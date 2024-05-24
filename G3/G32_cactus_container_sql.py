@@ -163,7 +163,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor        = result_cursor.cursor
 			result : int  = cursor.rowcount
 			cursor.close()
-		except:
+		except Exception as error:
+			print(error)
 			return T31_ResultInt(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
@@ -181,7 +182,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor             = result_cursor.cursor
 			data   : list[str] = cursor.fetchone()
 			cursor.close()
-		except:
+		except Exception as error:
+			print(error)
 			return T31_ResultString(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
@@ -202,7 +204,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor             = result_cursor.cursor
 			data   : list[str] = cursor.fetchone()
 			cursor.close()
-		except:
+		except Exception as error:
+			print(error)
 			return T31_ResultList(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
@@ -222,7 +225,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor             = result_cursor.cursor
 			result : list[str] = list(map(lambda data: data[0], cursor.fetchall()))
 			cursor.close()
-		except:
+		except Exception as error:
+			print(error)
 			return T31_ResultList(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
@@ -242,7 +246,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor             = result_cursor.cursor
 			result : list[str] = cursor.fetchall()
 			cursor.close()
-		except:
+		except Exception as error:
+			print(error)
 			return T31_ResultList(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
