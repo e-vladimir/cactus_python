@@ -12,22 +12,22 @@ from   G00_cactus_codes         import *
 from   G10_cactus_validators    import ValidateOci,           \
 									   ValidateOid,           \
 									   ValidatePid
-from   G30_cactus_struct        import T30_ResultCode,        \
-									   T30_StructCell
-from   G31_cactus_struct        import T31_ResultBool,        \
-									   T31_ResultInt,         \
-									   T31_ResultList,        \
-									   T31_ResultString,      \
-									   T31_ResultStructCell,  \
-									   T31_ResultStructCells, \
-									   T31_StructRange,       \
-									   T31_ResultStructRange
+from G20_cactus_struct import T20_ResultCode,        \
+									   T20_StructCell
+from G21_struct_result import T21_ResultBool,        \
+									   T21_ResultInt,         \
+									   T21_ResultList,        \
+									   T21_ResultString,      \
+									   T21_ResultStructCell,  \
+									   T21_ResultStructCells, \
+									   T21_StructRange,       \
+									   T21_ResultStructRange
 from   G31_cactus_container_sql import C31_ContainerSQL
 
 
 # ТИПЫ ДАННЫХ SQL КОНТЕЙНЕРА
 @dataclass
-class T31_ResultCursorS3m(T30_ResultCode):
+class T31_ResultCursorS3m(T20_ResultCode):
 	""" Результат-Курсор """
 	cursor : s3m.Cursor = None
 
@@ -53,71 +53,71 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		self.connection : s3m.Connection | None = None
 
 	# УПРАВЛЕНИЕ ПАРАМЕТРАМИ ПОДКЛЮЧЕНИЯ
-	def OptionsFilename(self, filename: str = None) -> T31_ResultString:
+	def OptionsFilename(self, filename: str = None) -> T21_ResultString:
 		""" Запрос/Установка параметра подключения: Имя файла """
-		if filename is None: return T31_ResultString(RESULT_OK, self._options_filename)
+		if filename is None: return T21_ResultString(RESULT_OK, self._options_filename)
 		self._options_filename = filename
 
 	# ЗАПРОС СОСТОЯНИЯ ПОДКЛЮЧЕНИЯ
-	def ConnectionState(self) -> T31_ResultBool:
+	def ConnectionState(self) -> T21_ResultBool:
 		""" Запрос состояния подключения """
-		if self.connection is None: return T31_ResultBool(RESULT_OK, False)
+		if self.connection is None: return T21_ResultBool(RESULT_OK, False)
 
 		try                       : cursor = self.connection.cursor()
-		except                    : return T31_ResultBool(RESULT_OK, False)
+		except                    : return T21_ResultBool(RESULT_OK, False)
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
 	# УПРАВЛЕНИЕ ПОДКЛЮЧЕНИЕМ
-	def Connect(self) -> T31_ResultBool:
+	def Connect(self) -> T21_ResultBool:
 		""" Подключение к СУБД """
 		if not self.ConnectionState().flag:
 			self.connection = None
 
 			try                            : self.connection = s3m.Connection(self.OptionsFilename().text, isolation_level=None, check_same_thread=False)
-			except sqlite3.OperationalError: return T31_ResultBool(RESULT_ERROR_ACCESS_IO, False)
-			except                         : return T31_ResultBool(RESULT_ERROR_ACCESS_CONNECTION, False)
+			except sqlite3.OperationalError: return T21_ResultBool(RESULT_ERROR_ACCESS_IO, False)
+			except                         : return T21_ResultBool(RESULT_ERROR_ACCESS_CONNECTION, False)
 
 			try   :
 				cursor = self.connection.cursor()
 				cursor.execute('PRAGMA journal_mode=MEMORY;')
 			except: pass
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
-	def Disconnect(self) -> T31_ResultBool:
+	def Disconnect(self) -> T21_ResultBool:
 		""" Отключение от СУБД """
-		if     self.connection is None    : return T31_ResultBool(RESULT_OK, True)
+		if     self.connection is None    : return T21_ResultBool(RESULT_OK, True)
 
 		try                               : self.connection.close()
 		except                            : pass
 
 		self.connection = None
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
 	# УПРАВЛЕНИЕ РЕГИСТРАЦИЕЙ КЛАССА
-	def RegisterClass(self, oci: str) -> T31_ResultBool:
+	def RegisterClass(self, oci: str) -> T21_ResultBool:
 		""" Регистрация класса структурного объекта """
-		if not ValidateOci(oci)                : return T31_ResultBool(RESULT_ERROR_CHECK_VALIDATE, False)
+		if not ValidateOci(oci)                : return T21_ResultBool(RESULT_ERROR_CHECK_VALIDATE, False)
 
 		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci} ({SQL_SID} TEXT PRIMARY KEY, {SQL_CVL} TEXT NOT NULL, {SQL_CUT} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
-		if not result_s_table.code == RESULT_OK: return T31_ResultBool(result_s_table.code, False)
+		if not result_s_table.code == RESULT_OK: return T21_ResultBool(result_s_table.code, False)
 
 		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci}_ ({SQL_SID} TEXT, {SQL_CVL} TEXT NOT NULL, {SQL_CUT} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
-		if not result_s_table.code == RESULT_OK: return T31_ResultBool(result_s_table.code, False)
+		if not result_s_table.code == RESULT_OK: return T21_ResultBool(result_s_table.code, False)
 
 		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_sid_ ON {oci}_ ({SQL_SID})"
 		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == RESULT_OK: return T31_ResultBool(result_s_index.code, False)
+		if not result_s_index.code == RESULT_OK: return T21_ResultBool(result_s_index.code, False)
 
 		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_cut_ ON {oci}_ ({SQL_CUT})"
 		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == RESULT_OK: return T31_ResultBool(result_s_index.code, False)
+		if not result_s_index.code == RESULT_OK: return T21_ResultBool(result_s_index.code, False)
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
 	# ВЫПОЛНЕНИЕ ЗАПРОСОВ
 	def ExecSql(self, sql: str | list[str]) -> T31_ResultCursorS3m:
@@ -152,12 +152,12 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			self.PrepareDisconnect()
 			return T31_ResultCursorS3m(RESULT_ERROR_EXEC)
 
-	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T31_ResultInt:
+	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_ResultInt:
 		"""Выполнение запроса с числом строк"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultInt(result_cursor.code)
+			return T21_ResultInt(result_cursor.code)
 
 		try:
 			cursor        = result_cursor.cursor
@@ -165,18 +165,18 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except Exception as error:
 			print(error)
-			return T31_ResultInt(RESULT_ERROR_ACCESS_IO)
+			return T21_ResultInt(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
 
-		return T31_ResultInt(RESULT_OK, result)
+		return T21_ResultInt(RESULT_OK, result)
 
-	def ExecSqlSelectSingle(self, sql: str) -> T31_ResultString:
+	def ExecSqlSelectSingle(self, sql: str) -> T21_ResultString:
 		"""Выполнение запроса с получением значения"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultString(result_cursor.code)
+			return T21_ResultString(result_cursor.code)
 
 		try:
 			cursor             = result_cursor.cursor
@@ -184,21 +184,21 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except Exception as error:
 			print(error)
-			return T31_ResultString(RESULT_ERROR_ACCESS_IO)
+			return T21_ResultString(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
 
-		if not data: return T31_ResultString(RESULT_WARNING_NO_DATA)
+		if not data: return T21_ResultString(RESULT_WARNING_NO_DATA)
 
 		result : str       = data[0]
-		return T31_ResultString(RESULT_OK, result)
+		return T21_ResultString(RESULT_OK, result)
 
-	def ExecSqlSelectHList(self, sql: str) -> T31_ResultList:
+	def ExecSqlSelectHList(self, sql: str) -> T21_ResultList:
 		"""Выполнение запроса с получением горизонтального списка значений"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultList(result_cursor.code)
+			return T21_ResultList(result_cursor.code)
 
 		try:
 			cursor             = result_cursor.cursor
@@ -206,20 +206,20 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except Exception as error:
 			print(error)
-			return T31_ResultList(RESULT_ERROR_ACCESS_IO)
+			return T21_ResultList(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
 
-		if not data: return T31_ResultList(RESULT_WARNING_NO_DATA)
+		if not data: return T21_ResultList(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultList(RESULT_OK, data)
+		return T21_ResultList(RESULT_OK, data)
 
-	def ExecSqlSelectVList(self, sql: str) -> T31_ResultList:
+	def ExecSqlSelectVList(self, sql: str) -> T21_ResultList:
 		"""Выполнение запроса с получением вертикального списка значений"""
 		result_cursor      = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultList(result_cursor.code)
+			return T21_ResultList(result_cursor.code)
 
 		try:
 			cursor             = result_cursor.cursor
@@ -227,20 +227,20 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except Exception as error:
 			print(error)
-			return T31_ResultList(RESULT_ERROR_ACCESS_IO)
+			return T21_ResultList(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
 
-		if not result: return T31_ResultList(RESULT_WARNING_NO_DATA, result)
+		if not result: return T21_ResultList(RESULT_WARNING_NO_DATA, result)
 
-		return T31_ResultList(RESULT_OK, result)
+		return T21_ResultList(RESULT_OK, result)
 
-	def ExecSqlSelectMatrix(self, sql: str) -> T31_ResultList:
+	def ExecSqlSelectMatrix(self, sql: str) -> T21_ResultList:
 		"""Выполнение запроса с получением матрицы"""
 		result_cursor      = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultList(result_cursor.code)
+			return T21_ResultList(result_cursor.code)
 
 		try:
 			cursor             = result_cursor.cursor
@@ -248,20 +248,20 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except Exception as error:
 			print(error)
-			return T31_ResultList(RESULT_ERROR_ACCESS_IO)
+			return T21_ResultList(RESULT_ERROR_ACCESS_IO)
 
 		self.PrepareDisconnect()
 
-		if not result: return T31_ResultList(RESULT_WARNING_NO_DATA, result)
+		if not result: return T21_ResultList(RESULT_WARNING_NO_DATA, result)
 
-		return T31_ResultList(RESULT_OK, result)
+		return T21_ResultList(RESULT_OK, result)
 
 	# УПРАВЛЕНИЕ S-ЯЧЕЙКОЙ
-	def WriteSCell(self, cell: T30_StructCell, flag_mode_ignore: bool = False) -> T31_ResultStructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False) -> T21_ResultStructCell:
 		""" Запись S-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql : str   = f"INSERT INTO {cell.oci} ({SQL_SID}, {SQL_CVL}, {SQL_CUT}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
 		if flag_mode_ignore: sql += f"ON CONFLICT ({SQL_SID}) DO NOTHING"
@@ -270,69 +270,69 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result      = self.ExecSql(sql)
 		actual_cell = self.ReadSCell(cell)
 
-		return T31_ResultStructCell(result.code, actual_cell.cell)
+		return T21_ResultStructCell(result.code, actual_cell.cell)
 
-	def ReadSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def ReadSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запрос S-Ячейки """
-		if not ValidateOci(cell.oci)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql  : str       = f"SELECT {SQL_CVL}, {SQL_CUT} FROM {cell.oci} WHERE {SQL_SID} = '{cell.sid}'"
 
 		result_data      = self.ExecSqlSelectHList(sql)
-		if not result_data.code == RESULT_OK: return T31_ResultStructCell(result_data.code)
+		if not result_data.code == RESULT_OK: return T21_ResultStructCell(result_data.code)
 
 		data : list[str] = result_data.items
-		if len(data) < 2                    : return T31_ResultStructCell(RESULT_WARNING_NO_DATA)
+		if len(data) < 2                    : return T21_ResultStructCell(RESULT_WARNING_NO_DATA)
 
 		try                                 :
-			result           = T30_StructCell()
+			result           = T20_StructCell()
 			result.oci       = cell.oci
 			result.oid       = cell.oid
 			result.pid       = cell.pid
 			result.cvl       = data[0]
 			result.cut       = int(data[1])
 
-		except                              : return T31_ResultStructCell(RESULT_ERROR_CONVERT)
+		except                              : return T21_ResultStructCell(RESULT_ERROR_CONVERT)
 
-		return T31_ResultStructCell(RESULT_OK, result)
+		return T21_ResultStructCell(RESULT_OK, result)
 
-	def DeleteSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def DeleteSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Удаление S-Ячейки """
-		if not ValidateOci(cell.oci)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql  : str = f"DELETE FROM {cell.oci} WHERE {SQL_SID} = '{cell.sid}'"
 		result     = self.ExecSqlSelectRowCount(sql)
-		if not result.code  == RESULT_OK    : return T31_ResultStructCell(result.code)
-		if not result.value == 1            : return T31_ResultStructCell(RESULT_WARNING_NO_DATA)
+		if not result.code  == RESULT_OK    : return T21_ResultStructCell(result.code)
+		if not result.value == 1            : return T21_ResultStructCell(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCell(RESULT_OK, cell)
+		return T21_ResultStructCell(RESULT_OK, cell)
 
-	def SyncSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def SyncSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Синхронизация S-Ячейки """
 		result_read       = self.ReadSCell(cell)
 		cell_in_container = result_read.cell
 
 		if   cell_in_container.cut <  cell.cut: result = self.WriteSCell(cell)
-		else                                  : result = T31_ResultStructCell(RESULT_OK_SKIP)
+		else                                  : result = T21_ResultStructCell(RESULT_OK_SKIP)
 
 		cell = self.ReadSCell(cell)
 
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code, cell.cell)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code, cell.cell)
 
-		return T31_ResultStructCell(result.code, cell.cell)
+		return T21_ResultStructCell(result.code, cell.cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ S-ЯЧЕЕК
-	def DeleteSCells(self, cell_cells: T30_StructCell | list[T30_StructCell]) -> T31_ResultStructCells:
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Удаление пакета S-Ячеек """
-		result                         = T30_ResultCode(RESULT_OK_SKIP)
-		cells_0 : list[T30_StructCell] = self.ReadSCells(cell_cells).cells
+		result                         = T20_ResultCode(RESULT_OK_SKIP)
+		cells_0 : list[T20_StructCell] = self.ReadSCells(cell_cells).cells
 
-		if type(cell_cells) is T30_StructCell:
-			if not ValidateOci(cell_cells.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if type(cell_cells) is T20_StructCell:
+			if not ValidateOci(cell_cells.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 			sql     : str       = f"DELETE FROM {cell_cells.oci}"
 			filters : list[str] = []
@@ -351,9 +351,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql          : list[str]            = []
 
 			for cell in cell_cells:
-				if not ValidateOci(cell.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidateOid(cell.oid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidatePid(cell.pid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOci(cell.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOid(cell.oid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidatePid(cell.pid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 				sql.append(f"DELETE FROM {cell.oci} WHERE {SQL_SID} = '{cell.sid}';")
 
@@ -361,22 +361,22 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			result                              = self.ExecSql(sql)
 
-		if not result.code == RESULT_OK   : return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK   : return T21_ResultStructCells(result.code)
 
-		cells_1 : list[T30_StructCell] = self.ReadSCells(cell_cells).cells
-		cells   : list[T30_StructCell] = []
+		cells_1 : list[T20_StructCell] = self.ReadSCells(cell_cells).cells
+		cells   : list[T20_StructCell] = []
 
 		for cell in cells_0:
 			if cell not in cells_1: cells.append(cell)
 
-		return T31_ResultStructCells(result.code, cells)
+		return T21_ResultStructCells(result.code, cells)
 
-	def ReadSCells(self, cell_cells: T30_StructCell | list[T30_StructCell]) -> T31_ResultStructCells:
+	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запрос пакета S-Ячеек """
-		cells : list[T30_StructCell] = []
+		cells : list[T20_StructCell] = []
 
-		if type(cell_cells) is T30_StructCell:
-			if not ValidateOci(cell_cells.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if type(cell_cells) is T20_StructCell:
+			if not ValidateOci(cell_cells.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 			sql     : str       = f"SELECT {SQL_SID}, {SQL_CVL}, {SQL_CUT} FROM {cell_cells.oci}"
 			filters : list[str] = []
@@ -391,7 +391,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			if filters:	sql    += f" WHERE {' AND '.join(filters)}"
 			result              = self.ExecSqlSelectMatrix(sql)
 
-			if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+			if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 			for raw_data in result.items:
 				try:
@@ -402,15 +402,15 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 					cvl     = raw_data[1]
 					cut     = int(raw_data[2])
 
-					cells.append(T30_StructCell(oci=cell_cells.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+					cells.append(T20_StructCell(oci=cell_cells.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
 				except: continue
 
-			if not cells: return T31_ResultStructCells(result.code)
-			return T31_ResultStructCells(result.code, cells)
+			if not cells: return T21_ResultStructCells(result.code)
+			return T21_ResultStructCells(result.code, cells)
 
 		elif type(cell_cells) is list:
-			cells       : dict[str, T30_StructCell] = dict()
-			result_cells: list[T30_StructCell]      = []
+			cells       : dict[str, T20_StructCell] = dict()
+			result_cells: list[T20_StructCell]      = []
 			oci         : str                       = ""
 
 			for cell in cell_cells:
@@ -428,7 +428,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			result              = self.ExecSqlSelectMatrix(sql)
 
-			if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+			if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 			for raw_data in result.items:
 				try:
@@ -439,15 +439,15 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 					cvl     = raw_data[1]
 					cut     = int(raw_data[2])
 
-					result_cells.append(T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+					result_cells.append(T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
 				except: continue
 
-			if not cells: return T31_ResultStructCells(result.code)
-			return T31_ResultStructCells(result.code, result_cells)
+			if not cells: return T21_ResultStructCells(result.code)
+			return T21_ResultStructCells(result.code, result_cells)
 
-		return T31_ResultStructCells(RESULT_OK_SKIP)
+		return T21_ResultStructCells(RESULT_OK_SKIP)
 
-	def SyncSCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def SyncSCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Синхронизация пакета S-Ячеек """
 		sql : list[str] = []
 
@@ -462,16 +462,16 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			sql.append(sql_insert)
 
-		if not sql: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not sql: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
 		sql.insert(0, "BEGIN;")
 
 		result = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		return self.ReadSCells(cells)
 
-	def WriteSCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def WriteSCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запись пакета S-Ячеек """
 		sql : list[str] = []
 
@@ -486,69 +486,69 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			sql.append(sql_insert)
 
-		if not sql: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not sql: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
 		sql.insert(0, "BEGIN;")
 
 		result = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		return self.ReadSCells(cells)
 
 	# УПРАВЛЕНИЕ D-ЯЧЕЙКОЙ
-	def DeleteDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def DeleteDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Удаление D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not cell.cut             : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not cell.cut             : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		result_cell = self.ReadDCell(cell)
 		sql         = f"DELETE FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' AND {SQL_CUT}={cell.cut}"
 		result      = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code, result_cell.cell)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code, result_cell.cell)
 
 		return result_cell
 
-	def ReadDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def ReadDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запрос D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not cell.cut             : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not cell.cut             : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql    = f"SELECT {SQL_CVL} FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' AND {SQL_CUT}={cell.cut}"
 		result = self.ExecSqlSelectSingle(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code)
 
-		return T31_ResultStructCell(RESULT_OK, T30_StructCell(oci=cell.oci, oid=cell.oid, pid=cell.pid, cvl=result.text, cut=cell.cut))
+		return T21_ResultStructCell(RESULT_OK, T20_StructCell(oci=cell.oci, oid=cell.oid, pid=cell.pid, cvl=result.text, cut=cell.cut))
 
-	def WriteDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def WriteDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запись D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not cell.cut             : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not cell.cut             : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql         = f"UPDATE {cell.oci}_ SET {SQL_CVL}='{cell.cvl}' WHERE {SQL_SID}='{cell.sid}' AND {SQL_CUT}={cell.cut}"
 		result      = self.ExecSqlSelectRowCount(sql)
 
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code)
 		if     result.value == 0:
 			sql         = f"INSERT INTO {cell.oci}_ ({SQL_SID}, {SQL_CVL}, {SQL_CUT}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut})"
 			result      = self.ExecSql(sql)
-			if not result.code == RESULT_OK: return T31_ResultStructCell(result.code)
+			if not result.code == RESULT_OK: return T21_ResultStructCell(result.code)
 
 		result_cell = self.ReadDCell(cell)
 
 		return result_cell
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def ReadDCells(self, cell: T31_StructRange) -> T31_ResultStructCells:
+	def ReadDCells(self, cell: T21_StructRange) -> T21_ResultStructCells:
 		""" Запрос пакета D-Ячеек """
-		if not ValidateOci(cell.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
-		cells   : list[T30_StructCell] = []
+		cells   : list[T20_StructCell] = []
 
 		filters : list[str]            = []
 		if cell.oid and cell.pid: filters.append(f"({SQL_SID}='{cell.sid}')")
@@ -559,7 +559,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if filters: sql               += f"WHERE " + " AND ".join(filters)
 
 		result                         = self.ExecSqlSelectMatrix(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		for raw_data in result.items:
 			try:
@@ -571,19 +571,19 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 				cvl     = raw_data[1]
 				cut     = int(raw_data[2])
 
-				cells.append(T30_StructCell(oci=cell.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+				cells.append(T20_StructCell(oci=cell.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
 			except: continue
 
-		if not cells: return T31_ResultStructCells(result.code)
-		return T31_ResultStructCells(result.code, cells)
+		if not cells: return T21_ResultStructCells(result.code)
+		return T21_ResultStructCells(result.code, cells)
 
-	def DeleteDCells(self, cell_cells: T31_StructRange | list[T30_StructCell]) -> T31_ResultStructCells:
+	def DeleteDCells(self, cell_cells: T21_StructRange | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Удаление пакета D-Ячеек """
-		result                         = T30_ResultCode(RESULT_OK_SKIP)
-		cells_0 : list[T30_StructCell] = self.ReadDCells(cell_cells).cells
+		result                         = T20_ResultCode(RESULT_OK_SKIP)
+		cells_0 : list[T20_StructCell] = self.ReadDCells(cell_cells).cells
 
-		if type(cell_cells) is T31_StructRange:
-			if not ValidateOci(cell_cells.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if type(cell_cells) is T21_StructRange:
+			if not ValidateOci(cell_cells.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 			sql     : str       = f"DELETE FROM {cell_cells.oci}_"
 			filters : list[str] = []
@@ -603,10 +603,10 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql          : list[str]            = []
 
 			for cell in cell_cells:
-				if not ValidateOci(cell.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidateOid(cell.oid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidatePid(cell.pid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not cell.cut             : return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOci(cell.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOid(cell.oid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidatePid(cell.pid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not cell.cut             : return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 				sql.append(f"DELETE FROM {cell.oci}_ WHERE ({SQL_SID} = '{cell.sid}) AND ({SQL_CUT} = {cell.cut})';")
 
@@ -614,17 +614,17 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			result                              = self.ExecSql(sql)
 
-		if not result.code == RESULT_OK   : return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK   : return T21_ResultStructCells(result.code)
 
-		cells_1 : list[T30_StructCell] = self.ReadSCells(cell_cells).cells
-		cells   : list[T30_StructCell] = []
+		cells_1 : list[T20_StructCell] = self.ReadSCells(cell_cells).cells
+		cells   : list[T20_StructCell] = []
 
 		for cell in cells_0:
 			if cell not in cells_1: cells.append(cell)
 
-		return T31_ResultStructCells(result.code, cells)
+		return T21_ResultStructCells(result.code, cells)
 
-	def WriteDCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def WriteDCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запись пакета D-Ячеек """
 		sql : list[str] = []
 
@@ -638,21 +638,21 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			sql.append(sql_insert)
 
-		if not sql: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not sql: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
 		sql.insert(0, "BEGIN;")
 
 		result = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		return self.ReadSCells(cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T31_StructRange) -> T31_ResultStructRange:
+	def DCutRange(self, cell: T21_StructRange) -> T21_ResultStructRange:
 		""" Запрос границ cUT D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql    = f"SELECT MIN({SQL_CUT}) AS {SQL_CUT}_0, MAX({SQL_CUT}) AS {SQL_CUT}_1 FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' "
 		if cell.cut_l: sql += f"AND ({SQL_CUT} >= {cell.cut_l}) "
@@ -664,25 +664,25 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			data   = result.items
 			cut_l  = int(data[0])
 			cut_r  = int(data[1])
-		except: return T31_ResultStructRange(RESULT_ERROR_CONVERT)
+		except: return T21_ResultStructRange(RESULT_ERROR_CONVERT)
 
-		return T31_ResultStructRange(result.code, T31_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
+		return T21_ResultStructRange(result.code, T21_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
 
-	def DCuts(self, cell: T31_StructRange) -> T31_ResultList:
+	def DCuts(self, cell: T21_StructRange) -> T21_ResultList:
 		""" Запрос списка CUT """
-		if not ValidateOci(cell.oci)   : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)   : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)   : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)   : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)   : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)   : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql    = f"SELECT {SQL_CUT} FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' "
 		if cell.cut_l: sql += f"AND ({SQL_CUT} >= {cell.cut_l}) "
 		if cell.cut_r: sql += f"AND ({SQL_CUT} <= {cell.cut_r}) "
 
 		result = self.ExecSqlSelectVList(sql)
-		if not result.code == RESULT_OK: return T31_ResultList(result.code)
-		if not result.items            : return T31_ResultList(RESULT_WARNING_NO_DATA)
+		if not result.code == RESULT_OK: return T21_ResultList(result.code)
+		if not result.items            : return T21_ResultList(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultList(RESULT_OK, result.items)
+		return T21_ResultList(RESULT_OK, result.items)
 
 
 # КАКТУС: КОНТЕЙНЕР-PostgreSQL
@@ -710,43 +710,43 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		self.connection : psycopg2.connection | None = None
 
 	# УПРАВЛЕНИЕ ПАРАМЕТРАМИ ПОДКЛЮЧЕНИЯ
-	def OptionsServerIp(self, ip: str = None) -> T31_ResultString:
+	def OptionsServerIp(self, ip: str = None) -> T21_ResultString:
 		""" Запрос/Установка параметра подключения: IP сервера """
-		if ip is None: return T31_ResultString(RESULT_OK, self._options_server_ip)
+		if ip is None: return T21_ResultString(RESULT_OK, self._options_server_ip)
 		self._options_server_ip = ip
 
-	def OptionsServerTcpPort(self, tcp_port: int = None) -> T31_ResultInt:
+	def OptionsServerTcpPort(self, tcp_port: int = None) -> T21_ResultInt:
 		""" Запрос/Установка параметра подключения: TCP-порт """
-		if tcp_port is None: return T31_ResultInt(RESULT_OK, self._options_server_tcp_port)
+		if tcp_port is None: return T21_ResultInt(RESULT_OK, self._options_server_tcp_port)
 		self._options_server_tcp_port = tcp_port
 
-	def OptionsServerDBase(self, basename: str = None) -> T31_ResultString:
+	def OptionsServerDBase(self, basename: str = None) -> T21_ResultString:
 		""" Запрос/Установка параметра подключения: Имя схемы """
-		if basename is None: return T31_ResultString(RESULT_OK, self._options_server_dbase)
+		if basename is None: return T21_ResultString(RESULT_OK, self._options_server_dbase)
 		self._options_server_dbase = basename
 
-	def OptionsServerLogin(self, login: str = None) -> T31_ResultString:
+	def OptionsServerLogin(self, login: str = None) -> T21_ResultString:
 		""" Запрос/Установка параметра подключения: Логин """
-		if login is None: return T31_ResultString(RESULT_OK, self._options_server_login)
+		if login is None: return T21_ResultString(RESULT_OK, self._options_server_login)
 		self._options_server_login = login
 
-	def OptionsServerPassword(self, password: str = None) -> T31_ResultString:
+	def OptionsServerPassword(self, password: str = None) -> T21_ResultString:
 		""" Запрос/Установка параметра подключения: Пароль """
-		if password is None: return T31_ResultString(RESULT_OK, self._options_server_password)
+		if password is None: return T21_ResultString(RESULT_OK, self._options_server_password)
 		self._options_server_password = password
 
 	# ЗАПРОС СОСТОЯНИЯ ПОДКЛЮЧЕНИЯ
-	def ConnectionState(self) -> T31_ResultBool:
+	def ConnectionState(self) -> T21_ResultBool:
 		""" Запрос состояния подключения """
-		if self.connection is None: return T31_ResultBool(RESULT_OK, False)
+		if self.connection is None: return T21_ResultBool(RESULT_OK, False)
 
 		try                       : cursor = self.connection.cursor()
-		except                    : return T31_ResultBool(RESULT_OK, False)
+		except                    : return T21_ResultBool(RESULT_OK, False)
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
 	# УПРАВЛЕНИЕ ПОДКЛЮЧЕНИЕМ
-	def Connect(self) -> T31_ResultBool:
+	def Connect(self) -> T21_ResultBool:
 		""" Подключение к СУБД """
 		if not self.ConnectionState().flag:
 			try                             : self.connection = psycopg2.connect(host            = self.OptionsServerIp().text,
@@ -755,48 +755,48 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 									                                             user            = self.OptionsServerLogin().text,
 									                                             password        = self.OptionsServerPassword().text,
 									                                             connect_timeout = 5)
-			except psycopg2.OperationalError: return T31_ResultBool(RESULT_ERROR_ACCESS_IO,         False)
-			except                          : return T31_ResultBool(RESULT_ERROR_ACCESS_CONNECTION, False)
+			except psycopg2.OperationalError: return T21_ResultBool(RESULT_ERROR_ACCESS_IO, False)
+			except                          : return T21_ResultBool(RESULT_ERROR_ACCESS_CONNECTION, False)
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
-	def Disconnect(self) -> T31_ResultBool:
+	def Disconnect(self) -> T21_ResultBool:
 		""" Отключение от СУБД """
-		if     self.connection is None    : return T31_ResultBool(RESULT_OK, True)
+		if     self.connection is None    : return T21_ResultBool(RESULT_OK, True)
 
 		try                               : self.connection.close()
 		except                            : pass
 
 		self.connection = None
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
 	# УПРАВЛЕНИЕ РЕГИСТРАЦИЕЙ КЛАССА
-	def RegisterClass(self, oci: str) -> T31_ResultBool:
+	def RegisterClass(self, oci: str) -> T21_ResultBool:
 		""" Регистрация класса структурного объекта """
-		if not ValidateOci(oci)                : return T31_ResultBool(RESULT_ERROR_CHECK_VALIDATE, False)
+		if not ValidateOci(oci)                : return T21_ResultBool(RESULT_ERROR_CHECK_VALIDATE, False)
 
 		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci} ({SQL_SID} TEXT PRIMARY KEY, {SQL_CVL} TEXT, {SQL_CUT} INT)"
 		result_s_table = self.ExecSql(sql)
-		if not result_s_table.code == RESULT_OK: return T31_ResultBool(result_s_table.code, False)
+		if not result_s_table.code == RESULT_OK: return T21_ResultBool(result_s_table.code, False)
 
 		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_sid ON {oci} ({SQL_SID})"
 		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == RESULT_OK: return T31_ResultBool(result_s_index.code, False)
+		if not result_s_index.code == RESULT_OK: return T21_ResultBool(result_s_index.code, False)
 
 		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci}_ ({SQL_SID} TEXT, {SQL_CVL} TEXT, {SQL_CUT} INT)"
 		result_s_table = self.ExecSql(sql)
-		if not result_s_table.code == RESULT_OK: return T31_ResultBool(result_s_table.code, False)
+		if not result_s_table.code == RESULT_OK: return T21_ResultBool(result_s_table.code, False)
 
 		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_sid_ ON {oci}_ ({SQL_SID})"
 		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == RESULT_OK: return T31_ResultBool(result_s_index.code, False)
+		if not result_s_index.code == RESULT_OK: return T21_ResultBool(result_s_index.code, False)
 
 		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_cut_ ON {oci}_ ({SQL_CUT})"
 		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == RESULT_OK: return T31_ResultBool(result_s_index.code, False)
+		if not result_s_index.code == RESULT_OK: return T21_ResultBool(result_s_index.code, False)
 
-		return T31_ResultBool(RESULT_OK, True)
+		return T21_ResultBool(RESULT_OK, True)
 
 	# ВЫПОЛНЕНИЕ ЗАПРОСОВ
 	def ExecSql(self, sql: str | list[str]) -> T31_ResultCursorS3m:
@@ -832,12 +832,12 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.PrepareDisconnect()
 			return T31_ResultCursorS3m(RESULT_ERROR_EXEC)
 
-	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T31_ResultInt:
+	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_ResultInt:
 		"""Выполнение запроса с числом строк"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultInt(result_cursor.code)
+			return T21_ResultInt(result_cursor.code)
 
 		cursor        = result_cursor.cursor
 		result : int  = cursor.rowcount
@@ -845,14 +845,14 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		self.PrepareDisconnect()
 
-		return T31_ResultInt(RESULT_OK, result)
+		return T21_ResultInt(RESULT_OK, result)
 
-	def ExecSqlSelectSingle(self, sql: str) -> T31_ResultString:
+	def ExecSqlSelectSingle(self, sql: str) -> T21_ResultString:
 		"""Выполнение запроса с получением значения"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultString(result_cursor.code)
+			return T21_ResultString(result_cursor.code)
 
 		cursor             = result_cursor.cursor
 		data   : list[str] = cursor.fetchone()
@@ -860,17 +860,17 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		self.PrepareDisconnect()
 
-		if not data: return T31_ResultString(RESULT_WARNING_NO_DATA)
+		if not data: return T21_ResultString(RESULT_WARNING_NO_DATA)
 
 		result : str       = data[0]
-		return T31_ResultString(RESULT_OK, result)
+		return T21_ResultString(RESULT_OK, result)
 
-	def ExecSqlSelectHList(self, sql: str) -> T31_ResultList:
+	def ExecSqlSelectHList(self, sql: str) -> T21_ResultList:
 		"""Выполнение запроса с получением горизонтального списка значений"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultList(result_cursor.code)
+			return T21_ResultList(result_cursor.code)
 
 		cursor             = result_cursor.cursor
 		data   : list[str] = cursor.fetchone()
@@ -878,16 +878,16 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		self.PrepareDisconnect()
 
-		if not data: return T31_ResultList(RESULT_WARNING_NO_DATA)
+		if not data: return T21_ResultList(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultList(RESULT_OK, data)
+		return T21_ResultList(RESULT_OK, data)
 
-	def ExecSqlSelectVList(self, sql: str) -> T31_ResultList:
+	def ExecSqlSelectVList(self, sql: str) -> T21_ResultList:
 		"""Выполнение запроса с получением вертикального списка значений"""
 		result_cursor      = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultList(result_cursor.code)
+			return T21_ResultList(result_cursor.code)
 
 		cursor             = result_cursor.cursor
 		result : list[str] = list(map(lambda data: data[0], cursor.fetchall()))
@@ -895,16 +895,16 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		self.PrepareDisconnect()
 
-		if not result: return T31_ResultList(RESULT_WARNING_NO_DATA, result)
+		if not result: return T21_ResultList(RESULT_WARNING_NO_DATA, result)
 
-		return T31_ResultList(RESULT_OK, result)
+		return T21_ResultList(RESULT_OK, result)
 
-	def ExecSqlSelectMatrix(self, sql: str) -> T31_ResultList:
+	def ExecSqlSelectMatrix(self, sql: str) -> T21_ResultList:
 		"""Выполнение запроса с получением матрицы"""
 		result_cursor      = self.ExecSql(sql)
 		if not result_cursor.code == RESULT_OK:
 			self.PrepareDisconnect()
-			return T31_ResultList(result_cursor.code)
+			return T21_ResultList(result_cursor.code)
 
 		cursor             = result_cursor.cursor
 		result : list[str] = cursor.fetchall()
@@ -912,16 +912,16 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		self.PrepareDisconnect()
 
-		if not result: return T31_ResultList(RESULT_WARNING_NO_DATA, result)
+		if not result: return T21_ResultList(RESULT_WARNING_NO_DATA, result)
 
-		return T31_ResultList(RESULT_OK, result)
+		return T21_ResultList(RESULT_OK, result)
 
 	# УПРАВЛЕНИЕ S-ЯЧЕЙКОЙ
-	def WriteSCell(self, cell: T30_StructCell, flag_mode_ignore: bool = False) -> T31_ResultStructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False) -> T21_ResultStructCell:
 		""" Запись S-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql : str   = f"INSERT INTO {cell.oci} ({SQL_SID}, {SQL_CVL}, {SQL_CUT}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
 		if flag_mode_ignore: sql += f"ON CONFLICT ({SQL_SID}) DO NOTHING"
@@ -930,65 +930,65 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result      = self.ExecSql(sql)
 		actual_cell = self.ReadSCell(cell)
 
-		return T31_ResultStructCell(result.code, actual_cell.cell)
+		return T21_ResultStructCell(result.code, actual_cell.cell)
 
-	def ReadSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def ReadSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запрос S-Ячейки """
-		if not ValidateOci(cell.oci)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql  : str       = f"SELECT {SQL_CVL}, {SQL_CUT} FROM {cell.oci} WHERE {SQL_SID} = '{cell.sid}'"
 
 		result_data      = self.ExecSqlSelectHList(sql)
-		if not result_data.code == RESULT_OK: return T31_ResultStructCell(result_data.code)
+		if not result_data.code == RESULT_OK: return T21_ResultStructCell(result_data.code)
 
 		data : list[str] = result_data.items
-		if len(data) < 2                    : return T31_ResultStructCell(RESULT_WARNING_NO_DATA)
+		if len(data) < 2                    : return T21_ResultStructCell(RESULT_WARNING_NO_DATA)
 
 		try                                 :
-			result           = T30_StructCell()
+			result           = T20_StructCell()
 			result.oci       = cell.oci
 			result.oid       = cell.oid
 			result.pid       = cell.pid
 			result.cvl       = data[0]
 			result.cut       = int(data[1])
 
-		except                              : return T31_ResultStructCell(RESULT_ERROR_CONVERT)
+		except                              : return T21_ResultStructCell(RESULT_ERROR_CONVERT)
 
-		return T31_ResultStructCell(RESULT_OK, result)
+		return T21_ResultStructCell(RESULT_OK, result)
 
-	def DeleteSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def DeleteSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Удаление S-Ячейки """
-		if not ValidateOci(cell.oci)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)        : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)        : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql  : str = f"DELETE FROM {cell.oci} WHERE {SQL_SID} = '{cell.sid}'"
 		result     = self.ExecSqlSelectRowCount(sql)
-		if not result.code  == RESULT_OK    : return T31_ResultStructCell(result.code)
-		if not result.value == 1            : return T31_ResultStructCell(RESULT_WARNING_NO_DATA)
+		if not result.code  == RESULT_OK    : return T21_ResultStructCell(result.code)
+		if not result.value == 1            : return T21_ResultStructCell(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCell(RESULT_OK, cell)
+		return T21_ResultStructCell(RESULT_OK, cell)
 
-	def SyncSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def SyncSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Синхронизация S-Ячейки """
 		result_read       = self.ReadSCell(cell)
 
 		cell_in_container = result_read.cell
-		if cell_in_container.cut >  cell.cut: return T31_ResultStructCell(RESULT_OK_SKIP, cell)
+		if cell_in_container.cut >  cell.cut: return T21_ResultStructCell(RESULT_OK_SKIP, cell)
 
 		result            = self.WriteSCell(cell)
 		return self.ReadSCell(cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ S-ЯЧЕЕК
-	def DeleteSCells(self, cell_cells: T30_StructCell | list[T30_StructCell]) -> T31_ResultStructCells:
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Удаление пакета S-Ячеек """
-		result                         = T30_ResultCode(RESULT_OK_SKIP)
-		cells_0 : list[T30_StructCell] = self.ReadSCells(cell_cells).cells
+		result                         = T20_ResultCode(RESULT_OK_SKIP)
+		cells_0 : list[T20_StructCell] = self.ReadSCells(cell_cells).cells
 
-		if type(cell_cells) is T30_StructCell:
-			if not ValidateOci(cell_cells.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if type(cell_cells) is T20_StructCell:
+			if not ValidateOci(cell_cells.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 			sql     : str       = f"DELETE FROM {cell_cells.oci}"
 			filters : list[str] = []
@@ -1007,9 +1007,9 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql          : list[str]            = []
 
 			for cell in cell_cells:
-				if not ValidateOci(cell.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidateOid(cell.oid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidatePid(cell.pid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOci(cell.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOid(cell.oid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidatePid(cell.pid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 				sql.append(f"DELETE FROM {cell.oci} WHERE {SQL_SID} = '{cell.sid}';")
 
@@ -1017,22 +1017,22 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			result                              = self.ExecSql(sql)
 
-		if not result.code == RESULT_OK   : return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK   : return T21_ResultStructCells(result.code)
 
-		cells_1 : list[T30_StructCell] = self.ReadSCells(cell_cells).cells
-		cells   : list[T30_StructCell] = []
+		cells_1 : list[T20_StructCell] = self.ReadSCells(cell_cells).cells
+		cells   : list[T20_StructCell] = []
 
 		for cell in cells_0:
 			if cell not in cells_1: cells.append(cell)
 
-		return T31_ResultStructCells(result.code, cells)
+		return T21_ResultStructCells(result.code, cells)
 
-	def ReadSCells(self, cell_cells: T30_StructCell | list[T30_StructCell]) -> T31_ResultStructCells:
+	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запрос пакета S-Ячеек """
-		cells : list[T30_StructCell] = []
+		cells : list[T20_StructCell] = []
 
-		if type(cell_cells) is T30_StructCell:
-			if not ValidateOci(cell_cells.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if type(cell_cells) is T20_StructCell:
+			if not ValidateOci(cell_cells.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 			sql     : str       = f"SELECT {SQL_SID}, {SQL_CVL}, {SQL_CUT} FROM {cell_cells.oci}"
 			filters : list[str] = []
@@ -1047,7 +1047,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			if filters:	sql    += f" WHERE {' AND '.join(filters)}"
 			result              = self.ExecSqlSelectMatrix(sql)
 
-			if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+			if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 			for raw_data in result.items:
 				try:
@@ -1058,15 +1058,15 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 					cvl     = raw_data[1]
 					cut     = int(raw_data[2])
 
-					cells.append(T30_StructCell(oci=cell_cells.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+					cells.append(T20_StructCell(oci=cell_cells.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
 				except: continue
 
-			if not cells: return T31_ResultStructCells(result.code)
-			return T31_ResultStructCells(result.code, cells)
+			if not cells: return T21_ResultStructCells(result.code)
+			return T21_ResultStructCells(result.code, cells)
 
 		elif type(cell_cells) is list:
-			cells       : dict[str, T30_StructCell] = dict()
-			result_cells: list[T30_StructCell]      = []
+			cells       : dict[str, T20_StructCell] = dict()
+			result_cells: list[T20_StructCell]      = []
 			oci         : str                       = ""
 
 			for cell in cell_cells:
@@ -1084,7 +1084,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			result              = self.ExecSqlSelectMatrix(sql)
 
-			if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+			if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 			for raw_data in result.items:
 				try:
@@ -1095,15 +1095,15 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 					cvl     = raw_data[1]
 					cut     = int(raw_data[2])
 
-					result_cells.append(T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+					result_cells.append(T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
 				except: continue
 
-			if not cells: return T31_ResultStructCells(result.code)
-			return T31_ResultStructCells(result.code, result_cells)
+			if not cells: return T21_ResultStructCells(result.code)
+			return T21_ResultStructCells(result.code, result_cells)
 
-		return T31_ResultStructCells(RESULT_OK_SKIP)
+		return T21_ResultStructCells(RESULT_OK_SKIP)
 
-	def SyncSCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def SyncSCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Синхронизация пакета S-Ячеек """
 		sql : list[str] = []
 
@@ -1118,16 +1118,16 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			sql.append(sql_insert)
 
-		if not sql: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not sql: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
 		sql.insert(0, "BEGIN;")
 
 		result = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		return self.ReadSCells(cells)
 
-	def WriteSCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def WriteSCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запись пакета S-Ячеек """
 		sql : list[str] = []
 
@@ -1142,70 +1142,70 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			sql.append(sql_insert)
 
-		if not sql: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not sql: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
 		sql.insert(0, "BEGIN;")
 		sql.append("COMMIT;")
 
 		result = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		return self.ReadSCells(cells)
 
 	# УПРАВЛЕНИЕ D-ЯЧЕЙКОЙ
-	def DeleteDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def DeleteDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Удаление D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not cell.cut             : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not cell.cut             : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		result_cell = self.ReadDCell(cell)
 		sql         = f"DELETE FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' AND {SQL_CUT}={cell.cut}"
 		result      = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code, result_cell.cell)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code, result_cell.cell)
 
 		return result_cell
 
-	def ReadDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def ReadDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запрос D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not cell.cut             : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not cell.cut             : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql    = f"SELECT {SQL_CVL} FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' AND {SQL_CUT}={cell.cut}"
 		result = self.ExecSqlSelectSingle(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code)
 
-		return T31_ResultStructCell(RESULT_OK, T30_StructCell(oci=cell.oci, oid=cell.oid, pid=cell.pid, cvl=result.text, cut=cell.cut))
+		return T21_ResultStructCell(RESULT_OK, T20_StructCell(oci=cell.oci, oid=cell.oid, pid=cell.pid, cvl=result.text, cut=cell.cut))
 
-	def WriteDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def WriteDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запись D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not cell.cut             : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not cell.cut             : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql         = f"UPDATE {cell.oci}_ SET {SQL_CVL}='{cell.cvl}' WHERE {SQL_SID}='{cell.sid}' AND {SQL_CUT}={cell.cut}"
 		result      = self.ExecSqlSelectRowCount(sql)
 
-		if not result.code == RESULT_OK: return T31_ResultStructCell(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCell(result.code)
 		if     result.value == 0:
 			sql         = f"INSERT INTO {cell.oci}_ ({SQL_SID}, {SQL_CVL}, {SQL_CUT}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut})"
 			result      = self.ExecSql(sql)
-			if not result.code == RESULT_OK: return T31_ResultStructCell(result.code)
+			if not result.code == RESULT_OK: return T21_ResultStructCell(result.code)
 
 		result_cell = self.ReadDCell(cell)
 
 		return result_cell
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def ReadDCells(self, cell: T31_StructRange) -> T31_ResultStructCells:
+	def ReadDCells(self, cell: T21_StructRange) -> T21_ResultStructCells:
 		""" Запрос пакета D-Ячеек """
-		if not ValidateOci(cell.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
-		cells   : list[T30_StructCell] = []
+		cells   : list[T20_StructCell] = []
 
 		filters : list[str]            = []
 		if cell.oid and cell.pid: filters.append(f"({SQL_SID}='{cell.sid}')")
@@ -1216,7 +1216,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if filters: sql               += f"WHERE " + " AND ".join(filters)
 
 		result                         = self.ExecSqlSelectMatrix(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		for raw_data in result.items:
 			try:
@@ -1228,19 +1228,19 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 				cvl     = raw_data[1]
 				cut     = int(raw_data[2])
 
-				cells.append(T30_StructCell(oci=cell.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+				cells.append(T20_StructCell(oci=cell.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
 			except: continue
 
-		if not cells: return T31_ResultStructCells(result.code)
-		return T31_ResultStructCells(result.code, cells)
+		if not cells: return T21_ResultStructCells(result.code)
+		return T21_ResultStructCells(result.code, cells)
 
-	def DeleteDCells(self, cell_cells: T31_StructRange | list[T30_StructCell]) -> T31_ResultStructCells:
+	def DeleteDCells(self, cell_cells: T21_StructRange | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Удаление пакета D-Ячеек """
-		result                         = T30_ResultCode(RESULT_OK_SKIP)
-		cells_0 : list[T30_StructCell] = self.ReadDCells(cell_cells).cells
+		result                         = T20_ResultCode(RESULT_OK_SKIP)
+		cells_0 : list[T20_StructCell] = self.ReadDCells(cell_cells).cells
 
-		if type(cell_cells) is T31_StructRange:
-			if not ValidateOci(cell_cells.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+		if type(cell_cells) is T21_StructRange:
+			if not ValidateOci(cell_cells.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 			sql     : str       = f"DELETE FROM {cell_cells.oci}_"
 			filters : list[str] = []
@@ -1260,10 +1260,10 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql          : list[str]            = []
 
 			for cell in cell_cells:
-				if not ValidateOci(cell.oci): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidateOid(cell.oid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not ValidatePid(cell.pid): return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
-				if not cell.cut             : return T31_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOci(cell.oci): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidateOid(cell.oid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not ValidatePid(cell.pid): return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
+				if not cell.cut             : return T21_ResultStructCells(RESULT_ERROR_CHECK_VALIDATE)
 
 				sql.append(f"DELETE FROM {cell.oci}_ WHERE ({SQL_SID} = '{cell.sid}) AND ({SQL_CUT} = {cell.cut})';")
 
@@ -1271,17 +1271,17 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			result                              = self.ExecSql(sql)
 
-		if not result.code == RESULT_OK   : return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK   : return T21_ResultStructCells(result.code)
 
-		cells_1 : list[T30_StructCell] = self.ReadSCells(cell_cells).cells
-		cells   : list[T30_StructCell] = []
+		cells_1 : list[T20_StructCell] = self.ReadSCells(cell_cells).cells
+		cells   : list[T20_StructCell] = []
 
 		for cell in cells_0:
 			if cell not in cells_1: cells.append(cell)
 
-		return T31_ResultStructCells(result.code, cells)
+		return T21_ResultStructCells(result.code, cells)
 
-	def WriteDCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def WriteDCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запись пакета D-Ячеек """
 		sql : list[str] = []
 
@@ -1295,21 +1295,21 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			sql.append(sql_insert)
 
-		if not sql: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not sql: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
 		sql.insert(0, "BEGIN;")
 
 		result = self.ExecSql(sql)
-		if not result.code == RESULT_OK: return T31_ResultStructCells(result.code)
+		if not result.code == RESULT_OK: return T21_ResultStructCells(result.code)
 
 		return self.ReadSCells(cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T31_StructRange) -> T31_ResultStructRange:
+	def DCutRange(self, cell: T21_StructRange) -> T21_ResultStructRange:
 		""" Запрос границ cUT D-Ячейки """
-		if not ValidateOci(cell.oci): return T31_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid): return T31_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid): return T31_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci): return T21_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid): return T21_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid): return T21_ResultStructRange(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql    = f"SELECT MIN({SQL_CUT}) AS {SQL_CUT}_0, MAX({SQL_CUT}) AS {SQL_CUT}_1 FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' "
 		if cell.cut_l: sql += f"AND ({SQL_CUT} >= {cell.cut_l}) "
@@ -1321,22 +1321,22 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			data   = result.items
 			cut_l  = int(data[0])
 			cut_r  = int(data[1])
-		except: return T31_ResultStructRange(RESULT_ERROR_CONVERT)
+		except: return T21_ResultStructRange(RESULT_ERROR_CONVERT)
 
-		return T31_ResultStructRange(result.code, T31_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
+		return T21_ResultStructRange(result.code, T21_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
 
-	def DCuts(self, cell: T31_StructRange) -> T31_ResultList:
+	def DCuts(self, cell: T21_StructRange) -> T21_ResultList:
 		""" Запрос списка CUT """
-		if not ValidateOci(cell.oci)   : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)   : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)   : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)   : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)   : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)   : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
 
 		sql    = f"SELECT {SQL_CUT} FROM {cell.oci}_ WHERE {SQL_SID}='{cell.sid}' "
 		if cell.cut_l: sql += f"AND ({SQL_CUT} >= {cell.cut_l}) "
 		if cell.cut_r: sql += f"AND ({SQL_CUT} <= {cell.cut_r}) "
 
 		result = self.ExecSqlSelectVList(sql)
-		if not result.code == RESULT_OK: return T31_ResultList(result.code)
-		if not result.items            : return T31_ResultList(RESULT_WARNING_NO_DATA)
+		if not result.code == RESULT_OK: return T21_ResultList(result.code)
+		if not result.items            : return T21_ResultList(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultList(RESULT_OK, result.items)
+		return T21_ResultList(RESULT_OK, result.items)

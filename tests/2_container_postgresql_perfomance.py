@@ -1,7 +1,7 @@
 import random
 import time
 
-from G30_cactus_struct                import T30_StructCell
+from G20_cactus_struct import T20_StructCell
 from G30_cactus_controller_containers import controller_containers
 
 count = 1000
@@ -30,7 +30,7 @@ for index in range(count):
 	pid    = f"field-{index}"
 	cvl    = f"value-{index}"
 	cut    = 1
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	container.WriteSCell(cell)
 
 time_1     = time.time()
@@ -48,7 +48,7 @@ for index in range(count):
 	pid    = f"field-{random.randint(0, count)}"
 	cvl    = f"value-{random.randint(0, count)}"
 	cut    = random.randint(0, 100000)
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	container.WriteSCell(cell, False)
 
 time_1     = time.time()
@@ -66,7 +66,7 @@ for index in range(count):
 	pid    = f"field-{random.randint(0, count)}"
 	cvl    = f"value-{random.randint(0, count)}"
 	cut    = random.randint(0, 100000)
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	container.WriteSCell(cell)
 
 time_1     = time.time()
@@ -84,7 +84,7 @@ for index in range(count):
 	pid    = f"field-{random.randint(0, count)}"
 	cvl    = f"value-{random.randint(0, count)}"
 	cut    = random.randint(0, 100000)
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	container.SyncSCell(cell)
 
 time_1     = time.time()
@@ -102,7 +102,7 @@ for index in range(count):
 	pid    = f"field-{random.randint(0, count)}"
 	cvl    = f"value-{random.randint(0, count)}"
 	cut    = random.randint(0, 100000)
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	container.WriteDCell(cell)
 
 time_1     = time.time()
@@ -121,7 +121,7 @@ for index in range(count):
 	pid    = f"field-{random.randint(0, count)}"
 	cvl    = f"value-{random.randint(0, count)}"
 	cut    = random.randint(0, 100000)
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	cells.append(cell)
 
 print(f"Запись {count} S-Ячеек")

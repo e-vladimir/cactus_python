@@ -1,20 +1,13 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 2022-11-26
+# 08 июн 2024
 
-from   dataclasses import dataclass, \
-						  field
-
-
-# ТИПЫ ДАННЫХ ОБЩЕГО НАЗНАЧЕНИЯ
-@dataclass
-class T30_ResultCode:
-	""" Результат-Код """
-	code: int = 0
+from dataclasses import (dataclass,
+                         field)
 
 
 # ТИПЫ ДАННЫХ СТРУКТУРНОЙ ЯЧЕЙКИ
 @dataclass
-class T30_StructCell:
+class T20_StructCell:
 	""" Структурная ячейка """
 	oci: str = ""
 
@@ -42,7 +35,7 @@ class T30_StructCell:
 
 # ТИПЫ ДАННЫХ ФИЛЬТРОВ
 @dataclass
-class T30_FilterD1:
+class T20_FilterD1:
 	""" Фильтр линейного типа """
 	flag_invert  : bool      = False
 	flag_include : bool      = False

@@ -1,27 +1,33 @@
-# КАКТУС: КАТАЛОГ
-# 2023-08-03
+# КАТАЛОГ: КАКТУС
+# 08 июн 2024
+
+import enum
+
 
 # ВИДЫ КОНТЕЙНЕРОВ
-CONTAINER_NONE       =  0
-CONTAINER_RAM        =  1
-CONTAINER_SQL        = 10
-CONTAINER_SQLITE     = 11
-CONTAINER_POSTGRESQL = 12
+
+class CONTAINERS(enum.Enum):
+	CONTAINER_NONE       = ( 0, "Нет контейнера")
+	CONTAINER_RAM        = ( 1, "RAM-Контейнер")
+	CONTAINER_SQL        = (10, "SQL-Контейнер")
+	CONTAINER_SQLITE     = (11, "SQL.SQLite-Контейнер")
+	CONTAINER_POSTGRESQL = (12, "SQL.Postgresql-Контейнер")
+
+	def __init__(self, code: int, description: str):
+		self.code         = code
+		self.descriptions = description
+
 
 # ИДЕНТИФИКАТОРЫ СТРУКТУРЫ ДАННЫХ
-OCI = "oci"
-OID = "oid"
-PID = "pid"
-SID = "sid"
-CID = "cid"
-CVL = "cvl"
-CUT = "cut"
+class CACTUS_STRUCT_ID(enum.Enum):
+	OCI = ("oci", "_oci")
+	OID = ("oid", "_oid")
+	PID = ("pid", "_pid")
+	SID = ("sid", "_sid")
+	CID = ("cid", "_cid")
+	CVL = ("cvl", "_cvl")
+	CUT = ("cut", "_cut")
 
-# SQL ИДЕНТИФИКАТОРЫ
-SQL_OCI = "_oci"
-SQL_OID = "_oid"
-SQL_PID = "_pid"
-SQL_SID = "_sid"
-SQL_CID = "_cid"
-SQL_CVL = "_cvl"
-SQL_CUT = "_cut"
+	def __init__(self, name: str, name_sql: str):
+		self.name     = name
+		self.name_sql = name_sql

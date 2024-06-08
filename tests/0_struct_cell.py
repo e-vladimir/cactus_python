@@ -1,4 +1,4 @@
-from G30_cactus_struct import T30_StructCell
+from G20_cactus_struct import T20_StructCell
 
 print("Тест регенерации параметров sid, cid структурой ячейки")
 print("")
@@ -12,7 +12,7 @@ cut = 1
 sid = f"{oid}.{pid}"
 cid = f"{oci}.{oid}.{pid}"
 
-cell = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+cell = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 result = f"{oid}.{pid}" == cell.sid
 print(f"{'[+]' if result else '[  ]'} Проверка sid после инициализации")
 result = f"{oci}.{oid}.{pid}" == cell.cid

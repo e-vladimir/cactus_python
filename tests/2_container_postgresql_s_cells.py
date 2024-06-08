@@ -1,5 +1,5 @@
 from G30_cactus_controller_containers import controller_containers
-from G30_cactus_struct                import T30_StructCell
+from G20_cactus_struct import T20_StructCell
 
 print("Тест PostgreSQL-Контейнера: Работа с пакетами S-Ячеек")
 print("")
@@ -15,7 +15,7 @@ container.Connect()
 oci    = "class_01"
 container.RegisterClass(oci)
 
-cell   = T30_StructCell(oci=oci)
+cell   = T20_StructCell(oci=oci)
 container.DeleteSCells(cell)
 
 result = len(container.ReadSCells(cell).cells) == 0
@@ -29,12 +29,12 @@ for index in range(0, 100):
 	pid    = f"field-{index}"
 	cvl    = f"value-{index}"
 	cut    = 1
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	cells.append(cell)
 
 container.WriteSCells(cells)
 
-cell   = T30_StructCell(oci=oci)
+cell   = T20_StructCell(oci=oci)
 result = len(container.ReadSCells(cell).cells) == 100
 print(f"{'[+]' if result else '[ ]'} Запись 100 S-Ячеек")
 
@@ -50,7 +50,7 @@ for index in range(1, 11):
 	pid    = f"field-{index}"
 	cvl    = f"value-{index}"
 	cut    = 1
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	cells.append(cell)
 
 result = len(container.WriteSCells(cells).cells) == 10
@@ -64,7 +64,7 @@ for index in range(6, 16):
 	pid    = f"field-{index}"
 	cvl    = f"value-{index}"
 	cut    = 1
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	cells.append(cell)
 
 deleted_cells = container.DeleteSCells(cells)

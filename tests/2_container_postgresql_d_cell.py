@@ -1,5 +1,5 @@
 from G00_result_codes                 import RESULT_OK
-from G30_cactus_struct                import T30_StructCell, T31_StructRange
+from G20_cactus_struct import T20_StructCell, T31_StructRange
 from G30_cactus_controller_containers import controller_containers
 
 
@@ -24,10 +24,10 @@ oid    = "object-01"
 pid    = "field-01"
 cvl    = "value-01"
 cut    = 100
-cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 result = container.WriteDCell(cell).code == RESULT_OK
 print(f"{'[+]' if result else '[ ]'} Запись D-Ячейки")
-cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
+cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
 cell   = container.ReadDCell(cell).cell
 result = True
 if   not cell.oci == oci: result = False
@@ -39,9 +39,9 @@ print(f"{'[+]' if result else '[ ]'} Чтение D-Ячейки")
 
 cvl    = "value-02"
 cut    = 100
-cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 container.WriteDCell(cell)
-cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
+cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
 cell   = container.ReadDCell(cell).cell
 result = True
 if   not cell.oci == oci: result = False
@@ -53,7 +53,7 @@ print(f"{'[+]' if result else '[ ]'} Перезапись D-Ячейки")
 
 for cut in range(1, 11):
 	cvl    = f"value-{cut:02d}"
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	container.WriteDCell(cell)
 
 cell   = T31_StructRange(oci=oci, oid=oid, pid=pid)
@@ -73,7 +73,7 @@ oid    = "object-01"
 pid    = "field-01"
 cvl    = "value-01"
 for cut in range(1, 11):
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
 	container.DeleteDCell(cell)
 
 cell   = T31_StructRange(oci=oci, oid=oid, pid=pid)

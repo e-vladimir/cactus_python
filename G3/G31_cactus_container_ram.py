@@ -7,12 +7,12 @@ from G10_cactus_validators import ValidateOci, \
 								  ValidateOid, \
 								  ValidatePid
 from G30_cactus_container  import C30_Container
-from G30_cactus_struct     import T30_StructCell
-from G31_cactus_struct     import T31_ResultStructCell,  \
-								  T31_ResultStructCells, \
-								  T31_StructRange,       \
-								  T31_ResultStructRange, \
-								  T31_ResultList
+from G20_cactus_struct import T20_StructCell
+from G21_struct_result import T21_ResultStructCell,  \
+								  T21_ResultStructCells, \
+								  T21_StructRange,       \
+								  T21_ResultStructRange, \
+								  T21_ResultList
 
 
 class C31_ContainerRAM(C30_Container):
@@ -22,8 +22,8 @@ class C31_ContainerRAM(C30_Container):
 	def Init_00(self):
 		super().Init_00()
 
-		self._s_cells : dict[str, T30_StructCell]            = dict()
-		self._d_cells : dict[str, dict[int, T30_StructCell]] = dict()
+		self._s_cells : dict[str, T20_StructCell]            = dict()
+		self._d_cells : dict[str, dict[int, T20_StructCell]] = dict()
 
 	def Init_01(self):
 		super().Init_01()
@@ -37,64 +37,64 @@ class C31_ContainerRAM(C30_Container):
 		self._d_cells.clear()
 
 	# УПРАВЛЕНИЕ S-ЯЧЕЙКОЙ
-	def DeleteSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def DeleteSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Удаление S-Ячейки """
-		if not ValidateOci(cell.oci) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		try                          : del self._s_cells[cell.sid]
-		except                       : return T31_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
+		except                       : return T21_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
 
-		return T31_ResultStructCell(RESULT_OK, cell)
+		return T21_ResultStructCell(RESULT_OK, cell)
 
-	def ReadSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def ReadSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запрос S-Ячейки """
-		if not ValidateOci(cell.oci)  : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)  : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)  : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)  : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)  : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)  : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
-		cell_from_container: None | T30_StructCell = self._s_cells.get(cell.sid, None)
+		cell_from_container: None | T20_StructCell = self._s_cells.get(cell.sid, None)
 
-		if cell_from_container is None: return T31_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
+		if cell_from_container is None: return T21_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
 
-		return T31_ResultStructCell(RESULT_OK, cell_from_container)
+		return T21_ResultStructCell(RESULT_OK, cell_from_container)
 
-	def SyncSCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def SyncSCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Синхронизация S-Ячейки """
-		if not ValidateOci(cell.oci)            : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)            : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)            : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)            : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)            : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)            : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
-		cell_from_container: None | T30_StructCell = self._s_cells.get(cell.sid, None)
+		cell_from_container: None | T20_StructCell = self._s_cells.get(cell.sid, None)
 
 		if cell_from_container is None          : return self.WriteSCell(cell)
 
-		if   cell_from_container.cut  > cell.cut: return T31_ResultStructCell(RESULT_OK, cell_from_container)
-		elif cell_from_container.cut == cell.cut: return T31_ResultStructCell(RESULT_OK, cell)
+		if   cell_from_container.cut  > cell.cut: return T21_ResultStructCell(RESULT_OK, cell_from_container)
+		elif cell_from_container.cut == cell.cut: return T21_ResultStructCell(RESULT_OK, cell)
 
 		return self.WriteSCell(cell)
 
-	def WriteSCell(self, cell: T30_StructCell, flag_mode_ignore: bool = False) -> T31_ResultStructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False) -> T21_ResultStructCell:
 		""" Запись S-Ячейки """
-		if not ValidateOci(cell.oci)      : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid)      : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid)      : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci)      : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid)      : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid)      : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
 		cell_exist : bool = cell.sid in self._s_cells
 
-		if cell_exist and flag_mode_ignore: return T31_ResultStructCell(RESULT_OK, self._s_cells.get(cell.sid, T30_StructCell()))
+		if cell_exist and flag_mode_ignore: return T21_ResultStructCell(RESULT_OK, self._s_cells.get(cell.sid, T20_StructCell()))
 
 		self._s_cells[cell.sid] = cell
-		return T31_ResultStructCell(RESULT_OK, cell)
+		return T21_ResultStructCell(RESULT_OK, cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ S-ЯЧЕЕК
-	def DeleteSCells(self, cell_cells: T30_StructCell | list[T30_StructCell]) -> T31_ResultStructCells:
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Удаление пакета S-Ячеек """
-		result_cells : list[T30_StructCell] = []
+		result_cells : list[T20_StructCell] = []
 		sids         : list[str]            = []
 
-		if type(cell_cells) is T30_StructCell:
+		if type(cell_cells) is T20_StructCell:
 			for cell in self._s_cells.values():
 				if cell_cells.oci and not cell_cells.oci == cell.oci: continue
 				if cell_cells.oid and not cell_cells.oid == cell.oid: continue
@@ -119,16 +119,16 @@ class C31_ContainerRAM(C30_Container):
 				result_cells.append(cell)
 			except: continue
 
-		if not result_cells: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not result_cells: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCells(RESULT_OK, result_cells)
+		return T21_ResultStructCells(RESULT_OK, result_cells)
 
-	def ReadSCells(self, cell_cells: T30_StructCell | list[T30_StructCell]) -> T31_ResultStructCells:
+	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запрос пакета S-Ячеек """
-		result_cells : list[T30_StructCell] = []
+		result_cells : list[T20_StructCell] = []
 		sids         : list[str]            = []
 
-		if type(cell_cells) is T30_StructCell:
+		if type(cell_cells) is T20_StructCell:
 			for cell in self._s_cells.values():
 				if cell_cells.oci and not cell_cells.oci == cell.oci: continue
 				if cell_cells.oid and not cell_cells.oid == cell.oid: continue
@@ -150,13 +150,13 @@ class C31_ContainerRAM(C30_Container):
 			try   :	result_cells.append(self._s_cells[sid])
 			except: continue
 
-		if not result_cells: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not result_cells: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCells(RESULT_OK, result_cells)
+		return T21_ResultStructCells(RESULT_OK, result_cells)
 
-	def SyncSCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def SyncSCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Синхронизация S-Ячеек """
-		result_cells : list[T30_StructCell] = []
+		result_cells : list[T20_StructCell] = []
 		result_code  : int                  = RESULT_OK
 
 		for cell in cells:
@@ -168,13 +168,13 @@ class C31_ContainerRAM(C30_Container):
 
 			result_cells.append(result_cell.cell)
 
-		if len(result_cells) == 0: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if len(result_cells) == 0: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCells(result_code, result_cells)
+		return T21_ResultStructCells(result_code, result_cells)
 
-	def WriteSCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def WriteSCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запись пакета S-Ячеек """
-		result_cells : list[T30_StructCell] = []
+		result_cells : list[T20_StructCell] = []
 
 		for cell in cells:
 			if not ValidateOci(cell.oci): continue
@@ -186,55 +186,55 @@ class C31_ContainerRAM(C30_Container):
 
 			result_cells.append(cell)
 
-		if not result_cells: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not result_cells: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCells(RESULT_OK, result_cells)
+		return T21_ResultStructCells(RESULT_OK, result_cells)
 
 	# УПРАВЛЕНИЕ D-ЯЧЕЙКОЙ
-	def DeleteDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def DeleteDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Удаление D-Ячейки """
-		if not ValidateOci(cell.oci) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
-		dcells : dict[int, T30_StructCell] = self._d_cells.get(cell.sid, dict())
+		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
 		try                          : del dcells[cell.cut]
-		except                       : return T31_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
+		except                       : return T21_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
 
-		return T31_ResultStructCell(RESULT_OK, cell)
+		return T21_ResultStructCell(RESULT_OK, cell)
 
-	def ReadDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def ReadDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запрос D-Ячейки """
-		if not ValidateOci(cell.oci) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
-		dcells : dict[int, T30_StructCell] = self._d_cells.get(cell.sid, dict())
+		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
 		dcell                              = dcells.get(cell.cut, None)
 
-		if dcell is None             : return T31_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
+		if dcell is None             : return T21_ResultStructCell(RESULT_WARNING_NO_DATA, cell)
 
-		return T31_ResultStructCell(RESULT_OK, dcell)
+		return T21_ResultStructCell(RESULT_OK, dcell)
 
-	def WriteDCell(self, cell: T30_StructCell) -> T31_ResultStructCell:
+	def WriteDCell(self, cell: T20_StructCell) -> T21_ResultStructCell:
 		""" Запись D-Ячейки """
-		if not ValidateOci(cell.oci) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid) : return T31_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid) : return T21_ResultStructCell(RESULT_ERROR_CHECK_VALIDATE)
 
-		dcells : dict[int, T30_StructCell] = self._d_cells.get(cell.sid, dict())
+		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
 		dcells[cell.cut]                   = cell
 
 		self._d_cells[cell.sid] = dcells
-		return T31_ResultStructCell(RESULT_OK, cell)
+		return T21_ResultStructCell(RESULT_OK, cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def DeleteDCells(self, cell_cells: T31_StructRange | list[T30_StructCell]) -> T31_ResultStructCells:
+	def DeleteDCells(self, cell_cells: T21_StructRange | list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Удаление пакета D-Ячеек """
-		cells        : list[T30_StructCell] = []
+		cells        : list[T20_StructCell] = []
 		result_code  : int                  = RESULT_OK
-		result_cells : list[T30_StructCell] = []
+		result_cells : list[T20_StructCell] = []
 
-		if   type(cell_cells) is T30_StructCell: cells = self.ReadDCells(cell_cells).cells
+		if   type(cell_cells) is T20_StructCell: cells = self.ReadDCells(cell_cells).cells
 		elif type(cell_cells) is list          : cells = cell_cells
 
 		for cell in cells:
@@ -250,11 +250,11 @@ class C31_ContainerRAM(C30_Container):
 
 			result_cells.append(result.cell)
 
-		return T31_ResultStructCells(result_code, result_cells)
+		return T21_ResultStructCells(result_code, result_cells)
 
-	def ReadDCells(self, cell: T31_StructRange) -> T31_ResultStructCells:
+	def ReadDCells(self, cell: T21_StructRange) -> T21_ResultStructCells:
 		""" Запрос пакета D-Ячеек """
-		result : list[T30_StructCell] = []
+		result : list[T20_StructCell] = []
 
 		for dcells in self._d_cells.values():
 			for dcell in dcells.values():
@@ -268,14 +268,14 @@ class C31_ContainerRAM(C30_Container):
 
 				result.append(dcell)
 
-		if not result: return T31_ResultStructCells(RESULT_WARNING_NO_DATA)
+		if not result: return T21_ResultStructCells(RESULT_WARNING_NO_DATA)
 
-		return T31_ResultStructCells(RESULT_OK, result)
+		return T21_ResultStructCells(RESULT_OK, result)
 
-	def WriteDCells(self, cells: list[T30_StructCell]) -> T31_ResultStructCells:
+	def WriteDCells(self, cells: list[T20_StructCell]) -> T21_ResultStructCells:
 		""" Запись пакета D-Ячеек """
 		result_code  : int                  = RESULT_OK
-		result_cells : list[T30_StructCell] = []
+		result_cells : list[T20_StructCell] = []
 
 		for cell in cells:
 			result = self.WriteDCell(cell)
@@ -286,30 +286,30 @@ class C31_ContainerRAM(C30_Container):
 
 			result_cells.append(result.cell)
 
-		return T31_ResultStructCells(result_code, result_cells)
+		return T21_ResultStructCells(result_code, result_cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T31_StructRange) -> T31_ResultStructRange:
+	def DCutRange(self, cell: T21_StructRange) -> T21_ResultStructRange:
 		""" Запрос границ cUT D-Ячейки """
 		result_cuts         = self.DCuts(cell)
 		cuts    : list[int] = result_cuts.items
 
-		if not cuts: return T31_ResultStructRange(RESULT_WARNING_NO_DATA)
+		if not cuts: return T21_ResultStructRange(RESULT_WARNING_NO_DATA)
 
 		min_cut : int       = min(cuts)
 		max_cut : int       = max(cuts)
 
-		return T31_ResultStructRange(RESULT_OK, T31_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=min_cut, cut_r=max_cut))
+		return T21_ResultStructRange(RESULT_OK, T21_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=min_cut, cut_r=max_cut))
 
-	def DCuts(self, cell: T31_StructRange) -> T31_ResultList:
+	def DCuts(self, cell: T21_StructRange) -> T21_ResultList:
 		""" Запрос списка CUT """
-		if not ValidateOci(cell.oci) : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidateOid(cell.oid) : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
-		if not ValidatePid(cell.pid) : return T31_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOci(cell.oci) : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidateOid(cell.oid) : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not ValidatePid(cell.pid) : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
 
-		dcells : dict[int, T30_StructCell] = self._d_cells.get(cell.sid, dict())
+		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
 
-		if not dcells                : return T31_ResultList(RESULT_WARNING_NO_DATA)
+		if not dcells                : return T21_ResultList(RESULT_WARNING_NO_DATA)
 
 		result : set[int] = set()
 
@@ -319,4 +319,4 @@ class C31_ContainerRAM(C30_Container):
 
 			result.add(cut)
 
-		return T31_ResultList(RESULT_OK, list(result))
+		return T21_ResultList(RESULT_OK, list(result))

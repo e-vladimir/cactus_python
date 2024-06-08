@@ -1,6 +1,6 @@
 import random
 
-from G30_cactus_struct                import T30_StructCell, T31_StructRange
+from G20_cactus_struct import T20_StructCell, T31_StructRange
 from G30_cactus_controller_containers import controller_containers
 
 
@@ -32,7 +32,7 @@ for index in range(count):
 	pid    = f"field-{random.randint(0, count)}"
 	cvl    = f"value-{random.randint(0, count)}"
 	cut    = random.randint(0, 100000)
-	cell   = T30_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
+	cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 	cells.append(cell)
 
 container.WriteDCells(cells)

@@ -1,17 +1,25 @@
-# КАТАЛОГ КОДОВ ФИЛЬТРОВ
-# 2022-11-26
+# КАТАЛОГ: ФИЛЬТРЫ
+# 08 июн 2024
 
-FILTER_EQUAL            =  0  # Равенство
+import enum
 
-FILTER_MORE             = 10  # Больше
-FILTER_MORE_OR_EQUAL    = 11  # Больше или равно
 
-FILTER_LESS             = 20  # Меньше
-FILTER_LESS_OR_EQUAL    = 21  # Меньше или равно
+class FILTERS(enum.Enum):
+	EQUAL            =  (0, "Равенство")
 
-FILTER_INCLUDE          = 30  # Включает в себя
+	MORE             = (10, "Больше")
+	MORE_OR_EQUAL    = (11, "Больше или равно")
 
-FILTER_IN               = 40  # Входит в список
+	LESS             = (20, "Меньше")
+	LESS_OR_EQUAL    = (21, "Меньше или равно")
 
-FILTER_BETWEEN          = 50  # В пределах
-FILTER_BETWEEN_OR_EQUAL = 51  # В пределах или равно
+	INCLUDE          = (30, "Включает в себя")
+
+	IN               = (40, "Входит в список")
+
+	BETWEEN          = (50, "В пределах")
+	BETWEEN_OR_EQUAL = (51, "В пределах или равно")
+
+	def __init__(self, code: int, description: str):
+		self.code         = code
+		self.descriptions = description
