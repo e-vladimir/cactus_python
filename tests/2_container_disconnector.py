@@ -11,8 +11,8 @@ container.OptionsFilename("./data.sqlite")
 result = container.Connect().code == RESULT_OK
 print(f"{'[+]' if result else '[ ]'} Подключение к контейнеру")
 
-container.AutodisconnectIsTimeout(True)
-container.AutodisconnectTimeoutValue(3)
+container.DisconnectMode_Timeout(True)
+container.DisconnectTimeout(3)
 
 container.PrepareDisconnect()
 

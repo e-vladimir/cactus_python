@@ -1,8 +1,10 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 08 июн 2024
+# 09 июн 2024
 
-from dataclasses import (dataclass,
-                         field)
+from dataclasses      import (dataclass,
+                              field)
+
+from G00_filter_codes import  FILTERS
 
 
 # ТИПЫ ДАННЫХ СТРУКТУРНОЙ ЯЧЕЙКИ
@@ -37,10 +39,10 @@ class T20_StructCell:
 @dataclass
 class T20_FilterD1:
 	""" Фильтр линейного типа """
-	flag_invert  : bool      = False
-	flag_include : bool      = False
+	flag_invert  : bool             = False
+	flag_include : bool             = False
 
-	filter_type  : int       = 0
+	filter_type  : FILTERS | None   = None
 
-	filter_value : str       = ""
-	filter_values: list[str] = field(default_factory=list)
+	filter_value : str              = ""
+	filter_values: list[str]        = field(default_factory=list)

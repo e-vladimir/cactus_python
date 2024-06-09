@@ -12,7 +12,7 @@ print(f"{'[+]' if result else '[ ]'} Подключение к контейне�
 result = container.Disconnect().code == RESULT_OK
 print(f"{'[+]' if result else '[ ]'} Отключение от контейнера")
 
-container.AutoconnectIsAuto(True)
+container.ConnectMode_Auto(True)
 
 oci    = "class_01"
 result = container.RegisterClass(oci).code == RESULT_OK

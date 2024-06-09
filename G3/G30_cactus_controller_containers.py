@@ -1,12 +1,15 @@
 # КАКТУС: КОНТРОЛЛЕР КОНТЕЙНЕРОВ
-# 2022-12-01
+# 09 июн 2024
 
-from G00_result_codes         import *
-from G20_meta_frame           import C20_MetaFrame
-from G20_cactus_struct import T20_ResultCode
-from G21_struct_result import T21_ResultList
-from G31_cactus_container_ram import C31_ContainerRAM
-from G32_cactus_container_sql import C32_ContainerSQLite, C32_ContainerPostgreSQL
+from G00_status_codes         import (CODES_COMPLETION,
+                                      CODES_DATA)
+
+from G20_meta_frame           import  C20_MetaFrame
+from G21_struct_result        import (T21_StructResult_String,
+                                      T21_StructResult_List)
+from G31_cactus_container_ram import  C31_ContainerRAM
+from G32_cactus_container_sql import (C32_ContainerSQLite,
+                                      C32_ContainerPostgreSQL)
 
 
 class C30_ControllerContainers(C20_MetaFrame):
@@ -21,7 +24,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 		container = self.GetContainer(container_name)
 
 		if container is not None:
-			if container.TypeIsRAM(): return container
+			if container.Type_RAM(): return container
 
 			return None
 
@@ -35,7 +38,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 		container = self.GetContainer(container_name)
 
 		if container is not None:
-			if container.TypeIsRAM(): return container
+			if container.Type_RAM(): return container
 
 			return None
 
@@ -49,7 +52,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 		container = self.GetContainer(container_name)
 
 		if container is not None:
-			if container.TypeIsRAM(): return container
+			if container.Type_RAM(): return container
 
 			return None
 
@@ -58,21 +61,25 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 		return container
 
-	def UnregisterContainer(self, container_name: str) -> T20_ResultCode:
+	def UnregisterContainer(self, container_name: str) -> T21_StructResult_String:
 		""" Отмена регистрации контейнера """
 		container = self.GetContainer(container_name)
 
-		if container is None: return T20_ResultCode(RESULT_WARNING_NO_DATA)
+		if container is None: return T21_StructResult_String(code     = CODES_COMPLETION.COMPLETED,
+		                                                     subcodes = [CODES_DATA.NO_DATA],
+		                                                     data     = container_name)
 
 		# Отключение контейнера
-		if   container.TypeIsSQLite().flag    : container.Disconnect()
-		elif container.TypeIsPostgreSQL().flag: container.Disconnect()
+		if   container.Type_SQLite().data    : container.Disconnect()
+		elif container.Type_PostgreSQL().data: container.Disconnect()
 
 		del container
 
 		del self._containers[container_name]
 
-		return T20_ResultCode(RESULT_OK)
+		return T21_StructResult_String(code     = CODES_COMPLETION.COMPLETED,
+		                               subcodes = [],
+		                               data     = container_name)
 
 	# УПРАВЛЕНИЕ КОНТЕЙНЕРОМ
 	def GetContainer(self, container_name: str) -> None | C31_ContainerRAM | C32_ContainerSQLite | C32_ContainerPostgreSQL:
@@ -80,14 +87,18 @@ class C30_ControllerContainers(C20_MetaFrame):
 		return self._containers.get(container_name, None)
 
 	# ЗАПРОСЫ КОНТЕЙНЕРОВ
-	def ContainerNames(self) -> T21_ResultList:
+	def ContainerNames(self) -> T21_StructResult_List:
 		""" Запрос списка названий контейнеров """
 		names : list[str] = list(self._containers.keys())
 		names.sort()
 
-		if not names: return T21_ResultList(RESULT_WARNING_NO_DATA)
+		if not names: return T21_StructResult_List(code     = CODES_COMPLETION.COMPLETED,
+		                                           subcodes = [CODES_DATA.NO_DATA],
+		                                           data     = [])
 
-		return T21_ResultList(RESULT_OK, names)
+		return T21_StructResult_List(code     = CODES_COMPLETION.COMPLETED,
+									 subcodes = [],
+									 data     = names)
 
 
 controller_containers = C30_ControllerContainers()

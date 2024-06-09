@@ -1,11 +1,8 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТРУНОГО ПАРАМЕТРА
 # 2022-12-01
 
-from G00_result_codes  import RESULT_OK
 from G20_meta_frame    import C20_MetaFrame
 from G30_cactus_frame  import C30_StructField, C30_StructFrame
-from G20_cactus_struct import T20_ResultCode
-from G21_struct_result import T21_ResultBool
 
 CS_POSTFIX  = "cs"
 RS_POSTFIX  = "cs"

@@ -117,9 +117,9 @@ class C30_StructFrame(C20_MetaFrame):
 		code      = RESULT_WARNING_NOT_IMPLEMENTED
 
 		if   container is None                : code = RESULT_WARNING_NOT_IMPLEMENTED
-		elif container.TypeIsRAM().flag       : code = RESULT_WARNING_NOT_IMPLEMENTED
-		elif container.TypeIsSQLite().flag    : code = container.RegisterClass(cls.Oci().text).code
-		elif container.TypeIsPostgreSQL().flag: code = container.RegisterClass(cls.Oci().text).code
+		elif container.Type_RAM().flag       : code = RESULT_WARNING_NOT_IMPLEMENTED
+		elif container.Type_SQLite().flag    : code = container.RegisterClass(cls.Oci().text).code
+		elif container.Type_PostgreSQL().flag: code = container.RegisterClass(cls.Oci().text).code
 
 		return T20_ResultCode(code)
 

@@ -1,11 +1,10 @@
 # КАТАЛОГ: КАКТУС
-# 08 июн 2024
+# 09 июн 2024
 
 import enum
 
 
 # ВИДЫ КОНТЕЙНЕРОВ
-
 class CONTAINERS(enum.Enum):
 	CONTAINER_NONE       = ( 0, "Нет контейнера")
 	CONTAINER_RAM        = ( 1, "RAM-Контейнер")
@@ -27,6 +26,17 @@ class CACTUS_STRUCT_ID(enum.Enum):
 	CID = ("cid", "_cid")
 	CVL = ("cvl", "_cvl")
 	CUT = ("cut", "_cut")
+
+	def __init__(self, name: str, name_sql: str):
+		self.name     = name
+		self.name_sql = name_sql
+
+
+# ТИП ПОДКЛЮЧЕНИЯ
+class CONNECTION_MANAGEMENT(enum.Enum):
+	OFF     = (0, "Управление подключением отключено")
+	AUTO    = (1, "Автоматическое управление подключением")
+	TIMEOUT = (2, "Управление по timeout")
 
 	def __init__(self, name: str, name_sql: str):
 		self.name     = name
