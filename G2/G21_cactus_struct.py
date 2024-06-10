@@ -1,11 +1,13 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 08 июн 2024
+# 10 июн 2024
 
-from dataclasses       import (dataclass,
-                               field)
+import s3m
 
-from G20_cactus_struct import T20_StructCell
-from G20_struct_result import T20_StructResult
+from   dataclasses       import (dataclass,
+                                 field)
+
+from   G20_cactus_struct import T20_StructCell
+from   G20_struct_result import T20_StructResult
 
 
 # ТИПЫ ДАННЫХ СТРУКТУРНОЙ ЯЧЕЙКИ
@@ -32,3 +34,10 @@ class T21_StructResult_StructCells(T20_StructResult):
 class T21_StructResult_StructRange(T20_StructResult):
 	""" Результат - Структурный диапазон cut """
 	range: T21_StructRange = field(default_factory=T21_StructRange)
+
+
+# ТИПЫ ДАННЫХ SQL КОНТЕЙНЕРА
+@dataclass
+class T31_StructResult_CursorS3m(T20_StructResult):
+	""" Результат-Курсор """
+	cursor : s3m.Cursor | None = None

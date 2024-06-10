@@ -1,5 +1,5 @@
 # КАТАЛОГ: КАКТУС
-# 09 июн 2024
+# 10 июн 2024
 
 import enum
 
@@ -18,18 +18,19 @@ class CONTAINERS(enum.Enum):
 
 
 # ИДЕНТИФИКАТОРЫ СТРУКТУРЫ ДАННЫХ
-class CACTUS_STRUCT_ID(enum.Enum):
-	OCI = ("oci", "_oci")
-	OID = ("oid", "_oid")
-	PID = ("pid", "_pid")
-	SID = ("sid", "_sid")
-	CID = ("cid", "_cid")
-	CVL = ("cvl", "_cvl")
-	CUT = ("cut", "_cut")
+class CACTUS_STRUCT_DATA(enum.Enum):
+	OCI = (0, "oci", "_oci")
+	OID = (1, "oid", "_oid")
+	PID = (2, "pid", "_pid")
+	SID = (3, "sid", "_sid")
+	CID = (4, "cid", "_cid")
+	CVL = (5, "cvl", "_cvl")
+	CUT = (6, "cut", "_cut")
 
-	def __init__(self, name: str, name_sql: str):
-		self.name     = name
-		self.name_sql = name_sql
+	def __init__(self, code: int, name_base: str, name_sql: str):
+		self.code      = code
+		self.name_base = name_base
+		self.name_sql  = name_sql
 
 
 # ТИП ПОДКЛЮЧЕНИЯ
@@ -38,6 +39,13 @@ class CONNECTION_MANAGEMENT(enum.Enum):
 	AUTO    = (1, "Автоматическое управление подключением")
 	TIMEOUT = (2, "Управление по timeout")
 
-	def __init__(self, name: str, name_sql: str):
-		self.name     = name
+	def __init__(self, code: int, name_sql: str):
+		self.code     = code
 		self.name_sql = name_sql
+
+
+# РАСШИРЕНИЕ СТРУКТУРНЫХ ПАРАМЕТРОВ
+CS_POSTFIX  = "cs"
+RS_POSTFIX  = "cs"
+SRC_POSTFIX = "src"
+DST_POSTFIX = "dst"

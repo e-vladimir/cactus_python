@@ -1,6 +1,7 @@
-from G00_result_codes                 import RESULT_OK
+from G00_status_codes import CODES_COMPLETION
+
 from G20_cactus_struct import T20_StructCell
-from G21_struct_result import T21_StructRange
+from G21_cactus_struct import T21_StructRange
 from G30_cactus_controller_containers import controller_containers
 
 
@@ -15,10 +16,10 @@ pid    = "field-01"
 cvl    = "value-01"
 cut    = 100
 cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
-result = container.WriteDCell(cell).code == RESULT_OK
+result = container.WriteDCell(cell).code == CODES_COMPLETION.COMPLETED
 print(f"{'[+]' if result else '[ ]'} Запись D-Ячейки")
 cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
-cell   = container.ReadDCell(cell).cell
+cell   = container.ReadDCell(cell).data
 result = True
 if   not cell.oci == oci: result = False
 elif not cell.oid == oid: result = False
@@ -32,7 +33,7 @@ cut    = 100
 cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut)
 container.WriteDCell(cell)
 cell   = T20_StructCell(oci=oci, oid=oid, pid=pid, cut=cut)
-cell   = container.ReadDCell(cell).cell
+cell   = container.ReadDCell(cell).data
 result = True
 if   not cell.oci == oci: result = False
 elif not cell.oid == oid: result = False
@@ -47,7 +48,7 @@ for cut in range(1, 11):
 	container.WriteDCell(cell)
 
 cell   = T21_StructRange(oci=oci, oid=oid, pid=pid)
-drange = container.DCutRange(cell).range
+drange = container.DCutRange(cell).data
 result = True
 if not drange.cut_l ==   1: result = False
 if not drange.cut_r == 100: result = False
@@ -55,7 +56,7 @@ print(f"{'[+]' if result else '[ ]'} Запрос диапазона D-Ячей�
 
 cell   = T21_StructRange(oci=oci, oid=oid, pid=pid, cut_l=1, cut_r=5)
 cuts   = container.DCuts(cell)
-result = cuts.items == [1, 2, 3, 4, 5]
+result = cuts.data == [1, 2, 3, 4, 5]
 print(f"{'[+]' if result else '[ ]'} Запрос списка CUT")
 
 for cut in range(11):

@@ -13,10 +13,10 @@ result          = container_ram_1 == container_ram_2
 print(f"{'[+]' if result else '[!]'} Создание контейнера RAM с повтором")
 
 names  = controller_containers.ContainerNames()
-result = names.items == ["RAM", "RAM-2"]
+result = names.data == ["RAM", "RAM-2"]
 print(f"{'[+]' if result else '[!]'} Получение списка контейнеров")
 
 controller_containers.UnregisterContainer('RAM')
 names  = controller_containers.ContainerNames()
-result = names.items == ["RAM-2"]
+result = names.data == ["RAM-2"]
 print(f"{'[+]' if result else '[!]'} Удаление контейнера RAM")

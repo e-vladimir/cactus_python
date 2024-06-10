@@ -1,18 +1,17 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТРУНОГО ПАРАМЕТРА
-# 2022-12-01
+# 10 июн 2024
+
+from G00_cactus_codes  import *
+from G00_status_codes  import CODES_COMPLETION
 
 from G20_meta_frame    import C20_MetaFrame
+from G20_struct_result import T20_StructResult
+from G21_struct_result import T21_StructResult_Bool
 from G30_cactus_frame  import C30_StructField, C30_StructFrame
-
-CS_POSTFIX  = "cs"
-RS_POSTFIX  = "cs"
-SRC_POSTFIX = "src"
-DST_POSTFIX = "dst"
 
 
 class C31_StructFieldCsRs(C30_StructField):
 	""" Структурный параметр CS-RS """
-	""" 2023-01-01 """
 
 	def __init__(self, struct_frame: C30_StructFrame, pid: str, default_cvl: any = None):
 		super().__init__(struct_frame, pid, default_cvl)
@@ -27,50 +26,49 @@ class C31_StructFieldCsRs(C30_StructField):
 		self.rs : C30_StructField | None = None
 
 	# УПРАВЛЕНИЕ CS ПАРАМЕТРОМ
-	def MemoryCvlFromCs(self, container_name_cs: str, container_name: str) -> T20_ResultCode:
+	def MemoryCvlFromCs(self, container_name_cs: str, container_name: str) -> T20_StructResult:
 		""" Запомнить CS-значение как S-Данные """
 		result_value_cs = self.cs.ToString(container_name_cs)
-		if not result_value_cs.code == RESULT_OK: return T20_ResultCode(result_value_cs.code)
+		if not result_value_cs.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code = result_value_cs.code)
 
 		result_value    = self.FromString(container_name, result_value_cs.text)
-		if not result_value.code == RESULT_OK: return T20_ResultCode(result_value.code)
+		if not result_value.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(result_value.code)
 
-		return T20_ResultCode(RESULT_OK)
+		return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-	def WriteCsCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_ResultCode:
+	def WriteCsCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_StructResult:
 		""" Записать CS-значение как D-Данные """
 		return self.cs.WriteCvl(container_name_dst, cvl, cut)
 
 	# УПРАВЛЕНИЕ RS ПАРАМЕТРОМ
-	def MemoryCvlFromRs(self, container_name_rs: str, container_name: str) -> T20_ResultCode:
+	def MemoryCvlFromRs(self, container_name_rs: str, container_name: str) -> T20_StructResult:
 		""" Запомнить CS-значение как S-Данные """
 		result_value_rs = self.rs.ToString(container_name_rs)
-		if not result_value_rs.code == RESULT_OK: return T20_ResultCode(result_value_rs.code)
+		if not result_value_rs.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(result_value_rs.code)
 
 		result_value    = self.FromString(container_name, result_value_rs.text)
-		if not result_value.code == RESULT_OK: return T20_ResultCode(result_value.code)
+		if not result_value.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(result_value.code)
 
-		return T20_ResultCode(RESULT_OK)
+		return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-	def WriteRsCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_ResultCode:
+	def WriteRsCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_StructResult:
 		""" Записать CS-значение как D-Данные """
 		return self.rs.WriteCvl(container_name_dst, cvl, cut)
 
 	# АНАЛИЗ CS\RS ЗНАЧЕНИЙ
-	def CheckEqualCsRs(self, container_name: str) -> T21_ResultBool:
+	def CheckEqualCsRs(self, container_name: str) -> T21_StructResult_Bool:
 		""" Проверка равенства CS и RS """
 		result_value_cs = self.cs.ToString(container_name)
-		if not result_value_cs.code == RESULT_OK: return T21_ResultBool(result_value_cs.code)
+		if not result_value_cs.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(result_value_cs.code)
 
 		result_value_rs = self.rs.ToString(container_name)
-		if not result_value_rs.code == RESULT_OK: return T21_ResultBool(result_value_rs.code)
+		if not result_value_rs.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(result_value_rs.code)
 
-		return T21_ResultBool(RESULT_OK, result_value_cs.text == result_value_rs.text)
+		return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED, data=result_value_cs.text == result_value_rs.text)
 
 
 class C31_StructFieldSrcDst(C20_MetaFrame):
 	""" Структурный параметр SRC-DST """
-	""" 2023-01-01 """
 
 	def __init__(self, struct_frame: C30_StructFrame, pid: str, default_cvl: any = None):
 		super().__init__()
@@ -85,21 +83,21 @@ class C31_StructFieldSrcDst(C20_MetaFrame):
 		self.dst : C30_StructField | None = None
 
 	# УПРАВЛЕНИЕ ДАННЫМИ SRC-DST
-	def SwapSrcDst(self, container_name: str) -> T20_ResultCode:
+	def SwapSrcDst(self, container_name: str) -> T20_StructResult:
 		""" Перестановка значений между SRC-DST """
 		result_value_src = self.src.ToString(container_name)
-		if not result_value_src.code == RESULT_OK: return T21_ResultBool(result_value_src.code)
+		if not result_value_src.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(result_value_src.code)
 
 		result_value_dst = self.src.ToString(container_name)
-		if not result_value_dst.code == RESULT_OK: return T21_ResultBool(result_value_dst.code)
+		if not result_value_dst.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(result_value_dst.code)
 
-		valus_src = result_value_src.text
-		valus_dst = result_value_dst.text
+		value_src = result_value_src.text
+		value_dst = result_value_dst.text
 
-		result_value_src = self.src.FromString(container_name, valus_src)
-		if not result_value_src.code == RESULT_OK: return T21_ResultBool(result_value_src.code)
+		result_value_src = self.src.FromString(container_name, value_src)
+		if not result_value_src.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(result_value_src.code)
 
-		result_value_dst = self.src.FromString(container_name, valus_dst)
-		if not result_value_dst.code == RESULT_OK: return T21_ResultBool(result_value_dst.code)
+		result_value_dst = self.src.FromString(container_name, value_dst)
+		if not result_value_dst.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(result_value_dst.code)
 
-		return T20_ResultCode(RESULT_OK)
+		return T20_StructResult(CODES_COMPLETION.COMPLETED)
