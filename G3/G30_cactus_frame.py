@@ -92,7 +92,7 @@ class C30_StructFrame(C20_MetaFrame):
 		cell.cvl  = self.Oci().text
 		cell.cut  = CurrentUTime()
 
-		container = controller_containers.GetContainer(container_name)
+		container = controller_containers.Container(container_name)
 		if container is None: return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		return T20_ResultCode(container.WriteSCell(cell, True).code)
@@ -103,7 +103,7 @@ class C30_StructFrame(C20_MetaFrame):
 		cell.oci  = self.Oci().text
 		cell.oid  = self.Oid().text
 
-		container = controller_containers.GetContainer(container_name)
+		container = controller_containers.Container(container_name)
 
 		if container is None: return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
@@ -113,7 +113,7 @@ class C30_StructFrame(C20_MetaFrame):
 	@classmethod
 	def RegisterClass(cls, container_name: str) -> T20_ResultCode:
 		""" Регистрация класса в контейнере """
-		container = controller_containers.GetContainer(container_name)
+		container = controller_containers.Container(container_name)
 		code      = RESULT_WARNING_NOT_IMPLEMENTED
 
 		if   container is None                : code = RESULT_WARNING_NOT_IMPLEMENTED
@@ -126,10 +126,10 @@ class C30_StructFrame(C20_MetaFrame):
 	# УПРАВЛЕНИЕ S-ДАННЫМИ
 	def CopyToContainer(self, container_name_src: str, container_name_dst: str) -> T20_ResultCode:
 		""" Копирование S-Ячеек из контейнера в контейнер """
-		container_src                    = controller_containers.GetContainer(container_name_src)
+		container_src                    = controller_containers.Container(container_name_src)
 		if container_src is None          : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
-		container_dst                    = controller_containers.GetContainer(container_name_dst)
+		container_dst                    = controller_containers.Container(container_name_dst)
 		if container_dst is None          : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		obj_cell : T20_StructCell        = T20_StructCell(oci=self.Oci().text, oid=self.Oid().text)
@@ -141,10 +141,10 @@ class C30_StructFrame(C20_MetaFrame):
 
 	def SyncBetweenContainers(self, container_name_1: str, container_name_2: str) -> T20_ResultCode:
 		""" Синхронизация S-Ячеек между контейнерами """
-		container_1                            = controller_containers.GetContainer(container_name_1)
+		container_1                            = controller_containers.Container(container_name_1)
 		if container_1 is None          : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
-		container_2                            = controller_containers.GetContainer(container_name_2)
+		container_2                            = controller_containers.Container(container_name_2)
 		if container_2 is None          : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		cell_object: T20_StructCell            = T20_StructCell(oci=self.Oci().text, oid=self.Oid().text)
@@ -180,7 +180,7 @@ class C30_StructFrame(C20_MetaFrame):
 	@classmethod
 	def Oids(self, container_name: str) -> T21_ResultList:
 		""" Запрос списка OID объектов класса из контейнера """
-		container                        = controller_containers.GetContainer(container_name)
+		container                        = controller_containers.Container(container_name)
 		if container is None              : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
 
 		cls_cell : T20_StructCell        = T20_StructCell(oci=self.Oci().text)
@@ -197,7 +197,7 @@ class C30_StructFrame(C20_MetaFrame):
 		""" Запрос списка PID S-Ячеек из контейнера """
 		if not ValidateOid(self._oid)     : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
 
-		container                        = controller_containers.GetContainer(container_name)
+		container                        = controller_containers.Container(container_name)
 		if container is None              : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
 
 		cls_cell : T20_StructCell        = T20_StructCell(oci=self.Oci().text, oid=self.Oid().text)
@@ -288,7 +288,7 @@ class C30_StructField(C20_MetaFrame):
 	# КОНВЕРТАЦИЯ ИЗ ТИПА ДАННЫХ
 	def _WriteCvlInSCell(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_ResultCode:
 		""" Системный метод записи данных для конверторов """
-		container = controller_containers.GetContainer(container_name_dst)
+		container = controller_containers.Container(container_name_dst)
 		if container is None        : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T20_ResultCode(RESULT_ERROR_DATA_STRUCT)
@@ -379,7 +379,7 @@ class C30_StructField(C20_MetaFrame):
 	# КОНВЕРТАЦИЯ В ТИП ДАННЫХ
 	def _ReadCvlSCell(self, container_name_src: str) -> T21_ResultString:
 		""" Системный метод чтения данных для конверторов """
-		container = controller_containers.GetContainer(container_name_src)
+		container = controller_containers.Container(container_name_src)
 		if container is None        : return T21_ResultString(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT)
@@ -495,7 +495,7 @@ class C30_StructField(C20_MetaFrame):
 	# УПРАВЛЕНИЕ S-ДАННЫМИ
 	def Cut(self, container_name_src: str) -> T21_ResultInt:
 		""" Запрос cut """
-		container = controller_containers.GetContainer(container_name_src)
+		container = controller_containers.Container(container_name_src)
 		if container is None        : return T21_ResultInt(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T21_ResultInt(RESULT_ERROR_DATA_STRUCT)
@@ -516,10 +516,10 @@ class C30_StructField(C20_MetaFrame):
 
 	def CopyToContainer(self, container_name_src: str, container_name_dst: str) -> T20_ResultCode:
 		""" Копирование S-Ячейки из контейнера в контейнер """
-		container_src                   = controller_containers.GetContainer(container_name_src)
+		container_src                   = controller_containers.Container(container_name_src)
 		if container_src is None         : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
-		container_dst                   = controller_containers.GetContainer(container_name_dst)
+		container_dst                   = controller_containers.Container(container_name_dst)
 		if container_dst is None         : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
 		oid                             = self.struct_frame.Oid()
@@ -540,10 +540,10 @@ class C30_StructField(C20_MetaFrame):
 
 	def SyncBetweenContainers(self, container_name_1: str, container_name_2: str) -> T20_ResultCode:
 		""" Синхронизация S-Ячейки между контейнерами """
-		container_1                   = controller_containers.GetContainer(container_name_1)
+		container_1                   = controller_containers.Container(container_name_1)
 		if container_1 is None              : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
-		container_2                   = controller_containers.GetContainer(container_name_2)
+		container_2                   = controller_containers.Container(container_name_2)
 		if container_2 is None              : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
 		oid                           = self.struct_frame.Oid()
@@ -569,7 +569,7 @@ class C30_StructField(C20_MetaFrame):
 
 	def DeleteFromContainer(self, container_name_src: str) -> T20_ResultCode:
 		""" Удаление S-Ячейки из контейнера """
-		container_src                   = controller_containers.GetContainer(container_name_src)
+		container_src                   = controller_containers.Container(container_name_src)
 		if container_src is None         : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
 		oid                             = self.struct_frame.Oid()
@@ -591,7 +591,7 @@ class C30_StructField(C20_MetaFrame):
 	# УПРАВЛЕНИЕ D-ДАННЫМИ
 	def WriteCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_ResultCode:
 		""" Добавление записи D-Данных """
-		container = controller_containers.GetContainer(container_name_dst)
+		container = controller_containers.Container(container_name_dst)
 		if container is None        : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T20_ResultCode(RESULT_ERROR_DATA_STRUCT)
@@ -614,7 +614,7 @@ class C30_StructField(C20_MetaFrame):
 
 	def ReadCvl(self, container_name_src: str, cut: int = 0) -> T21_ResultString:
 		""" Запрос записи D-Данных """
-		container = controller_containers.GetContainer(container_name_src)
+		container = controller_containers.Container(container_name_src)
 		if container is None        : return T21_ResultString(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT)
@@ -642,7 +642,7 @@ class C30_StructField(C20_MetaFrame):
 
 	def CutRange(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultRange:
 		""" Запрос границ cut D-Данных """
-		container = controller_containers.GetContainer(container_name_src)
+		container = controller_containers.Container(container_name_src)
 		if container is None          : return T21_ResultRange(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None  : return T21_ResultRange(RESULT_ERROR_DATA_STRUCT)
@@ -663,7 +663,7 @@ class C30_StructField(C20_MetaFrame):
 
 	def Cuts(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultList:
 		""" Запрос списка cut в диапазоне cut D-Данных """
-		container = controller_containers.GetContainer(container_name_src)
+		container = controller_containers.Container(container_name_src)
 		if container is None          : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None  : return T21_ResultList(RESULT_ERROR_DATA_STRUCT)
@@ -683,7 +683,7 @@ class C30_StructField(C20_MetaFrame):
 
 	def Cvls(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultDict:
 		""" Запрос cvl/cut в диапазоне cut D-Данных """
-		container = controller_containers.GetContainer(container_name_src)
+		container = controller_containers.Container(container_name_src)
 		if container is None          : return T21_ResultDict(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None  : return T21_ResultDict(RESULT_ERROR_DATA_STRUCT)

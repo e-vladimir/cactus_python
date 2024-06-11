@@ -335,7 +335,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных """
 		if not self._oci                      : return T21_StructResult_List(RESULT_ERROR_DATA_NOT_ENOUGH)
 
-		container = controller_containers.GetContainer(container_name)
+		container = controller_containers.Container(container_name)
 		if container is None                  : return T21_StructResult_List(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if   container.Type_RAM().flag       : return self._CaptureFromRam(container)

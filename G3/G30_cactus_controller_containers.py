@@ -26,7 +26,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 		return struct_result
 
-	def GetContainer(self, container_name: str) -> None | C31_ContainerRAM | C32_ContainerSQLite | C32_ContainerPostgreSQL:
+	def Container(self, container_name: str) -> None | C31_ContainerRAM | C32_ContainerSQLite | C32_ContainerPostgreSQL:
 		""" Запрос контейнера """
 		return self._containers.get(container_name, None)
 
@@ -36,7 +36,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 	# Логика данных: Регистрация контейнеров
 	def RegisterContainerRAM(self, container_name: str) -> None | C31_ContainerRAM:
 		""" Регистрация RAM-Контейнера """
-		container = self.GetContainer(container_name)
+		container = self.Container(container_name)
 
 		if container is not None:
 			if container.Type_RAM(): return container
@@ -50,7 +50,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 	def RegisterContainerSQLite(self, container_name: str) -> None | C32_ContainerSQLite:
 		""" Регистрация SQLite-Контейнера """
-		container = self.GetContainer(container_name)
+		container = self.Container(container_name)
 
 		if container is not None:
 			if container.Type_RAM(): return container
@@ -64,7 +64,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 	def RegisterContainerPostgreSQL(self, container_name: str) -> None | C32_ContainerPostgreSQL:
 		""" Регистрация PostgreSQL-Контейнера """
-		container = self.GetContainer(container_name)
+		container = self.Container(container_name)
 
 		if container is not None:
 			if container.Type_RAM(): return container
@@ -81,7 +81,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 		""" Отмена регистрации контейнера """
 		struct_result = T21_StructResult_String(data=container_name)
 
-		container     = self.GetContainer(container_name)
+		container     = self.Container(container_name)
 
 		if container is None:
 			struct_result.subcodes.add(CODES_DATA.NO_DATA)
