@@ -525,7 +525,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		return self.ReadDCell(cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def ReadDCells(self, cell: T21_StructRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		if not ValidateOci(cell.oci): return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
@@ -560,11 +560,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			case 1: return T21_StructResult_StructCells(code=CODES_COMPLETION.COMPLETED, data=cells)
 			case _: return T21_StructResult_StructCells(code=CODES_COMPLETION.COMPLETED, data=cells)
 
-	def DeleteDCells(self, cell_cells: T21_StructRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell_cells: T21_CutRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		cells_before : list[T20_StructCell] = self.ReadDCells(cell_cells).data
 
-		if type(cell_cells) is T21_StructRange:
+		if type(cell_cells) is T21_CutRange:
 			if not ValidateOci(cell_cells.oci): return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
 			sql     : str   = f"DELETE FROM {cell_cells.oci}_"
@@ -634,11 +634,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		return T21_StructResult_StructCells(code=result.code, data=cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_StructRange) -> T21_StructResult_StructRange:
+	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ CUT D-Ячейки """
-		if not ValidateOci(cell.oci): return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
-		if not ValidateOid(cell.oid): return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
-		if not ValidatePid(cell.pid): return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
+		if not ValidateOci(cell.oci): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
+		if not ValidateOid(cell.oid): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
+		if not ValidatePid(cell.pid): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
 		sql    = f"SELECT MIN({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_0, MAX({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_1 FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' "
 		if cell.cut_l: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l}) "
@@ -650,11 +650,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			data   = result.data
 			cut_l  = int(data[0])
 			cut_r  = int(data[1])
-		except: return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CONVERT])
+		except: return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CONVERT])
 
-		return T21_StructResult_StructRange(code=result.code, data=T21_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
+		return T21_StructResult_CutRange(code=result.code, data=T21_CutRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
 
-	def DCuts(self, cell: T21_StructRange) -> T21_StructResult_List:
+	def DCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
 		if not ValidateOci(cell.oci)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
@@ -1187,7 +1187,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		return self.ReadDCell(cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def ReadDCells(self, cell: T21_StructRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		if not ValidateOci(cell.oci): return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
@@ -1222,11 +1222,11 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			case 1: return T21_StructResult_StructCells(code=CODES_COMPLETION.COMPLETED, subcodes=[CODES_DATA.SINGLE])
 			case _: return T21_StructResult_StructCells(code=CODES_COMPLETION.COMPLETED, data=cells)
 
-	def DeleteDCells(self, cell_cells: T21_StructRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell_cells: T21_CutRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		cells_0 : list[T20_StructCell] = self.ReadDCells(cell_cells).data
 
-		if type(cell_cells) is T21_StructRange:
+		if type(cell_cells) is T21_CutRange:
 			if not ValidateOci(cell_cells.oci): return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
 			sql     : str   = f"DELETE FROM {cell_cells.oci}_"
@@ -1298,11 +1298,11 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		return self.ReadSCells(cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_StructRange) -> T21_StructResult_StructRange:
+	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
-		if not ValidateOci(cell.oci): return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
-		if not ValidateOid(cell.oid): return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
-		if not ValidatePid(cell.pid): return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
+		if not ValidateOci(cell.oci): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
+		if not ValidateOid(cell.oid): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
+		if not ValidatePid(cell.pid): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
 		sql    = f"SELECT MIN({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_0, MAX({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_1 FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' "
 		if cell.cut_l: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l}) "
@@ -1314,11 +1314,11 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			data   = result.data
 			cut_l  = int(data[0])
 			cut_r  = int(data[1])
-		except: return T21_StructResult_StructRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CONVERT])
+		except: return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CONVERT])
 
-		return T21_StructResult_StructRange(code=result.code, data=T21_StructRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
+		return T21_StructResult_CutRange(code=result.code, data=T21_CutRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
 
-	def DCuts(self, cell: T21_StructRange) -> T21_StructResult_List:
+	def DCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
 		if not ValidateOci(cell.oci)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])

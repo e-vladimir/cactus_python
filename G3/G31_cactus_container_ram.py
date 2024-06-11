@@ -317,7 +317,7 @@ class C31_ContainerRAM(C30_Container):
 		                                   data = cell)
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def DeleteDCells(self, cell_cells: T21_StructRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell_cells: T21_CutRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		cells        : list[T20_StructCell] = []
 		result_cells : list[T20_StructCell] = []
@@ -356,7 +356,7 @@ class C31_ContainerRAM(C30_Container):
 		                                    subcodes = list(subcodes),
 		                                    data     = result_cells)
 
-	def ReadDCells(self, cell: T21_StructRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		result : list[T20_StructCell] = []
 
@@ -397,27 +397,27 @@ class C31_ContainerRAM(C30_Container):
 		                                    data     = result_cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_StructRange) -> T21_StructResult_StructRange:
+	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
 		result_cuts         = self.DCuts(cell)
 		cuts    : list[int] = result_cuts.data
 
-		if not cuts: return T21_StructResult_StructRange(code     = CODES_COMPLETION.COMPLETED,
-		                                                 subcodes = [CODES_DATA.NO_DATA])
+		if not cuts: return T21_StructResult_CutRange(code     = CODES_COMPLETION.COMPLETED,
+		                                              subcodes = [CODES_DATA.NO_DATA])
 
 		min_cut : int       = min(cuts)
 		max_cut : int       = max(cuts)
 
-		result              = T21_StructRange(oci   = cell.oci,
-		                                      oid   = cell.oid,
-		                                      pid   = cell.pid,
-		                                      cut_l = min_cut,
-		                                      cut_r = max_cut)
+		result              = T21_CutRange(oci   = cell.oci,
+		                                   oid   = cell.oid,
+		                                   pid   = cell.pid,
+		                                   cut_l = min_cut,
+		                                   cut_r = max_cut)
 
-		return T21_StructResult_StructRange(code = CODES_COMPLETION.COMPLETED,
-		                                    data = result)
+		return T21_StructResult_CutRange(code = CODES_COMPLETION.COMPLETED,
+		                                 data = result)
 
-	def DCuts(self, cell: T21_StructRange) -> T21_StructResult_List:
+	def DCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
 		if not ValidateOci(cell.oci) : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
 		                                                            subcodes = [CODES_DATA.ERROR_CHECK])

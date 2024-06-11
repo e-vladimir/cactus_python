@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 09 июн 2024
+# 11 июн 2024
 
 from dataclasses      import (dataclass,
                               field)
@@ -7,7 +7,7 @@ from dataclasses      import (dataclass,
 from G00_filter_codes import  FILTERS
 
 
-# ТИПЫ ДАННЫХ СТРУКТУРНОЙ ЯЧЕЙКИ
+# СТРУКТУРНАЯ ЯЧЕЙКА
 @dataclass
 class T20_StructCell:
 	""" Структурная ячейка """
@@ -35,7 +35,7 @@ class T20_StructCell:
 		self.__regenerate_sid_cid__()
 
 
-# ТИПЫ ДАННЫХ ФИЛЬТРОВ
+# ФИЛЬТРЫ
 @dataclass
 class T20_FilterD1:
 	""" Фильтр линейного типа """
