@@ -75,8 +75,7 @@ class C31_ContainerRAM(C30_Container):
 		                                                                   subcodes = [CODES_DATA.NO_DATA],
 		                                                                   data     = cell)
 
-		T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
-		                            data = cell_from_container)
+		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED, data = cell_from_container)
 
 	def SyncSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """

@@ -2,7 +2,6 @@
 # 08 июн 2024
 
 import datetime
-
 from   typing   import Optional
 
 

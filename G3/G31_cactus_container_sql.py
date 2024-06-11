@@ -112,9 +112,9 @@ class C31_ContainerSQL(C30_Container):
 
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.TIMEOUT
 
-	def DisconnectTimeout(self, value: int = None) -> int:
+	def DisconnectTimeout(self, value: int = None) -> T21_StructResult_Int:
 		""" Задержка отключения """
-		if value is None: return self._disconnect_timeout
+		if value is None: return T21_StructResult_Int(code=CODES_COMPLETION.COMPLETED, data=self._disconnect_timeout)
 		else            :	     self._disconnect_timeout = CalcBetween(3, value, 600)
 
 	# УПРАВЛЕНИЕ РЕГИСТРАЦИЕЙ КЛАССА
@@ -191,7 +191,7 @@ class C30_ContainerSqlDisconnector(threading.Thread):
 		""" Основной обработчик потока """
 		if self.container is None: return
 
-		while self.Counter() < self.container.DisconnectTimeout().value:
+		while self.Counter() < self.container.DisconnectTimeout().data:
 			time.sleep(1)
 			self.IncCounter()
 
