@@ -226,24 +226,33 @@ class C31_ContainerRAM(C30_Container):
 		return struct_result
 
 	# УПРАВЛЕНИЕ D-ЯЧЕЙКОЙ
-	def DeleteDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
+	def DeleteDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		if not ValidateOci(cell.oci) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		struct_result      = T21_StructResult_StructCell()
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		if not ValidateOid(cell.oid) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		if not ValidateOci(cell.oci) : return struct_result
+		if not ValidateOid(cell.oid) : return struct_result
+		if not ValidatePid(cell.pid) : return struct_result
 
-		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
-		try                          : del dcells[cell.cut]
-		except                       : return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-		                                                                  subcodes = [CODES_DATA.NO_DATA],
-		                                                                  data     = cell)
+		struct_result.code = CODES_COMPLETION.COMPLETED
+		struct_result.subcodes.clear()
 
-		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
-		                                   data = cell)
+		if cell.sid not in self._d_cells:
+			struct_result.subcodes.add(CODES_DATA.NO_DATA)
+			return struct_result
+
+		ddata = self._d_cells.get(cell.sid)
+
+		if cell.cut not in ddata:
+			struct_result.subcodes.add(CODES_PROCESSING.SKIP)
+			return struct_result
+
+		del ddata[cell.cut]
+		self._d_cells[cell.sid] = ddata
+
+		return struct_result
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
