@@ -55,49 +55,22 @@ class C31_ContainerRAM(C30_Container):
 
 	def ReadSCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		struct_result      = T21_StructResult_StructCell()
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result                            = T21_StructResult_StructCell()
+		struct_result.code                       = CODES_COMPLETION.INTERRUPTED
 		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-		struct_result.data = cell
+		struct_result.data                       = cell
 
 		if not ValidateOci(cell.oci) : return struct_result
 		if not ValidateOid(cell.oid) : return struct_result
 		if not ValidatePid(cell.pid) : return struct_result
 
+		struct_result.code                       = CODES_COMPLETION.COMPLETED
 		struct_result.subcodes.clear()
 
 		cell_in_container: None | T20_StructCell = self._s_cells.get(cell.sid, None)
 
-		if cell_in_container is None:
-			struct_result.code = CODES_COMPLETION.INTERRUPTED
-			struct_result.subcodes.add(CODES_DATA.NO_DATA)
-			return struct_result
-
-		struct_result.code = CODES_COMPLETION.COMPLETED
-		struct_result.data = cell_in_container
-
-		return struct_result
-
-	def SyncSCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
-		""" Синхронизация S-Ячейки """
-		struct_result                             = T21_StructResult_StructCell()
-		struct_result.code                        = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-		if not ValidateOci(cell.oci) : return struct_result
-		if not ValidateOid(cell.oid) : return struct_result
-		if not ValidatePid(cell.pid) : return struct_result
-
-		struct_result.code                        = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.clear()
-
-		cell_in_container : None | T20_StructCell = self._s_cells.get(cell.sid, None)
-
-		if   cell_in_container is None       : self._s_cells[cell.sid] = cell
-		elif cell_in_container.cut < cell.cut: self._s_cells[cell.sid] = cell
-		else                                 : struct_result.subcodes.add(CODES_PROCESSING.SKIP)
-
-		if flag_capture_data: struct_result.data = self._s_cells[cell.sid]
+		if cell_in_container is None: struct_result.subcodes.add(CODES_DATA.NO_DATA)
+		else                        : struct_result.data = cell_in_container
 
 		return struct_result
 

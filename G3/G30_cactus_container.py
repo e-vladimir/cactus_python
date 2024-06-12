@@ -1,12 +1,13 @@
 # КАКТУС: МЕТА-КОНТЕЙНЕР
-# 11 июн 2024
+# 12 июн 2024
 
-from G00_cactus_codes  import  CONTAINERS
-from G00_status_codes  import *
+from G00_cactus_codes      import  CONTAINERS
+from G00_status_codes      import *
+from G10_cactus_validators import *
 
-from G20_meta_frame    import  C20_MetaFrame
-from G21_cactus_struct import *
-from G21_struct_result import *
+from G20_meta_frame        import  C20_MetaFrame
+from G21_cactus_struct     import *
+from G21_struct_result     import *
 
 
 class C30_Container(C20_MetaFrame):
@@ -46,7 +47,32 @@ class C30_Container(C20_MetaFrame):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		struct_result       = T21_StructResult_StructCell()
+		struct_result.code  = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+		if not ValidateOci(cell.oci) : return struct_result
+		if not ValidateOid(cell.oid) : return struct_result
+		if not ValidatePid(cell.pid) : return struct_result
+
+		struct_result.code = CODES_COMPLETION.COMPLETED
+		struct_result.subcodes.clear()
+
+		read_from_container = self.ReadSCell(cell)
+		cell_from_container = read_from_container.data
+
+		if cell_from_container.cut < cell.cut:
+			write_to_container = self.WriteSCell(cell)
+			struct_result.code     = write_to_container.code
+			struct_result.subcodes = write_to_container.subcodes
+
+		else:
+			struct_result.subcodes.add(CODES_PROCESSING.SKIP)
+
+		if flag_capture_data:
+			struct_result.data = self.ReadSCell(cell).data
+
+		return struct_result
 
 	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
