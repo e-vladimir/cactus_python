@@ -252,31 +252,37 @@ class C31_ContainerRAM(C30_Container):
 		del ddata[cell.cut]
 		self._d_cells[cell.sid] = ddata
 
+		if flag_capture_data: struct_result.data = cell
+
 		return struct_result
 
-	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
+	def ReadDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		if not ValidateOci(cell.oci) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		struct_result      = T21_StructResult_StructCell()
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		if not ValidateOid(cell.oid) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		if not ValidateOci(cell.oci) : return struct_result
+		if not ValidateOid(cell.oid) : return struct_result
+		if not ValidatePid(cell.pid) : return struct_result
 
-		if not ValidatePid(cell.pid) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.clear()
 
-		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
-		dcell                              = dcells.get(cell.cut, None)
+		if cell.sid not in self._d_cells:
+			struct_result.subcodes.add(CODES_DATA.NO_DATA)
+			return struct_result
 
-		if dcell is None             : return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-		                                                                  subcodes = [CODES_DATA.NO_DATA],
-		                                                                  data     = cell)
+		ddata = self._d_cells.get(cell.sid)
 
-		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
-		                                   data = dcell)
+		if cell.cut not in ddata:
+			struct_result.subcodes.add(CODES_DATA.NO_DATA)
+			return struct_result
+
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.data = self._d_cells.get(cell.sid, None)
+
+		return struct_result
 
 	def WriteDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
