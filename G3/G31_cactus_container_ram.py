@@ -95,13 +95,11 @@ class C31_ContainerRAM(C30_Container):
 		return struct_result
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ S-ЯЧЕЕК
-	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def DeleteSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		struct_result = T21_StructResult_StructCells()
 
-		if type(cell_cells) is T20_StructCell: cell_cells = [cell_cells]
-
-		for cell in cell_cells:
+		for cell in cells:
 			if cell.sid not in self._s_cells:
 				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
@@ -111,7 +109,7 @@ class C31_ContainerRAM(C30_Container):
 		if not flag_capture_data: return struct_result
 
 		result        = []
-		for cell in cell_cells:
+		for cell in cells:
 			if cell.sid in self._s_cells: continue
 
 			result.append(cell)
@@ -122,15 +120,12 @@ class C31_ContainerRAM(C30_Container):
 
 		return struct_result
 
-	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def ReadSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
 		struct_result = T21_StructResult_StructCells()
-
 		result        = []
 
-		if type(cell_cells) is T20_StructCell: cell_cells = [cell_cells]
-
-		for cell in cell_cells:
+		for cell in cells:
 			if cell.sid not in self._s_cells:
 				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
@@ -143,25 +138,30 @@ class C31_ContainerRAM(C30_Container):
 
 		return struct_result
 
-	def SyncSCells(self, cells: list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Синхронизация S-Ячеек """
-		result_cells : list[T20_StructCell] = []
-		subcodes     : set[CODES]     = set()
+		struct_result = T21_StructResult_StructCells()
 
 		for cell in cells:
-			result_cell = self.SyncSCell(cell)
+			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell)
 
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				subcodes.add(CODES_PROCESSING.SKIP)
-				continue
+			if cell_in_container.cut > cell.cut: continue
 
-			result_cells.append(result_cell.data)
+			self._s_cells[cell.sid] = cell
 
-		if len(result_cells) == 0: subcodes.add(CODES_DATA.NO_DATA)
+		if not flag_capture_data: return struct_result
 
-		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
-		                                    subcodes = list(subcodes),
-		                                    data     = result_cells)
+		result        = []
+		for cell in cells:
+			if cell.sid not in self._s_cells: continue
+
+			result.append(self._s_cells[cell.sid])
+
+		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
+
+		struct_result.data = result[:]
+
+		return struct_result
 
 	def WriteSCells(self, cells: list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
