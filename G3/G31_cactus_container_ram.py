@@ -95,74 +95,36 @@ class C31_ContainerRAM(C30_Container):
 		return struct_result
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ S-ЯЧЕЕК
-	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
-		result_cells : list[T20_StructCell] = []
-		sids         : list[str]            = []
+		struct_result = T21_StructResult_StructCells()
 
-		if type(cell_cells) is T20_StructCell:
-			for cell in self._s_cells.values():
-				if cell_cells.oci and not cell_cells.oci == cell.oci: continue
-				if cell_cells.oid and not cell_cells.oid == cell.oid: continue
-				if cell_cells.pid and not cell_cells.pid == cell.pid: continue
-				if cell_cells.cvl and not cell_cells.cvl == cell.cvl: continue
-				if cell_cells.cut and not cell_cells.cut == cell.cut: continue
+		if type(cell_cells) is T20_StructCell: cell_cells = [cell_cells]
 
-				sids.append(cell.sid)
+		for cell in cell_cells:
+			if cell.sid not in self._s_cells:
+				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
 
-		elif type(cell_cells) is list:
-			for cell in cell_cells:
-				if not ValidateOci(cell.oci): continue
-				if not ValidateOid(cell.oid): continue
-				if not ValidatePid(cell.pid): continue
+			del self._s_cells[cell.sid]
 
-				sids.append(cell.sid)
+		if not flag_capture_data: return struct_result
 
-		for sid in sids:
-			try   :
-				cell = self._s_cells[sid]
-				del self._s_cells[sid]
-				result_cells.append(cell)
-			except: continue
+		result        = []
+		for cell in cell_cells:
+			if cell.sid in self._s_cells: continue
 
-		if not result_cells: return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
-		                                                         subcodes = [CODES_DATA.NO_DATA])
+			result.append(cell)
 
-		return T21_StructResult_StructCells(code = CODES_COMPLETION.COMPLETED,
-		                                    data = result_cells)
+		if not result           : struct_result.subcodes.add(CODES_DATA.NO_DATA)
 
-	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
+		struct_result.data = result[:]
+
+		return struct_result
+
+	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
-		result_cells : list[T20_StructCell] = []
-		sids         : list[str]            = []
-
-		if type(cell_cells) is T20_StructCell:
-			for cell in self._s_cells.values():
-				if cell_cells.oci and not cell_cells.oci == cell.oci: continue
-				if cell_cells.oid and not cell_cells.oid == cell.oid: continue
-				if cell_cells.pid and not cell_cells.pid == cell.pid: continue
-				if cell_cells.cvl and not cell_cells.cvl == cell.cvl: continue
-				if cell_cells.cut and not cell_cells.cut == cell.cut: continue
-
-				sids.append(cell.sid)
-
-		elif type(cell_cells) is list:
-			for cell in cell_cells:
-				if not ValidateOci(cell.oci): continue
-				if not ValidateOid(cell.oid): continue
-				if not ValidatePid(cell.pid): continue
-
-				sids.append(cell.sid)
-
-		for sid in sids:
-			try   :	result_cells.append(self._s_cells[sid])
-			except: continue
-
-		if not result_cells: return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
-		                                                         subcodes = [CODES_DATA.NO_DATA])
-
-		return T21_StructResult_StructCells(code = CODES_COMPLETION.COMPLETED,
-		                                    data = result_cells)
+		pass
 
 	def SyncSCells(self, cells: list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Синхронизация S-Ячеек """
