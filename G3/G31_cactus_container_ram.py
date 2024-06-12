@@ -124,7 +124,24 @@ class C31_ContainerRAM(C30_Container):
 
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
-		pass
+		struct_result = T21_StructResult_StructCells()
+
+		result        = []
+
+		if type(cell_cells) is T20_StructCell: cell_cells = [cell_cells]
+
+		for cell in cell_cells:
+			if cell.sid not in self._s_cells:
+				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			result.append(self._s_cells[cell.sid])
+
+		if not result : struct_result.subcodes.add(CODES_DATA.NO_DATA)
+
+		struct_result.data = result[:]
+
+		return struct_result
 
 	def SyncSCells(self, cells: list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Синхронизация S-Ячеек """
