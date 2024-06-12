@@ -273,7 +273,7 @@ class C31_ContainerRAM(C30_Container):
 			struct_result.subcodes.add(CODES_DATA.NO_DATA)
 			return struct_result
 
-		ddata = self._d_cells.get(cell.sid)
+		ddata = self._d_cells.get(cell.sid, dict())
 
 		if cell.cut not in ddata:
 			struct_result.subcodes.add(CODES_DATA.NO_DATA)
@@ -284,26 +284,29 @@ class C31_ContainerRAM(C30_Container):
 
 		return struct_result
 
-	def WriteDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
+	def WriteDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		if not ValidateOci(cell.oci) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		struct_result      = T21_StructResult_StructCell()
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		if not ValidateOid(cell.oid) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		if not ValidateOci(cell.oci) : return struct_result
+		if not ValidateOid(cell.oid) : return struct_result
+		if not ValidatePid(cell.pid) : return struct_result
 
-		if not ValidatePid(cell.pid) : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                  subcodes = [CODES_DATA.ERROR_CHECK],
-		                                                                  data     = cell)
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.clear()
 
-		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
-		dcells[cell.cut]                   = cell
+		ddata = self._d_cells.get(cell.sid, dict())
+		ddata[cell.cut] = cell
 
-		self._d_cells[cell.sid] = dcells
-		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
-		                                   data = cell)
+		self._d_cells[cell.sid] = ddata
+
+		if not flag_capture_data: return struct_result
+
+		struct_result.data = cell
+
+		return struct_result
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
 	def DeleteDCells(self, cell_cells: T21_CutRange | list[T20_StructCell]) -> T21_StructResult_StructCells:
