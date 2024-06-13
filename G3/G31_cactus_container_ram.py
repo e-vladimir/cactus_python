@@ -269,9 +269,9 @@ class C31_ContainerRAM(C30_Container):
 			struct_result.subcodes.add(CODES_DATA.NO_DATA)
 			return struct_result
 
-		ddata = self._d_cells.get(cell.sid, dict())
+		dcells             = self._d_cells.get(cell.sid, dict())
 
-		if cell.cut not in ddata:
+		if cell.cut not in dcells:
 			struct_result.subcodes.add(CODES_DATA.NO_DATA)
 			return struct_result
 
@@ -293,10 +293,10 @@ class C31_ContainerRAM(C30_Container):
 		struct_result.code = CODES_COMPLETION.INTERRUPTED
 		struct_result.subcodes.clear()
 
-		ddata = self._d_cells.get(cell.sid, dict())
-		ddata[cell.cut] = cell
+		dcells             = self._d_cells.get(cell.sid, dict())
+		dcells[cell.cut]   = cell
 
-		self._d_cells[cell.sid] = ddata
+		self._d_cells[cell.sid] = dcells
 
 		if not flag_capture_data: return struct_result
 
@@ -305,13 +305,13 @@ class C31_ContainerRAM(C30_Container):
 		return struct_result
 
 	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def DeleteDCells(self, cutrange_dcells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cutrange_cells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		struct_result    = T21_StructResult_StructCells()
 		cells_processing = []
 
-		if   type(cutrange_dcells) is list        : cells_processing = cutrange_dcells[:]
-		elif type(cutrange_dcells) is T21_CutRange: cells_processing = self.ReadDCells(cutrange_dcells)
+		if   type(cutrange_cells) is list        : cells_processing = cutrange_cells[:]
+		elif type(cutrange_cells) is T21_CutRange: cells_processing = self.ReadDCells(cutrange_cells)
 
 		if not cells_processing: struct_result.subcodes.add(CODES_DATA.NO_DATA)
 
@@ -347,9 +347,45 @@ class C31_ContainerRAM(C30_Container):
 
 		return struct_result
 
-	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cutrange_cells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
-		pass
+		struct_result = T21_StructResult_StructCells()
+		result        = []
+
+		if type(cutrange_cells)   is T21_CutRange:
+			struct_result.code                 = CODES_COMPLETION.INTERRUPTED
+			struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+			if not ValidateOci(cutrange_cells.oci): return struct_result
+			if not ValidateOid(cutrange_cells.oid): return struct_result
+			if not ValidatePid(cutrange_cells.pid): return struct_result
+
+			struct_result.code                 = CODES_COMPLETION.COMPLETED
+			struct_result.subcodes.clear()
+
+			dcells : dict[int, T20_StructCell] = self._d_cells.get(cutrange_cells.sid, dict())
+
+			for cut, dcell in dcells.items():
+				if   (cut < cutrange_cells.cut_l)                               : continue
+				elif (cut > cutrange_cells.cut_r) and (cutrange_cells.cut_r > 0): continue
+
+				result.append(dcell)
+
+		elif type(cutrange_cells) is list        :
+			struct_result.code                 = CODES_COMPLETION.COMPLETED
+			struct_result.subcodes.clear()
+
+			dcells : dict[int, T20_StructCell] = self._d_cells.get(cutrange_cells.sid, dict())
+
+			for dcell in cutrange_cells:
+				if dcell.cut not in dcells: continue
+
+				result.append(dcells[dcell.cut])
+
+		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
+
+		struct_result.data = result
+		return struct_result
 
 	def WriteDCells(self, cells: list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запись пакета D-Ячеек """
