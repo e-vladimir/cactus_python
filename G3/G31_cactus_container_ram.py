@@ -319,14 +319,17 @@ class C31_ContainerRAM(C30_Container):
 			if not ValidateOci(cell.oci):
 				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
 
 			if not ValidateOid(cell.oid):
 				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
 
 			if not ValidatePid(cell.pid):
 				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
 
 			if cell.sid not in self._d_cells          : continue
 			if cell.cut not in self._d_cells[cell.sid]: continue
@@ -387,9 +390,43 @@ class C31_ContainerRAM(C30_Container):
 		struct_result.data = result
 		return struct_result
 
-	def WriteDCells(self, cells: list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета D-Ячеек """
-		pass
+		struct_result = T21_StructResult_StructCells()
+
+		for dcell in cells:
+			if not ValidateOci(dcell.oci):
+				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			if not ValidateOid(dcell.oid):
+				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			if not ValidatePid(dcell.pid):
+				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			dcells            = self._d_cells.get(dcell.sid, dict())
+			dcells[dcell.cut] = dcell
+
+			self._d_cells[dcell.sid] = dcells
+
+		if not flag_capture_data: return struct_result
+
+		result        = []
+
+		for dcell in cells:
+			if dcell.sid not in self._d_cells           : continue
+			if dcell.cut not in self._d_cells[dcell.sid]: continue
+
+			result.append(self._d_cells[dcell.sid][dcell.cut])
+
+		struct_result.data = result[:]
+		return struct_result
 
 	# ЗАПРОСЫ D-ДАННЫХ
 	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
