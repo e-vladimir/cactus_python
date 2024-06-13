@@ -96,9 +96,9 @@ class C30_Container(C20_MetaFrame):
 		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
 
 	# Логика данных: D-Ячейка
-	def DeleteDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+	def DeleteDCells(self, cutrange_dcells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление D-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
 
 	def ReadDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
@@ -109,12 +109,12 @@ class C30_Container(C20_MetaFrame):
 		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
 
 	# Логика данных: D-Ячейки
-	def ReadDCells(self, cell: T21_CutRange, flag_capture_data: bool = False) -> T21_StructResult_StructCells:
-		""" Запрос пакета D-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
-
 	def DeleteDCells(self, cell_cells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
+		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+
+	def ReadDCells(self, cell: T21_CutRange, flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+		""" Запрос пакета D-Ячеек """
 		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
 
 	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
