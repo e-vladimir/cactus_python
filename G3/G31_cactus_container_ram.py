@@ -429,49 +429,50 @@ class C31_ContainerRAM(C30_Container):
 		return struct_result
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
-		""" Запрос границ cUT D-Ячейки """
-		result_cuts         = self.DCuts(cell)
-		cuts    : list[int] = result_cuts.data
+	def DCutRange(self, cell: T21_CutRange, flag_capture_data: bool = False) -> T21_StructResult_CutRange:
+		""" Запрос границ CUT D-Ячейки """
+		struct_result      = T21_StructResult_CutRange()
 
-		if not cuts: return T21_StructResult_CutRange(code     = CODES_COMPLETION.COMPLETED,
-		                                              subcodes = [CODES_DATA.NO_DATA])
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		min_cut : int       = min(cuts)
-		max_cut : int       = max(cuts)
+		if not ValidateOci(cell.oci)              : return struct_result
+		if not ValidateOid(cell.oid)              : return struct_result
+		if not ValidatePid(cell.pid)              : return struct_result
 
-		result              = T21_CutRange(oci   = cell.oci,
-		                                   oid   = cell.oid,
-		                                   pid   = cell.pid,
-		                                   cut_l = min_cut,
-		                                   cut_r = max_cut)
+		struct_result.code = CODES_COMPLETION.COMPLETED
+		struct_result.subcodes.clear()
 
-		return T21_StructResult_CutRange(code = CODES_COMPLETION.COMPLETED,
-		                                 data = result)
+		dcells             = self._d_cells[cell.sid].keys()
 
-	def DCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
+		if not dcells:
+			struct_result.subcodes.add(CODES_DATA.NO_DATA)
+
+		else         :
+			struct_result.data.cut_l = min(dcells)
+			struct_result.data.cut_r = max(dcells)
+
+		return struct_result
+
+	def DCuts(self, cell: T21_CutRange, flag_capture_data: bool = False) -> T21_StructResult_List:
 		""" Запрос списка CUT """
-		if not ValidateOci(cell.oci) : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                            subcodes = [CODES_DATA.ERROR_CHECK])
+		struct_result = T21_StructResult_List()
 
-		if not ValidateOid(cell.oid) : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                            subcodes = [CODES_DATA.ERROR_CHECK])
+		struct_result.code = CODES_COMPLETION.INTERRUPTED
+		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		if not ValidatePid(cell.pid) : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                            subcodes = [CODES_DATA.ERROR_CHECK])
+		if not ValidateOci(cell.oci): return struct_result
+		if not ValidateOid(cell.oid): return struct_result
+		if not ValidatePid(cell.pid): return struct_result
 
-		dcells : dict[int, T20_StructCell] = self._d_cells.get(cell.sid, dict())
+		struct_result.code = CODES_COMPLETION.COMPLETED
+		struct_result.subcodes.clear()
 
-		if not dcells                : return T21_StructResult_List(code     = CODES_COMPLETION.COMPLETED,
-		                                                            subcodes = [CODES_DATA.NO_DATA])
+		dcells = self._d_cells[cell.sid].keys()
 
-		result : set[int] = set()
+		if not dcells:
+			struct_result.subcodes.add(CODES_DATA.NO_DATA)
 
-		for cut in dcells.keys():
-			if (not cell.cut_l == 0) and cut < cell.cut_l: continue
-			if (not cell.cut_r == 0) and cut > cell.cut_r: continue
+		struct_result.data = sorted(dcells)
 
-			result.add(cut)
-
-		return T21_StructResult_List(code = CODES_COMPLETION.COMPLETED,
-		                             data = list(result))
+		return struct_result
