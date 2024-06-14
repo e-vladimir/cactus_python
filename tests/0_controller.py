@@ -5,20 +5,20 @@ print("")
 print("[== Тест контроллера контейнеров ==]")
 
 result = controller_containers.ContainerNames()
-check = (result.code == CODES_COMPLETION.COMPLETED) and (result.data == [])
+check  = (result.code == CODES_COMPLETION.COMPLETED) and (result.data == [])
 print(f"{'[+]' if check else '[ ]'} Инициализация контроллера")
 
 controller_containers.RegisterContainerRAM("RAM")
 result = controller_containers.ContainerNames()
-check = (result.code == CODES_COMPLETION.COMPLETED) and (result.data == ["RAM"])
+check  = (result.code == CODES_COMPLETION.COMPLETED) and (result.data == ["RAM"])
 print(f"{'[+]' if check else '[ ]'} Регистрация контейнера RAM")
 
 check = controller_containers.Container("RAM") is not None
 print(f"{'[+]' if check else '[ ]'} Получение контейнера RAM")
 
 result = controller_containers.UnregisterContainer("RAM")
-check = result.code == CODES_COMPLETION.COMPLETED
+check  = result.code == CODES_COMPLETION.COMPLETED
 result = controller_containers.ContainerNames()
-check = check and (result.code == CODES_COMPLETION.COMPLETED) and (result.data == [])
+check  = check and (result.code == CODES_COMPLETION.COMPLETED) and (result.data == [])
 print(f"{'[+]' if check else '[ ]'} Отмена регистрации контейнера RAM")
 

@@ -1,6 +1,8 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
 # 12 июн 2024
 
+from copy import copy
+
 from G00_cactus_codes      import CONTAINERS
 from G00_status_codes      import *
 
@@ -73,7 +75,7 @@ class C31_ContainerRAM(C30_Container):
 		cell_in_container: None | T20_StructCell = self._s_cells.get(cell.sid, None)
 
 		if cell_in_container is None: struct_result.subcodes.add(CODES_DATA.NO_DATA)
-		else                        : struct_result.data = cell_in_container
+		else                        : struct_result.data = copy(cell_in_container)
 
 		return struct_result
 
@@ -90,10 +92,10 @@ class C31_ContainerRAM(C30_Container):
 		struct_result.code = CODES_COMPLETION.COMPLETED
 		struct_result.subcodes.clear()
 
-		if   not flag_mode_ignore         : self._s_cells[cell.sid] = cell
-		elif     cell.sid in self._s_cells: struct_result.subcodes.add(CODES_PROCESSING.SKIP)
+		if flag_mode_ignore and (cell.sid in self._s_cells): struct_result.subcodes.add(CODES_PROCESSING.SKIP)
+		else                                               : self._s_cells[cell.sid] = copy(cell)
 
-		if   flag_capture_data            : struct_result.data = self._s_cells[cell.sid]
+		if flag_capture_data: struct_result.data = self._s_cells[cell.sid]
 
 		return struct_result
 
@@ -147,7 +149,7 @@ class C31_ContainerRAM(C30_Container):
 				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			result.append(self._s_cells[cell.sid])
+			result.append(copy(self._s_cells[cell.sid]))
 
 		if not result : struct_result.subcodes.add(CODES_DATA.NO_DATA)
 
@@ -172,11 +174,11 @@ class C31_ContainerRAM(C30_Container):
 				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				continue
 
-			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell)
+			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell())
 
 			if cell_in_container.cut > cell.cut: continue
 
-			self._s_cells[cell.sid] = cell
+			self._s_cells[cell.sid] = copy(cell)
 
 		if not flag_capture_data: return struct_result
 
@@ -184,7 +186,7 @@ class C31_ContainerRAM(C30_Container):
 		for cell in cells:
 			if cell.sid not in self._s_cells: continue
 
-			result.append(self._s_cells[cell.sid])
+			result.append(copy(self._s_cells[cell.sid]))
 
 		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
 
@@ -212,7 +214,7 @@ class C31_ContainerRAM(C30_Container):
 				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				continue
 
-			self._s_cells[cell.sid] = cell
+			self._s_cells[cell.sid] = copy(cell)
 
 		if not flag_capture_data: return struct_result
 
@@ -220,7 +222,7 @@ class C31_ContainerRAM(C30_Container):
 		for cell in cells:
 			if cell.sid not in self._s_cells: continue
 
-			result.append(self._s_cells[cell.sid])
+			result.append(copy(self._s_cells[cell.sid]))
 
 		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
 
