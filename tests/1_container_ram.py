@@ -58,3 +58,9 @@ check  = (result.code == CODES_COMPLETION.COMPLETED) and (CODES_PROCESSING.SKIP 
 print(f"{'[+]' if check else '[ ]'} Синхронизация S-Ячейки без обновления данных")
 check  = result.data.cvl == "200"
 print(f"{'[+]' if check else '[ ]'} Проверка захвата данных после синхронизации")
+
+cell.cvl = ""
+cell.cut = 0
+result = container.ReadSCell(cell)
+check  = (result.code == CODES_COMPLETION.COMPLETED) and (result.data.cvl == "200") and (result.data.cut == 100)
+print(f"{'[+]' if check else '[ ]'} Чтение S-Ячейки")
