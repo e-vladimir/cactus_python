@@ -1,5 +1,5 @@
 # ОБРАБОТЧИКИ СПИСКОВ
-# 08 июн 2024
+# 16 июн 2024
 
 import natsort
 
@@ -31,3 +31,19 @@ def DistinctAndSortList2D(values: list, index_processing_item: int, flag_distinc
 
 		return result
 	except: return []
+
+
+def DifferenceLists(list_1: list, list_2: list) -> list:
+	""" Разница между списками """
+	result = []
+
+	for item in (list_1 + list_2):
+		check_exist : bool = item in list_1
+		check_exist       &= item in list_2
+
+		if check_exist    : continue
+		if item in result : continue
+
+		result.append(item)
+
+	return result

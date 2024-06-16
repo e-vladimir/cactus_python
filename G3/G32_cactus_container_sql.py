@@ -235,14 +235,14 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			case _: return T21_StructResult_List(code=CODES_COMPLETION.COMPLETED, data=data)
 
 	# УПРАВЛЕНИЕ S-ЯЧЕЙКОЙ
-	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False) -> T21_StructResult_StructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
 		if not ValidateOci(cell.oci): return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid): return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidatePid(cell.pid): return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
 		sql : str   = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-		if flag_mode_ignore: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
+		if flag_ignore: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
 		else               : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
 
 		result      = self.ExecSql(sql)
@@ -634,7 +634,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		return T21_StructResult_StructCells(code=result.code, data=cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
+	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ CUT D-Ячейки """
 		if not ValidateOci(cell.oci): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
@@ -654,7 +654,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return T21_StructResult_CutRange(code=result.code, data=T21_CutRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
 
-	def DCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
+	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
 		if not ValidateOci(cell.oci)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
@@ -897,14 +897,14 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			case _: return T21_StructResult_List(code=CODES_COMPLETION.COMPLETED, data=data)
 
 	# УПРАВЛЕНИЕ S-ЯЧЕЙКОЙ
-	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False) -> T21_StructResult_StructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
 		if not ValidateOci(cell.oci): return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid): return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidatePid(cell.pid): return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 
 		sql : str   = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-		if flag_mode_ignore: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
+		if flag_ignore: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
 		else               : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
 
 		result      = self.ExecSql(sql)
@@ -1298,7 +1298,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		return self.ReadSCells(cells)
 
 	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
+	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
 		if not ValidateOci(cell.oci): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid): return T21_StructResult_CutRange(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
@@ -1318,7 +1318,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		return T21_StructResult_CutRange(code=result.code, data=T21_CutRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
 
-	def DCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
+	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
 		if not ValidateOci(cell.oci)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])
 		if not ValidateOid(cell.oid)   : return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DATA.ERROR_CHECK])

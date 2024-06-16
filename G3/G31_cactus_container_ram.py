@@ -1,22 +1,24 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 12 июн 2024
+# 16 июн 2024
 
-from copy import copy
+from copy                  import copy
 
 from G00_cactus_codes      import CONTAINERS
 from G00_status_codes      import *
 
 from G10_cactus_validators import *
+from G10_list              import DifferenceLists
+
 from G21_cactus_struct     import *
 from G21_struct_result     import T21_StructResult_List
+
 from G30_cactus_container  import C30_Container
-from G20_cactus_struct     import T20_StructCell
 
 
 class C31_ContainerRAM(C30_Container):
 	""" Кактус: Контейнер RAM """
 
-	# СЛУЖЕБНЫЕ МЕТОДЫ
+	# Модель данных
 	def Init_00(self):
 		super().Init_00()
 
@@ -28,453 +30,236 @@ class C31_ContainerRAM(C30_Container):
 
 		self._container_type = CONTAINERS.CONTAINER_RAM
 
-	# УПРАВЛЕНИЕ КОНТЕЙНЕРОМ
+	# Механика данных
 	def Clear(self):
 		""" Очистка контейнера """
 		self._s_cells.clear()
 		self._d_cells.clear()
 
-	# УПРАВЛЕНИЕ S-ЯЧЕЙКОЙ
-	def DeleteSCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+	# Механика управления
+	pass
+
+	# Логика данных: S-Ячейка
+	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		struct_result      = T21_StructResult_StructCell()
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		result                              = T21_StructResult_StructCell()
 
-		if not ValidateOci(cell.oci) : return struct_result
-		if not ValidateOid(cell.oid) : return struct_result
-		if not ValidatePid(cell.pid) : return struct_result
+		result_check  : bool                = ValidateOid(cell.oid)
+		result_check                       &= ValidatePid(cell.pid)
 
-		struct_result.code = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.clear()
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		if cell.sid not in self._s_cells:
-			struct_result.subcodes.add(CODES_PROCESSING.SKIP)
-			return struct_result
+			return result
+
+		result_exist : bool                 = cell.sid in self._s_cells
+
+		if not result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+			return result
+
+		cells_start  : list[T20_StructCell] = []
+		cells_end    : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_start = self.ReadSCells(cell).data
 
 		del self._s_cells[cell.sid]
 
-		if flag_capture_data: struct_result.data = cell
+		if flag_capture_delta:
+			cells_end   = self.ReadSCells(cell).data
+			cells_delta = DifferenceLists(cells_start, cells_end)
 
-		return struct_result
+			result.data = None if not cells_delta else cells_delta[0]
 
-	def ReadSCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+		return result
+
+	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		struct_result                            = T21_StructResult_StructCell()
-		struct_result.code                       = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-		struct_result.data                       = cell
+		result      = T21_StructResult_StructCell()
 
-		if not ValidateOci(cell.oci) : return struct_result
-		if not ValidateOid(cell.oid) : return struct_result
-		if not ValidatePid(cell.pid) : return struct_result
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
 
-		struct_result.code                       = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.clear()
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		cell_in_container: None | T20_StructCell = self._s_cells.get(cell.sid, None)
+			return result
 
-		if cell_in_container is None: struct_result.subcodes.add(CODES_DATA.NO_DATA)
-		else                        : struct_result.data = copy(cell_in_container)
+		result_exist : bool = cell.sid in self._s_cells
 
-		return struct_result
+		if not result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+			result.subcodes.add(CODES_DATA.NO_DATA)
 
-	def WriteSCell(self, cell: T20_StructCell, flag_mode_ignore: bool = False, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+			return result
+
+		result.data = self._s_cells[cell.sid]
+
+		return result
+
+	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+		""" Синхронизация S-Ячейки """
+		result              = T21_StructResult_StructCell()
+
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
+
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+			return result
+
+		result_read        = self.ReadSCell(cell)
+		if not result_read.code == CODES_COMPLETION.COMPLETED:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes = result_read.subcodes
+
+			return result
+
+		cell_in_container  = T20_StructCell() if result_read.data is None else result_read.data
+
+		if cell_in_container.cut > cell.cut:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+			result.data = cell_in_container
+
+			return result
+
+		result = self.WriteSCell(cell, flag_ignore=False, flag_capture_delta=flag_capture_delta)
+
+		return result
+
+	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		struct_result      = T21_StructResult_StructCell()
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		result      = T21_StructResult_StructCell()
 
-		if not ValidateOci(cell.oci) : return struct_result
-		if not ValidateOid(cell.oid) : return struct_result
-		if not ValidatePid(cell.pid) : return struct_result
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
 
-		struct_result.code = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.clear()
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
-		if flag_mode_ignore and (cell.sid in self._s_cells): struct_result.subcodes.add(CODES_PROCESSING.SKIP)
-		else                                               : self._s_cells[cell.sid] = copy(cell)
+			return result
 
-		if flag_capture_data: struct_result.data = self._s_cells[cell.sid]
+		result_exist : bool = cell.sid in self._s_cells
 
-		return struct_result
+		if flag_ignore and result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_PROCESSING.SKIP)
 
-	# УПРАВЛЕНИЕ ПАКЕТОМ S-ЯЧЕЕК
-	def DeleteSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+			return result
+
+		cells_start  : list[T20_StructCell] = []
+		cells_end    : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_start = self.ReadSCells(cell).data
+
+		self._s_cells[cell.sid] = copy(cell)
+
+		if flag_capture_delta:
+			cells_end = self.ReadSCells(cell).data
+			cells_delta = DifferenceLists(cells_start, cells_end)
+
+			result.data = None if not cells_delta else cells_delta[0]
+
+		return result
+
+	# Логика данных: S-Ячейки
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
-		struct_result = T21_StructResult_StructCells()
+		result      = T21_StructResult_StructCells()
+		return result
 
-		for cell in cells:
-			if not ValidateOci(cell.oci):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			if not ValidateOid(cell.oid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			if not ValidatePid(cell.pid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			if cell.sid not in self._s_cells:
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			del self._s_cells[cell.sid]
-
-		if not flag_capture_data: return struct_result
-
-		result        = []
-		for cell in cells:
-			if cell.sid in self._s_cells:
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			result.append(cell)
-
-		if not result           : struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		struct_result.data = result[:]
-
-		return struct_result
-
-	def ReadSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
-		struct_result = T21_StructResult_StructCells()
-		result        = []
+		result      = T21_StructResult_StructCells()
 
-		for cell in cells:
-			if cell.sid not in self._s_cells:
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
+		if type(cell_cells) is T20_StructCell:
+			for sid, cell in self._s_cells.items():
+				if cell_cells.oci and not (cell.oci == cell_cells.oci): continue
+				if cell_cells.oid and not (cell.oid == cell_cells.oid): continue
+				if cell_cells.pid and not (cell.pid == cell_cells.pid): continue
+				if cell_cells.cvl and not (cell.cvl == cell_cells.cvl): continue
+				if cell_cells.cut and not (cell.cut == cell_cells.cut): continue
 
-			result.append(copy(self._s_cells[cell.sid]))
+				result.data.append(cell)
 
-		if not result : struct_result.subcodes.add(CODES_DATA.NO_DATA)
+		elif type(cell_cells) is list:
+			for cell in cell_cells:
+				result_check : bool = ValidateOid(cell.oid)
+				result_check       &= ValidatePid(cell.pid)
 
-		struct_result.data = result[:]
+				if not result_check: continue
 
-		return struct_result
+				result.data.append(cell)
 
-	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
-		""" Синхронизация S-Ячеек """
-		struct_result = T21_StructResult_StructCells()
+		else:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+			result.subcodes.add(CODES_DATA.ERROR_TYPE)
 
-		for cell in cells:
-			if not ValidateOci(cell.oci):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
+		return result
 
-			if not ValidateOid(cell.oid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			if not ValidatePid(cell.pid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell())
-
-			if cell_in_container.cut > cell.cut: continue
-
-			self._s_cells[cell.sid] = copy(cell)
-
-		if not flag_capture_data: return struct_result
-
-		result        = []
-		for cell in cells:
-			if cell.sid not in self._s_cells: continue
-
-			result.append(copy(self._s_cells[cell.sid]))
-
-		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		struct_result.data = result[:]
-
-		return struct_result
-
-	def WriteSCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def SyncSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
-		struct_result = T21_StructResult_StructCells()
+		result      = T21_StructResult_StructCells()
+		return result
 
-		for cell in cells:
-			if not ValidateOci(cell.oci):
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
+	def WriteSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Запись пакета S-Ячеек """
+		result      = T21_StructResult_StructCells()
+		return result
 
-			if not ValidateOid(cell.oid):
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			if not ValidatePid(cell.pid):
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			self._s_cells[cell.sid] = copy(cell)
-
-		if not flag_capture_data: return struct_result
-
-		result        = []
-		for cell in cells:
-			if cell.sid not in self._s_cells: continue
-
-			result.append(copy(self._s_cells[cell.sid]))
-
-		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		struct_result.data = result[:]
-
-		return struct_result
-
-	# УПРАВЛЕНИЕ D-ЯЧЕЙКОЙ
-	def DeleteDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+	# Логика данных: D-Ячейка
+	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		struct_result      = T21_StructResult_StructCell()
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		result      = T21_StructResult_StructCell()
+		return result
 
-		if not ValidateOci(cell.oci)              : return struct_result
-		if not ValidateOid(cell.oid)              : return struct_result
-		if not ValidatePid(cell.pid)              : return struct_result
-
-		struct_result.code = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.add(CODES_PROCESSING.SKIP)
-		struct_result.subcodes.clear()
-
-		if cell.sid not in self._d_cells          : return struct_result
-		if cell.cut not in self._d_cells[cell.sid]: return struct_result
-
-		del self._d_cells[cell.sid][cell.cut]
-
-		if flag_capture_data: struct_result.data = cell
-
-		return struct_result
-
-	def ReadDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		struct_result      = T21_StructResult_StructCell()
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		result      = T21_StructResult_StructCell()
+		return result
 
-		if not ValidateOci(cell.oci) : return struct_result
-		if not ValidateOid(cell.oid) : return struct_result
-		if not ValidatePid(cell.pid) : return struct_result
-
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.clear()
-
-		if cell.sid not in self._d_cells:
-			struct_result.subcodes.add(CODES_DATA.NO_DATA)
-			return struct_result
-
-		dcells             = self._d_cells.get(cell.sid, dict())
-
-		if cell.cut not in dcells:
-			struct_result.subcodes.add(CODES_DATA.NO_DATA)
-			return struct_result
-
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.data = self._d_cells.get(cell.sid, None)
-
-		return struct_result
-
-	def WriteDCell(self, cell: T20_StructCell, flag_capture_data: bool = False) -> T21_StructResult_StructCell:
+	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		struct_result      = T21_StructResult_StructCell()
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		result      = T21_StructResult_StructCell()
+		return result
 
-		if not ValidateOci(cell.oci) : return struct_result
-		if not ValidateOid(cell.oid) : return struct_result
-		if not ValidatePid(cell.pid) : return struct_result
-
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.clear()
-
-		dcells             = self._d_cells.get(cell.sid, dict())
-		dcells[cell.cut]   = cell
-
-		self._d_cells[cell.sid] = dcells
-
-		if not flag_capture_data: return struct_result
-
-		struct_result.data = cell
-
-		return struct_result
-
-	# УПРАВЛЕНИЕ ПАКЕТОМ D-ЯЧЕЕК
-	def DeleteDCells(self, cutrange_cells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	# Логика данных: D-Ячейки
+	def DeleteDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
-		struct_result    = T21_StructResult_StructCells()
-		cells_processing = []
+		result      = T21_StructResult_StructCells()
+		return result
 
-		if   type(cutrange_cells) is list        : cells_processing = cutrange_cells[:]
-		elif type(cutrange_cells) is T21_CutRange: cells_processing = self.ReadDCells(cutrange_cells)
-
-		if not cells_processing: struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		for cell in cells_processing:
-			if not ValidateOci(cell.oci):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			if not ValidateOid(cell.oid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			if not ValidatePid(cell.pid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			if cell.sid not in self._d_cells          : continue
-			if cell.cut not in self._d_cells[cell.sid]: continue
-
-			del self._d_cells[cell.sid][cell.cut]
-
-		if not flag_capture_data: return struct_result
-
-		result = []
-
-		for cell in cells_processing:
-			if cell.sid not in self._d_cells          : continue
-			if cell.cut     in self._d_cells[cell.sid]: continue
-
-			result.append(cell)
-
-		struct_result.data = result[:]
-
-		return struct_result
-
-	def ReadDCells(self, cutrange_cells: T21_CutRange | list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def ReadDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
-		struct_result = T21_StructResult_StructCells()
-		result        = []
+		result      = T21_StructResult_StructCells()
+		return result
 
-		if type(cutrange_cells)   is T21_CutRange:
-			struct_result.code                 = CODES_COMPLETION.INTERRUPTED
-			struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			if not ValidateOci(cutrange_cells.oci): return struct_result
-			if not ValidateOid(cutrange_cells.oid): return struct_result
-			if not ValidatePid(cutrange_cells.pid): return struct_result
-
-			struct_result.code                 = CODES_COMPLETION.COMPLETED
-			struct_result.subcodes.clear()
-
-			dcells : dict[int, T20_StructCell] = self._d_cells.get(cutrange_cells.sid, dict())
-
-			for cut, dcell in dcells.items():
-				if   (cut < cutrange_cells.cut_l)                               : continue
-				elif (cut > cutrange_cells.cut_r) and (cutrange_cells.cut_r > 0): continue
-
-				result.append(dcell)
-
-		elif type(cutrange_cells) is list        :
-			struct_result.code                 = CODES_COMPLETION.COMPLETED
-			struct_result.subcodes.clear()
-
-			dcells : dict[int, T20_StructCell] = self._d_cells.get(cutrange_cells.sid, dict())
-
-			for dcell in cutrange_cells:
-				if dcell.cut not in dcells: continue
-
-				result.append(dcells[dcell.cut])
-
-		if not result: struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		struct_result.data = result
-		return struct_result
-
-	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_data: bool = False) -> T21_StructResult_StructCells:
+	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета D-Ячеек """
-		struct_result = T21_StructResult_StructCells()
+		result      = T21_StructResult_StructCells()
+		return result
 
-		for dcell in cells:
-			if not ValidateOci(dcell.oci):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
+	# Логика данных: Запрос данных
+	def ReadDCutRange(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_CutRange:
+		""" Запрос границ cUT D-Ячейки """
+		result      = T21_StructResult_CutRange()
+		return result
 
-			if not ValidateOid(dcell.oid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			if not ValidatePid(dcell.pid):
-				struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				struct_result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				continue
-
-			dcells            = self._d_cells.get(dcell.sid, dict())
-			dcells[dcell.cut] = dcell
-
-			self._d_cells[dcell.sid] = dcells
-
-		if not flag_capture_data: return struct_result
-
-		result        = []
-
-		for dcell in cells:
-			if dcell.sid not in self._d_cells           : continue
-			if dcell.cut not in self._d_cells[dcell.sid]: continue
-
-			result.append(self._d_cells[dcell.sid][dcell.cut])
-
-		struct_result.data = result[:]
-		return struct_result
-
-	# ЗАПРОСЫ D-ДАННЫХ
-	def DCutRange(self, cell: T21_CutRange, flag_capture_data: bool = False) -> T21_StructResult_CutRange:
-		""" Запрос границ CUT D-Ячейки """
-		struct_result      = T21_StructResult_CutRange()
-
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-		if not ValidateOci(cell.oci)              : return struct_result
-		if not ValidateOid(cell.oid)              : return struct_result
-		if not ValidatePid(cell.pid)              : return struct_result
-
-		struct_result.code = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.clear()
-
-		dcells             = self._d_cells[cell.sid].keys()
-
-		if not dcells:
-			struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		else         :
-			struct_result.data.cut_l = min(dcells)
-			struct_result.data.cut_r = max(dcells)
-
-		return struct_result
-
-	def DCuts(self, cell: T21_CutRange, flag_capture_data: bool = False) -> T21_StructResult_List:
+	def ReadDCuts(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_List:
 		""" Запрос списка CUT """
-		struct_result = T21_StructResult_List()
+		result      = T21_StructResult_CutRange()
+		return result
 
-		struct_result.code = CODES_COMPLETION.INTERRUPTED
-		struct_result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-		if not ValidateOci(cell.oci): return struct_result
-		if not ValidateOid(cell.oid): return struct_result
-		if not ValidatePid(cell.pid): return struct_result
-
-		struct_result.code = CODES_COMPLETION.COMPLETED
-		struct_result.subcodes.clear()
-
-		dcells = self._d_cells[cell.sid].keys()
-
-		if not dcells:
-			struct_result.subcodes.add(CODES_DATA.NO_DATA)
-
-		struct_result.data = sorted(dcells)
-
-		return struct_result
+	# Логика управления
+	pass

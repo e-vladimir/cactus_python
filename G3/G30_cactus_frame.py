@@ -657,7 +657,7 @@ class C30_StructField(C20_MetaFrame):
 		if not pid.code == RESULT_OK  : return T21_ResultRange(pid.code)
 
 		cell      = T21_StructRange(oci=oci.text, oid=oid.text, pid=pid.text, cut_l=cut_l, cut_r=cut_r)
-		result    = container.DCutRange(cell)
+		result    = container.ReadDCutRange(cell)
 
 		return T21_ResultRange(result.code, cut_l=result.range.cut_l, cut_r=result.range.cut_r)
 
@@ -679,7 +679,7 @@ class C30_StructField(C20_MetaFrame):
 
 		cell      = T21_StructRange(oci=oci.text, oid=oid.text, pid=pid.text, cut_l=cut_l, cut_r=cut_r)
 
-		return container.DCuts(cell)
+		return container.ReadDCuts(cell)
 
 	def Cvls(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultDict:
 		""" Запрос cvl/cut в диапазоне cut D-Данных """
