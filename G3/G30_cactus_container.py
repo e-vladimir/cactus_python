@@ -1,5 +1,5 @@
 # КАКТУС: МЕТА-КОНТЕЙНЕР
-# 15 июн 2024
+# 17 июн 2024
 
 from G00_cactus_codes      import  CONTAINERS
 from G00_status_codes      import *
@@ -61,7 +61,7 @@ class C30_Container(C20_MetaFrame):
 		""" Запрос пакета S-Ячеек """
 		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
 
-	def SyncSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
 

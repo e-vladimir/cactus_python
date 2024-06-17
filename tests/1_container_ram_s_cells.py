@@ -18,7 +18,34 @@ for index in range(10): cells.append(T20_StructCell("oci", "oid", f"pid_{index}"
 result = container.ReadSCells(cells)
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= len(result.data) == 0
-print(f"{'[+]' if check else '[ ]'} Чтение S-Ячеек из пустого контейнера")
+print(f"{'[+]' if check else '[ ]'} Чтение пакета S-Ячеек из пустого контейнера")
 
-result = container.WriteSCells(cells, flag_capture_delta=True)
-print(result)
+result = container.DeleteSCells(cells)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{'[+]' if check else '[ ]'} Удаление пакета S-Ячеек из пустого контейнера без захвата данных")
+
+result = container.DeleteSCells(cells, flag_capture_delta=True)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{'[+]' if check else '[ ]'} Удаление пакета S-Ячеек из пустого контейнера с захватом данных")
+
+result = container.WriteSCells(cells)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{'[+]' if check else '[ ]'} Запись пакета S-Ячеек без захвата данных")
+
+result = container.WriteSCells(cells, flag_skip=True)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{'[+]' if check else '[ ]'} Запись пакета S-Ячеек с пропуском без захвата данных")
+
+result = container.WriteSCells(cells, flag_skip=True, flag_capture_delta=True)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{'[+]' if check else '[ ]'} Запись пакета S-Ячеек с пропуском с захватом данных")
+
+result = container.DeleteSCells(cells, flag_capture_delta=True)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == len(cells)
+print(f"{'[+]' if check else '[ ]'} Удаление пакета S-Ячеек с захватом данных")

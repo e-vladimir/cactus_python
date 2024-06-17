@@ -25,7 +25,7 @@ check    &= (CODES_DATA.NO_DATA in result.subcodes)
 check    &= (result.data        is None)
 print(f"{'[+]' if check else '[ ]'} Удаление S-Ячейки из пустого контейнера с захватом изменений")
 
-result    = container.WriteSCell(cell, flag_ignore=False, flag_capture_delta=False)
+result    = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=False)
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= (result.data        is None)
 print(f"{'[+]' if check else '[ ]'} Запись S-Ячейки без захвата изменений")
@@ -35,24 +35,24 @@ check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= (result.data        is not None)
 print(f"{'[+]' if check else '[ ]'} Удаление S-Ячейки с захватом изменений")
 
-result    = container.WriteSCell(cell, flag_ignore=False, flag_capture_delta=True)
+result    = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=True)
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= (result.data        is not None)
 print(f"{'[+]' if check else '[ ]'} Запись S-Ячейки с захватом изменений")
 
-result    = container.WriteSCell(cell, flag_ignore=False, flag_capture_delta=True)
+result    = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=True)
 check     = (result.code           == CODES_COMPLETION.COMPLETED)
 check    &= (result.data           is None)
 print(f"{'[+]' if check else '[ ]'} Перезапись S-Ячейки с захватом изменений")
 
 cell.cut  = 10
 
-result    = container.WriteSCell(cell, flag_ignore=False, flag_capture_delta=True)
+result    = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=True)
 check     = (result.code           == CODES_COMPLETION.COMPLETED)
 check    &= (result.data           is not None)
 print(f"{'[+]' if check else '[ ]'} Перезапись S-Ячейки с новыми данными с захватом изменений")
 
-result    = container.WriteSCell(cell, flag_ignore=True, flag_capture_delta=True)
+result    = container.WriteSCell(cell, flag_skip=True, flag_capture_delta=True)
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= (result.data        is None)
 print(f"{'[+]' if check else '[ ]'} Перезапись S-Ячейки с пропуском и захватом изменений")

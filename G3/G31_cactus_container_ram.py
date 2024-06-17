@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 16 июн 2024
+# 17 июн 2024
 
 from copy                  import copy
 
@@ -133,11 +133,11 @@ class C31_ContainerRAM(C30_Container):
 
 			return result
 
-		result = self.WriteSCell(cell, flag_ignore=False, flag_capture_delta=flag_capture_delta)
+		result = self.WriteSCell(cell, flag_skip=False, flag_capture_delta=flag_capture_delta)
 
 		return result
 
-	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
 		result                              = T21_StructResult_StructCell()
 
@@ -152,7 +152,7 @@ class C31_ContainerRAM(C30_Container):
 
 		result_exist : bool                  = cell.sid in self._s_cells
 
-		if flag_ignore and result_exist:
+		if flag_skip and result_exist:
 			result.code = CODES_COMPLETION.COMPLETED
 			result.subcodes.add(CODES_PROCESSING.SKIP)
 
@@ -176,22 +176,21 @@ class C31_ContainerRAM(C30_Container):
 		""" Удаление пакета S-Ячеек """
 		result      = T21_StructResult_StructCells()
 
-		cells_start  : list[T20_StructCell] = []
+		result_cells                        = self.ReadSCells(cell_cells)
+		cells_start  : list[T20_StructCell] = result_cells.data
 		cells_end    : list[T20_StructCell] = []
 
-		# if flag_capture_delta: cells_start = self.ReadSCells(cell).data
-		#
-		# if flag_capture_delta:
-		# 	cells_end   = self.ReadSCells(cell).data
-		# 	cells_delta = DifferenceLists(cells_start, cells_end)
-		#
-		# 	result.data = None if not cells_delta else cells_delta[0]
+		for cell in cells_start: del self._s_cells[cell.sid]
+
+		if flag_capture_delta:
+			cells_end   = self.ReadSCells(cell_cells).data
+			result.data = DifferenceLists(cells_start, cells_end)
 
 		return result
 
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
-		result      = T21_StructResult_StructCells()
+		result = T21_StructResult_StructCells()
 
 		if type(cell_cells) is T20_StructCell:
 			for sid, cell in self._s_cells.items():
@@ -220,14 +219,68 @@ class C31_ContainerRAM(C30_Container):
 
 		return result
 
-	def SyncSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
-		result      = T21_StructResult_StructCells()
+		result                             = T21_StructResult_StructCells()
+
+		cells_start : list[T20_StructCell] = []
+		cells_end   : list[T20_StructCell] = []
+
+		for cell in cells:
+			result_check  = ValidateOci(cell.oci)
+			result_check &= ValidateOid(cell.oid)
+			result_check &= ValidatePid(cell.pid)
+
+			if not result_check:
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				continue
+
+			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell())
+
+			if cell_in_container.cut > cell.cut:
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			self._s_cells[cell.sid] = copy(cell)
+
+		if flag_capture_delta:
+			cells_end   = self.ReadSCells(cells).data
+			result.data = DifferenceLists(cells_start, cells_end)
+
 		return result
 
-	def WriteSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def WriteSCells(self, cells: list[T20_StructCell], flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
-		result      = T21_StructResult_StructCells()
+		result                             = T21_StructResult_StructCells()
+
+		cells_start : list[T20_StructCell] = []
+		cells_end   : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_start = self.ReadSCells(cells).data
+
+		for cell in cells:
+			result_check  = ValidateOci(cell.oci)
+			result_check &= ValidateOid(cell.oid)
+			result_check &= ValidatePid(cell.pid)
+
+			if not result_check:
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				continue
+
+			result_exist : bool = cell.sid in self._s_cells
+
+			if result_exist and flag_skip:
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			self._s_cells[cell.sid] = copy(cell)
+
+		if flag_capture_delta:
+			cells_end   = self.ReadSCells(cells).data
+			result.data = DifferenceLists(cells_start, cells_end)
+
 		return result
 
 	# Логика данных: D-Ячейка
@@ -270,7 +323,7 @@ class C31_ContainerRAM(C30_Container):
 
 	def ReadDCuts(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_List:
 		""" Запрос списка CUT """
-		result      = T21_StructResult_CutRange()
+		result      = T21_StructResult_List()
 		return result
 
 	# Логика управления
