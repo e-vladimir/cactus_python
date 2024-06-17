@@ -126,7 +126,7 @@ class C31_ContainerRAM(C30_Container):
 
 		cell_in_container  = T20_StructCell() if result_read.data is None else result_read.data
 
-		if cell_in_container.cut > cell.cut:
+		if cell_in_container.cut >= cell.cut:
 			result.code = CODES_COMPLETION.COMPLETED
 			result.subcodes.add(CODES_PROCESSING.SKIP)
 			result.data = cell_in_container
@@ -238,7 +238,7 @@ class C31_ContainerRAM(C30_Container):
 
 			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell())
 
-			if cell_in_container.cut > cell.cut:
+			if cell_in_container.cut >= cell.cut:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
