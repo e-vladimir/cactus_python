@@ -62,24 +62,25 @@ class C31_ContainerRAM(C30_Container):
 
 			return result
 
-		cells_start  : list[T20_StructCell] = []
-		cells_end    : list[T20_StructCell] = []
+		cell_start  : T20_StructCell | None = None
+		cell_end    : T20_StructCell | None = None
 
-		if flag_capture_delta: cells_start = self.ReadSCells(cell).data
+		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
 		del self._s_cells[cell.sid]
 
 		if flag_capture_delta:
-			cells_end   = self.ReadSCells(cell).data
-			cells_delta = DifferenceLists(cells_start, cells_end)
+			cell_end = self.ReadSCell(cell).data
+			cells    = [cell_start, cell_end]
+			cells.remove(None)
 
-			result.data = None if not cells_delta else cells_delta[0]
+			result.data = cells[0]
 
 		return result
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result      = T21_StructResult_StructCell()
+		result              = T21_StructResult_StructCell()
 
 		result_check : bool = ValidateOid(cell.oid)
 		result_check       &= ValidatePid(cell.pid)
@@ -138,10 +139,10 @@ class C31_ContainerRAM(C30_Container):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result      = T21_StructResult_StructCell()
+		result                              = T21_StructResult_StructCell()
 
-		result_check : bool = ValidateOid(cell.oid)
-		result_check       &= ValidatePid(cell.pid)
+		result_check : bool                 = ValidateOid(cell.oid)
+		result_check                       &= ValidatePid(cell.pid)
 
 		if not result_check:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -149,7 +150,7 @@ class C31_ContainerRAM(C30_Container):
 
 			return result
 
-		result_exist : bool = cell.sid in self._s_cells
+		result_exist : bool                  = cell.sid in self._s_cells
 
 		if flag_ignore and result_exist:
 			result.code = CODES_COMPLETION.COMPLETED
@@ -157,18 +158,16 @@ class C31_ContainerRAM(C30_Container):
 
 			return result
 
-		cells_start  : list[T20_StructCell] = []
-		cells_end    : list[T20_StructCell] = []
+		cell_start   : T20_StructCell | None = None
+		cell_end     : T20_StructCell | None = None
 
-		if flag_capture_delta: cells_start = self.ReadSCells(cell).data
+		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
 		self._s_cells[cell.sid] = copy(cell)
 
 		if flag_capture_delta:
-			cells_end = self.ReadSCells(cell).data
-			cells_delta = DifferenceLists(cells_start, cells_end)
-
-			result.data = None if not cells_delta else cells_delta[0]
+			cell_end    = self.ReadSCell(cell).data
+			result.data = None if cell_end == cell_start else cell_end
 
 		return result
 
@@ -176,6 +175,18 @@ class C31_ContainerRAM(C30_Container):
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		result      = T21_StructResult_StructCells()
+
+		cells_start  : list[T20_StructCell] = []
+		cells_end    : list[T20_StructCell] = []
+
+		# if flag_capture_delta: cells_start = self.ReadSCells(cell).data
+		#
+		# if flag_capture_delta:
+		# 	cells_end   = self.ReadSCells(cell).data
+		# 	cells_delta = DifferenceLists(cells_start, cells_end)
+		#
+		# 	result.data = None if not cells_delta else cells_delta[0]
+
 		return result
 
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
@@ -197,7 +208,8 @@ class C31_ContainerRAM(C30_Container):
 				result_check : bool = ValidateOid(cell.oid)
 				result_check       &= ValidatePid(cell.pid)
 
-				if not result_check: continue
+				if not result_check                 : continue
+				if     cell.sid not in self._s_cells: continue
 
 				result.data.append(cell)
 
