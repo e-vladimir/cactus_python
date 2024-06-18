@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 17 июн 2024
+# 18 июн 2024
 
 from copy                  import copy
 
@@ -288,16 +288,114 @@ class C31_ContainerRAM(C30_Container):
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
 		result      = T21_StructResult_StructCell()
+
+		result_check : bool                  = ValidateOid(cell.oid)
+		result_check                        &= ValidatePid(cell.pid)
+
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+			return result
+
+		cell_start   : T20_StructCell | None = None
+		cell_end     : T20_StructCell | None = None
+
+		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
+
+		result_exist : bool = cell.sid in self._d_cells
+
+		if not result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_DATA.NO_DATA)
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+
+			return result
+
+		ddata               = self._d_cells[cell.sid]
+
+		result_exist : bool = cell.cut in ddata
+
+		if not result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_DATA.NO_DATA)
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+
+			return result
+
+		del ddata[cell.cut]
+		self._d_cells[cell.sid] = ddata
+
+		if flag_capture_delta:
+			cell_end    = self.ReadDCell(cell).data
+			cells    = [cell_start, cell_end]
+			cells.remove(None)
+
+			result.data = cells[0]
+
 		return result
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
 		result      = T21_StructResult_StructCell()
+
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
+
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+			return result
+
+		result_exist : bool = cell.sid in self._d_cells
+
+		if not result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+			return result
+
+		ddata               = self._d_cells[cell.sid]
+
+		result_exist : bool = cell.cut in ddata
+
+		if not result_exist:
+			result.code = CODES_COMPLETION.COMPLETED
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+			return result
+
+		result.data = ddata[cell.cut]
+
 		return result
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		result      = T21_StructResult_StructCell()
+		result                               = T21_StructResult_StructCell()
+
+		result_check : bool                  = ValidateOid(cell.oid)
+		result_check                        &= ValidatePid(cell.pid)
+
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+			return result
+
+		cell_start   : T20_StructCell | None = None
+		cell_end     : T20_StructCell | None = None
+
+		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
+
+		ddata                                = self._d_cells.get(cell.sid, dict())
+		ddata[cell.cut]                      = copy(cell)
+		self._d_cells[cell.sid] = ddata
+
+		if flag_capture_delta:
+			cell_end    = self.ReadDCell(cell).data
+			result.data = None if cell_end == cell_start else cell_end
+
 		return result
 
 	# Логика данных: D-Ячейки
