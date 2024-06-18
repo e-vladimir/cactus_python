@@ -117,16 +117,12 @@ class C31_ContainerRAM(C30_Container):
 
 			return result
 
-		result_read        = self.ReadSCell(cell)
-		if not result_read.code == CODES_COMPLETION.COMPLETED:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes = result_read.subcodes
+		cell_in_container   = self._s_cells.get(cell.sid, None)
 
-			return result
+		result_write : bool = True
+		if cell_in_container is not None: result_write = (cell_in_container.cut < cell.cut)
 
-		cell_in_container  = T20_StructCell() if result_read.data is None else result_read.data
-
-		if cell_in_container.cut >= cell.cut:
+		if not result_write:
 			result.code = CODES_COMPLETION.COMPLETED
 			result.subcodes.add(CODES_PROCESSING.SKIP)
 			result.data = cell_in_container
@@ -184,7 +180,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if flag_capture_delta:
 			cells_end   = self.ReadSCells(cell_cells).data
-			result.data = DifferenceLists(cells_start, cells_end)
+			result.data = DifferenceLists(cells_start, cells_end, flag_reverse=True)
 
 		return result
 
@@ -200,7 +196,7 @@ class C31_ContainerRAM(C30_Container):
 				if cell_cells.cvl and not (cell.cvl == cell_cells.cvl): continue
 				if cell_cells.cut and not (cell.cut == cell_cells.cut): continue
 
-				result.data.append(cell)
+				result.data.append(copy(cell))
 
 		elif type(cell_cells) is list:
 			for cell in cell_cells:
@@ -210,7 +206,7 @@ class C31_ContainerRAM(C30_Container):
 				if not result_check                 : continue
 				if     cell.sid not in self._s_cells: continue
 
-				result.data.append(cell)
+				result.data.append(copy(self._s_cells[cell.sid]))
 
 		else:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -226,6 +222,8 @@ class C31_ContainerRAM(C30_Container):
 		cells_start : list[T20_StructCell] = []
 		cells_end   : list[T20_StructCell] = []
 
+		if flag_capture_delta: cells_start = self.ReadSCells(cells).data
+
 		for cell in cells:
 			result_check  = ValidateOci(cell.oci)
 			result_check &= ValidateOid(cell.oid)
@@ -236,9 +234,12 @@ class C31_ContainerRAM(C30_Container):
 				result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				continue
 
-			cell_in_container = self._s_cells.get(cell.sid, T20_StructCell())
+			cell_in_container = self._s_cells.get(cell.sid, None)
 
-			if cell_in_container.cut >= cell.cut:
+			result_write: bool = True
+			if cell_in_container is not None: result_write = (cell_in_container.cut < cell.cut)
+
+			if not result_write:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
