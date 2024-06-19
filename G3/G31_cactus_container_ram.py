@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 18 июн 2024
+# 19 июн 2024
 
 from copy                  import copy
 
@@ -8,6 +8,7 @@ from G00_status_codes      import *
 
 from G10_cactus_validators import *
 from G10_list              import DifferenceLists
+from G10_math_linear       import CheckBetween
 
 from G21_cactus_struct     import *
 from G21_struct_result     import T21_StructResult_List
@@ -399,19 +400,103 @@ class C31_ContainerRAM(C30_Container):
 		return result
 
 	# Логика данных: D-Ячейки
-	def DeleteDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, range_cell_cells: T20_StructCell | list[T20_StructCell] | T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		result      = T21_StructResult_StructCells()
 		return result
 
-	def ReadDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def ReadDCells(self, range_cell_cells: T20_StructCell | list[T20_StructCell] | T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		result      = T21_StructResult_StructCells()
+
+		if   type(range_cell_cells) is T20_StructCell:
+			result_check : bool = ValidateOid(range_cell_cells.oid)
+			result_check       &= ValidatePid(range_cell_cells.pid)
+
+			if not result_check:
+				result.code = CODES_COMPLETION.INTERRUPTED
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				return result
+
+			ddata = self._d_cells.get(range_cell_cells.sid, dict())
+
+			for sid, cell in ddata.items():
+				if range_cell_cells.oci and not (cell.oci == range_cell_cells.oci): continue
+				if range_cell_cells.oid and not (cell.oid == range_cell_cells.oid): continue
+				if range_cell_cells.pid and not (cell.pid == range_cell_cells.pid): continue
+				if range_cell_cells.cvl and not (cell.cvl == range_cell_cells.cvl): continue
+				if range_cell_cells.cut and not (cell.cut == range_cell_cells.cut): continue
+
+				result.data.append(copy(cell))
+
+		elif type(range_cell_cells) is list          :
+			for cell in range_cell_cells:
+				result_check: bool = ValidateOid(cell.oid)
+				result_check &= ValidatePid(cell.pid)
+
+				if not result_check:
+					result.subcodes.add(CODES_DATA.ERROR_CHECK)
+					continue
+
+				ddata = self._d_cells.get(cell.sid, dict())
+
+				if cell.cut not in ddata: continue
+
+				result.data.append(copy(ddata[cell.cut]))
+
+		elif type(range_cell_cells) is T21_CutRange  :
+			result_check : bool = ValidateOid(range_cell_cells.oid)
+			result_check       &= ValidatePid(range_cell_cells.pid)
+
+			if not result_check:
+				result.code = CODES_COMPLETION.INTERRUPTED
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				return result
+
+			ddata = self._d_cells.get(range_cell_cells.sid, dict())
+
+			cut_l = range_cell_cells.cut_l
+			cut_r = range_cell_cells.cut_r
+
+			for sid, cell in ddata.items():
+				if not CheckBetween(cut_l, cell.cut, cut_r, flag_include=True): continue
+
+				result.data.append(copy(cell))
+
+		else                                         :
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+			result.subcodes.add(CODES_DATA.ERROR_TYPE)
+
 		return result
 
 	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета D-Ячеек """
 		result      = T21_StructResult_StructCells()
+
+		cells_start : list[T20_StructCell] = []
+		cells_end   : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_start = self.ReadDCells(cells).data
+
+		for cell in cells:
+			result_check  = ValidateOci(cell.oci)
+			result_check &= ValidateOid(cell.oid)
+			result_check &= ValidatePid(cell.pid)
+
+			if not result_check:
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				continue
+
+			ddata = self._d_cells.get(cell.sid, dict())
+			ddata[cell.cut] = copy(cell)
+			self._d_cells[cell.sid] = ddata
+
+		if flag_capture_delta:
+			cells_end   = self.ReadDCells(cells).data
+			result.data = DifferenceLists(cells_start, cells_end)
+
 		return result
 
 	# Логика данных: Запрос данных
