@@ -96,11 +96,11 @@ class C30_Container(C20_MetaFrame):
 		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
 
 	# Логика данных: Запрос данных
-	def ReadDCutRange(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_CutRange:
+	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
 		return T21_StructResult_CutRange(subcodes={CODES_PROCESSING.SKIP})
 
-	def ReadDCuts(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_List:
+	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
 		return T21_StructResult_List(subcodes={CODES_PROCESSING.SKIP})
 

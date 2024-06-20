@@ -500,14 +500,50 @@ class C31_ContainerRAM(C30_Container):
 		return result
 
 	# Логика данных: Запрос данных
-	def ReadDCutRange(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_CutRange:
+	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
-		result      = T21_StructResult_CutRange()
+		result            = T21_StructResult_CutRange()
+
+		result_cuts       = self.ReadDCuts(cell)
+
+		result.code       = result_cuts.code
+		result.subcodes   = result_cuts.subcodes
+
+		if not result_cuts.data: return result
+
+		result.data       = copy(cell)
+		result.data.cut_l = min(result_cuts.data)
+		result.data.cut_r = max(result_cuts.data)
+
 		return result
 
-	def ReadDCuts(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_List:
+	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
-		result      = T21_StructResult_List()
+		result              = T21_StructResult_List()
+
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
+
+		if not result_check:
+			result.code = CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+			return result
+
+		ddata               = self._d_cells.get(cell.sid, dict())
+
+		for sid, dcell in ddata.items():
+			if cell.oci   and not (dcell.oci == cell.oci)  : continue
+			if cell.oid   and not (dcell.oid == cell.oid)  : continue
+			if cell.pid   and not (dcell.pid == cell.pid)  : continue
+			if cell.cvl   and not (dcell.cvl == cell.cvl)  : continue
+			if cell.cut   and not (dcell.cut == cell.cut)  : continue
+			if cell.cut_l and not (dcell.cut >  cell.cut_l): continue
+			if cell.cut_r and not (dcell.cut <  cell.cut_r): continue
+
+			if dcell.cut   in result.data                   : continue
+
+			result.data.append(dcell.cut)
+
 		return result
 
 	# Логика управления
