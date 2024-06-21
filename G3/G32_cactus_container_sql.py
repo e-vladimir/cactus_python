@@ -39,7 +39,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		else               : self._options_filename = filename
 
 	# ЗАПРОС СОСТОЯНИЯ ПОДКЛЮЧЕНИЯ
-	def ConnectionState(self) -> T21_StructResult_Bool:
+	def StateConnected(self) -> T21_StructResult_Bool:
 		""" Запрос состояния подключения """
 		if self.connection is None: return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED, data=False)
 
@@ -51,7 +51,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# УПРАВЛЕНИЕ ПОДКЛЮЧЕНИЕМ
 	def Connect(self) -> T21_StructResult_Bool:
 		""" Подключение к СУБД """
-		if self.ConnectionState().data: return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED, data=True)
+		if self.StateConnected().data: return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED, data=True)
 
 		self.connection = None
 		
@@ -720,7 +720,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		else               :        self._options_server_password = password
 
 	# ЗАПРОС СОСТОЯНИЯ ПОДКЛЮЧЕНИЯ
-	def ConnectionState(self) -> T21_StructResult_Bool:
+	def StateConnected(self) -> T21_StructResult_Bool:
 		""" Запрос состояния подключения """
 		if self.connection is None: return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED, data=False)
 
@@ -732,7 +732,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	# УПРАВЛЕНИЕ ПОДКЛЮЧЕНИЕМ
 	def Connect(self) -> T21_StructResult_Bool:
 		""" Подключение к СУБД """
-		if not self.ConnectionState().data:
+		if not self.StateConnected().data:
 			try                             : self.connection = psycopg2.connect(host=self._options_server_ip, port=self._options_server_tcp_port, dbname=self._options_server_dbase, user=self._options_server_login, password=self._options_server_password, connect_timeout=5)
 			except                          : return T21_StructResult_Bool(code=CODES_COMPLETION.INTERRUPTED, subcodes=[CODES_DB.ERROR_DB], data=False)
 

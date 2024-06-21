@@ -1,5 +1,5 @@
 # КАТАЛОГ: КАКТУС
-# 10 июн 2024
+# 21 июн 2024
 
 import enum
 
@@ -35,7 +35,7 @@ class CACTUS_STRUCT_DATA(enum.Enum):
 
 # ТИП ПОДКЛЮЧЕНИЯ
 class CONNECTION_MANAGEMENT(enum.Enum):
-	OFF     = (0, "Управление подключением отключено")
+	MANUAL  = (0, "Ручное управление подключением")
 	AUTO    = (1, "Автоматическое управление подключением")
 	TIMEOUT = (2, "Управление по timeout")
 

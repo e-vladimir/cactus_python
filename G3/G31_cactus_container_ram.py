@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 19 июн 2024
+# 21 июн 2024
 
 from copy                  import copy
 
@@ -130,7 +130,7 @@ class C31_ContainerRAM(C30_Container):
 
 			return result
 
-		result = self.WriteSCell(cell, flag_skip=False, flag_capture_delta=flag_capture_delta)
+		result = self.WriteSCell(cell, False, flag_capture_delta)
 
 		return result
 
@@ -181,7 +181,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if flag_capture_delta:
 			cells_end   = self.ReadSCells(cell_cells).data
-			result.data = DifferenceLists(cells_start, cells_end, flag_reverse=True)
+			result.data = DifferenceLists(cells_start, cells_end, True)
 
 		return result
 
@@ -459,7 +459,7 @@ class C31_ContainerRAM(C30_Container):
 			cut_r = range_cell_cells.cut_r
 
 			for sid, cell in ddata.items():
-				if not CheckBetween(cut_l, cell.cut, cut_r, flag_include=True): continue
+				if not CheckBetween(cut_l, cell.cut, cut_r, True): continue
 
 				result.data.append(copy(cell))
 

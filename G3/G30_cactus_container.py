@@ -22,15 +22,18 @@ class C30_Container(C20_MetaFrame):
 	# ПРОВЕРКА ВИДА КОНТЕЙНЕРА
 	def Type_RAM(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: RAM """
-		return T21_StructResult_Bool(data=self._container_type == CONTAINERS.CONTAINER_RAM)
+		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
+		                             data = self._container_type == CONTAINERS.CONTAINER_RAM)
 
 	def Type_SQLite(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: SQLite """
-		return T21_StructResult_Bool(data=self._container_type == CONTAINERS.CONTAINER_SQLITE)
+		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
+		                             data = self._container_type == CONTAINERS.CONTAINER_SQLITE)
 
 	def Type_PostgreSQL(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: PostgreSQL """
-		return T21_StructResult_Bool(data=self._container_type == CONTAINERS.CONTAINER_POSTGRESQL)
+		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
+		                             data = self._container_type == CONTAINERS.CONTAINER_POSTGRESQL)
 
 	# Механика управления
 	pass
@@ -38,71 +41,87 @@ class C30_Container(C20_MetaFrame):
 	# Логика данных: S-Ячейка
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: S-Ячейки
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	def WriteSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: D-Ячейка
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		return T21_StructResult_StructCell(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: D-Ячейки
 	def DeleteDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	def ReadDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета D-Ячеек """
-		return T21_StructResult_StructCells(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: Запрос данных
 	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
-		return T21_StructResult_CutRange(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_CutRange(code     = CODES_COMPLETION.COMPLETED,
+		                                 subcodes = {CODES_PROCESSING.SKIP})
 
 	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
-		return T21_StructResult_List(subcodes={CODES_PROCESSING.SKIP})
+		return T21_StructResult_List(code     = CODES_COMPLETION.COMPLETED,
+		                             subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика управления
 	pass
