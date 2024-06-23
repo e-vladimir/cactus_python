@@ -1,7 +1,8 @@
 # КАКТУС: КОНТРОЛЛЕР КОНТЕЙНЕРОВ
-# 11 июн 2024
+# 23 июн 2024
 
 from G20_meta_frame           import  C20_MetaFrame
+
 from G31_cactus_container_ram import  C31_ContainerRAM
 from G32_cactus_container_sql import *
 
@@ -33,7 +34,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 	# Механика управления
 	pass
 
-	# Логика данных: Регистрация контейнеров
+	# Логика данных: Управление регистрацией контейнера
 	def RegisterContainerRAM(self, container_name: str) -> None | C31_ContainerRAM:
 		""" Регистрация RAM-Контейнера """
 		container = self.Container(container_name)
@@ -76,7 +77,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 		return container
 
-	# Логика данных: Отмена регистрации контейнеров
+	# Логика данных: Управление отменой регистрации контейнеров
 	def UnregisterContainer(self, container_name: str) -> T21_StructResult_String:
 		""" Отмена регистрации контейнера """
 		struct_result = T21_StructResult_String(data=container_name)

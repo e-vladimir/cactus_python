@@ -65,3 +65,22 @@ check    &= (result.data is not None)
 check    &= (result.data.cut_l == 5)
 check    &= (result.data.cut_r == 7)
 print(f"{'[+]' if check else '[ ]'} Чтение границ CUT D-Ячеек через OCI.OID.PID [CUT_L - CUT_R]")
+
+result    = container.DeleteDCells(T20_StructCell("oci", "oid", "pid"), flag_capture_delta=True)
+check     = (result.code == CODES_COMPLETION.COMPLETED)
+check    &= (len(result.data) == 10)
+print(f"{'[+]' if check else '[ ]'} Удаление пакета D-Ячеек через OCI.OID.PID")
+
+result    = container.WriteDCells(cells)
+result    = container.DeleteDCells(T20_StructCell("oci", "oid"), flag_capture_delta=True)
+check     = (result.code == CODES_COMPLETION.INTERRUPTED)
+print(f"{'[+]' if check else '[ ]'} Отказ удаления пакета D-Ячеек через OCI.OID")
+
+result    = container.DeleteDCells(T20_StructCell("oci"), flag_capture_delta=True)
+check     = (result.code == CODES_COMPLETION.INTERRUPTED)
+print(f"{'[+]' if check else '[ ]'} Отказ удаления пакета D-Ячеек через OCI")
+
+result    = container.DeleteDCells(T21_CutRange("oci", "oid", "pid", cut_l=1, cut_r=5), flag_capture_delta=True)
+check     = (result.code == CODES_COMPLETION.COMPLETED)
+check    &= (len(result.data) == 5)
+print(f"{'[+]' if check else '[ ]'} Удаление пакета D-Ячеек через OCI.OID.PID [CUT_L - CUT_R]")

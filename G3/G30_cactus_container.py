@@ -1,5 +1,5 @@
 # КАКТУС: МЕТА-КОНТЕЙНЕР
-# 17 июн 2024
+# 23 июн 2024
 
 from G00_cactus_codes      import  CONTAINERS
 from G00_status_codes      import *
@@ -18,8 +18,7 @@ class C30_Container(C20_MetaFrame):
 
 		self._container_type : CONTAINERS = CONTAINERS.CONTAINER_NONE
 
-	# Механика данных
-	# ПРОВЕРКА ВИДА КОНТЕЙНЕРА
+	# Механика данных: Тип контейнера
 	def Type_RAM(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: RAM """
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
@@ -112,7 +111,7 @@ class C30_Container(C20_MetaFrame):
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 
-	# Логика данных: Запрос данных
+	# Логика данных: Диапазон CUT
 	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
 		""" Запрос границ cUT D-Ячейки """
 		return T21_StructResult_CutRange(code     = CODES_COMPLETION.COMPLETED,
