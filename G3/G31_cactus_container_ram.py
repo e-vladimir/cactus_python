@@ -43,26 +43,18 @@ class C31_ContainerRAM(C30_Container):
 	# Логика данных: S-Ячейка
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		result                              = T21_StructResult_StructCell()
-		result.code                         = CODES_COMPLETION.COMPLETED
-
 		result_check  : bool                = ValidateOid(cell.oid)
 		result_check                       &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_exist : bool                 = cell.sid in self._s_cells
 
 		if not result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-			result.subcodes.add(CODES_DATA.NO_DATA)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+											   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		cell_start  : T20_StructCell | None = None
 		cell_end    : T20_StructCell | None = None
@@ -70,6 +62,9 @@ class C31_ContainerRAM(C30_Container):
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
 		del self._s_cells[cell.sid]
+
+		result                              = T21_StructResult_StructCell()
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		if flag_capture_delta:
 			cell_end = self.ReadSCell(cell).data
@@ -82,54 +77,44 @@ class C31_ContainerRAM(C30_Container):
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result              = T21_StructResult_StructCell()
-		result.code         = CODES_COMPLETION.COMPLETED
-
 		result_check : bool = ValidateOid(cell.oid)
 		result_check       &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_exist : bool = cell.sid in self._s_cells
 
 		if not result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-			result.subcodes.add(CODES_DATA.NO_DATA)
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+			                                   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA},
+			                                   data     = self._s_cells[cell.sid])
 
-			return result
-
-		result.data = self._s_cells[cell.sid]
-
-		return result
+		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
+										   data = self._s_cells[cell.sid])
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result              = T21_StructResult_StructCell()
-		result.code         = CODES_COMPLETION.COMPLETED
-
 		result_check : bool = ValidateOid(cell.oid)
 		result_check       &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cell_in_container   = self._s_cells.get(cell.sid, None)
 
 		result_write : bool = True
 		if cell_in_container is not None: result_write = (cell_in_container.cut < cell.cut)
 
+		result              = T21_StructResult_StructCell()
+		result.code         = CODES_COMPLETION.COMPLETED
+
 		if not result_write:
-			result.code = CODES_COMPLETION.COMPLETED
 			result.subcodes.add(CODES_PROCESSING.SKIP)
-			result.data = cell_in_container
+
+			if flag_capture_delta: result.data = cell_in_container
 
 			return result
 
@@ -139,25 +124,18 @@ class C31_ContainerRAM(C30_Container):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result                              = T21_StructResult_StructCell()
-		result.code                         = CODES_COMPLETION.COMPLETED
-
-		result_check : bool                 = ValidateOid(cell.oid)
-		result_check                       &= ValidatePid(cell.pid)
+		result_check : bool                  = ValidateOid(cell.oid)
+		result_check                        &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_exist : bool                  = cell.sid in self._s_cells
 
 		if flag_skip and result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+											   subcodes = {CODES_PROCESSING.SKIP})
 
 		cell_start   : T20_StructCell | None = None
 		cell_end     : T20_StructCell | None = None
@@ -165,6 +143,9 @@ class C31_ContainerRAM(C30_Container):
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
 		self._s_cells[cell.sid] = copy(cell)
+
+		result                              = T21_StructResult_StructCell()
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		if flag_capture_delta:
 			cell_end    = self.ReadSCell(cell).data
@@ -175,14 +156,15 @@ class C31_ContainerRAM(C30_Container):
 	# Логика данных: S-Ячейки
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
-		result      = T21_StructResult_StructCells()
-		result.code = CODES_COMPLETION.COMPLETED
-
 		result_cells                        = self.ReadSCells(cell_cells)
+
 		cells_start  : list[T20_StructCell] = result_cells.data
 		cells_end    : list[T20_StructCell] = []
 
 		for cell in cells_start: del self._s_cells[cell.sid]
+
+		result                              = T21_StructResult_StructCells()
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		if flag_capture_delta:
 			cells_end   = self.ReadSCells(cell_cells).data
@@ -296,17 +278,12 @@ class C31_ContainerRAM(C30_Container):
 	# Логика данных: D-Ячейка
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		result                               = T21_StructResult_StructCell()
-		result.code                          = CODES_COMPLETION.COMPLETED
-
 		result_check : bool                  = ValidateOid(cell.oid)
 		result_check                        &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cell_start   : T20_StructCell | None = None
 		cell_end     : T20_StructCell | None = None
@@ -316,25 +293,22 @@ class C31_ContainerRAM(C30_Container):
 		result_exist : bool                  = cell.sid in self._d_cells
 
 		if not result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_DATA.NO_DATA)
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+			                                   subcodes = {CODES_DATA.NO_DATA, CODES_PROCESSING.SKIP})
 
 		ddata                                = self._d_cells[cell.sid]
 
 		result_exist : bool                  = cell.cut in ddata
 
 		if not result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_DATA.NO_DATA)
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+			                                   subcodes = {CODES_DATA.NO_DATA, CODES_PROCESSING.SKIP})
 
 		del ddata[cell.cut]
 		self._d_cells[cell.sid] = ddata
+
+		result                               = T21_StructResult_StructCell()
+		result.code                          = CODES_COMPLETION.COMPLETED
 
 		if flag_capture_delta:
 			cell_end    = self.ReadDCell(cell).data
@@ -354,28 +328,22 @@ class C31_ContainerRAM(C30_Container):
 		result_check       &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_exist : bool = cell.sid in self._d_cells
 
 		if not result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_DATA.NO_DATA)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+			                                   subcodes = {CODES_DATA.NO_DATA})
 
 		ddata               = self._d_cells[cell.sid]
 
 		result_exist : bool = cell.cut in ddata
 
 		if not result_exist:
-			result.code = CODES_COMPLETION.COMPLETED
-			result.subcodes.add(CODES_DATA.NO_DATA)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+			                                   subcodes = {CODES_DATA.NO_DATA})
 
 		result.data = ddata[cell.cut]
 
@@ -383,17 +351,12 @@ class C31_ContainerRAM(C30_Container):
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		result                               = T21_StructResult_StructCell()
-		result.code                          = CODES_COMPLETION.COMPLETED
-
 		result_check : bool                  = ValidateOid(cell.oid)
 		result_check                        &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-
-			return result
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cell_start   : T20_StructCell | None = None
 		cell_end     : T20_StructCell | None = None
@@ -403,6 +366,9 @@ class C31_ContainerRAM(C30_Container):
 		ddata                                = self._d_cells.get(cell.sid, dict())
 		ddata[cell.cut]                      = copy(cell)
 		self._d_cells[cell.sid] = ddata
+
+		result                               = T21_StructResult_StructCell()
+		result.code                          = CODES_COMPLETION.COMPLETED
 
 		if flag_capture_delta:
 			cell_end    = self.ReadDCell(cell).data
@@ -426,9 +392,8 @@ class C31_ContainerRAM(C30_Container):
 			result_check       &= ValidatePid(range_cell_cells.pid)
 
 			if not result_check:
-				result.code = CODES_COMPLETION.INTERRUPTED
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				return result
+				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+				                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 			ddata               = self._d_cells.get(range_cell_cells.sid, dict())
 
@@ -463,9 +428,8 @@ class C31_ContainerRAM(C30_Container):
 			result_check       &= ValidatePid(range_cell_cells.pid)
 
 			if not result_check:
-				result.code = CODES_COMPLETION.INTERRUPTED
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				return result
+				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+				                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 			ddata = self._d_cells.get(range_cell_cells.sid, dict())
 
@@ -480,10 +444,8 @@ class C31_ContainerRAM(C30_Container):
 				del ddata[sid]
 
 		else                                         :
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-			result.subcodes.add(CODES_DATA.ERROR_TYPE)
-			return result
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+												subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.ERROR_TYPE})
 
 		if flag_capture_delta:
 			cells_end   = self.ReadDCells(range_cell_cells).data
@@ -504,9 +466,8 @@ class C31_ContainerRAM(C30_Container):
 			result_check       &= ValidatePid(range_cell_cells.pid)
 
 			if not result_check:
-				result.code = CODES_COMPLETION.INTERRUPTED
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				return result
+				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+				                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 			ddata = self._d_cells.get(range_cell_cells.sid, dict())
 
@@ -539,9 +500,8 @@ class C31_ContainerRAM(C30_Container):
 			result_check       &= ValidatePid(range_cell_cells.pid)
 
 			if not result_check:
-				result.code = CODES_COMPLETION.INTERRUPTED
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				return result
+				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+				                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 			ddata = self._d_cells.get(range_cell_cells.sid, dict())
 
@@ -554,9 +514,8 @@ class C31_ContainerRAM(C30_Container):
 				result.data.append(copy(cell))
 
 		else                                         :
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-			result.subcodes.add(CODES_DATA.ERROR_TYPE)
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+												subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.ERROR_TYPE})
 
 		if not result.data:
 			result.subcodes.add(CODES_DATA.NO_DATA)
@@ -617,16 +576,15 @@ class C31_ContainerRAM(C30_Container):
 
 	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
 		""" Запрос списка CUT """
-		result              = T21_StructResult_List()
-		result.code         = CODES_COMPLETION.COMPLETED
-
 		result_check : bool = ValidateOid(cell.oid)
 		result_check       &= ValidatePid(cell.pid)
 
 		if not result_check:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
-			return result
+			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+			                             subcodes = {CODES_DATA.ERROR_CHECK})
+
+		result              = T21_StructResult_List()
+		result.code         = CODES_COMPLETION.COMPLETED
 
 		ddata               = self._d_cells.get(cell.sid, dict())
 

@@ -19,7 +19,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 		""" Запрос списка названий контейнеров """
 		struct_result      = T21_StructResult_List()
 
-		names : list[str] = list(self._containers.keys())
+		names : list[str]  = list(self._containers.keys())
 		names.sort()
 		if not names: struct_result.subcodes.add(CODES_DATA.NO_DATA)
 

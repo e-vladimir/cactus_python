@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 21 июн 2024
+# 23 июн 2024
 
 import threading
 import time
@@ -8,13 +8,16 @@ from   G00_cactus_codes     import CONNECTION_MANAGEMENT
 from   G00_status_codes     import *
 
 from   G10_math_linear      import CalcBetween
+
 from   G21_struct_result    import *
+
 from   G30_cactus_container import C30_Container
 
 
 class C31_ContainerSQL(C30_Container):
 	""" Кактус: Контейнер SQL """
 
+	# Модель данных
 	def Init_00(self):
 		super().Init_00()
 
@@ -27,52 +30,14 @@ class C31_ContainerSQL(C30_Container):
 
 		self.disconnector = None
 
-	# УПРАВЛЕНИЕ ПОДКЛЮЧЕНИЕМ
-	def Connect(self) -> T20_StructResult:
-		""" Подключение к контейнеру """
-		return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
-		                        subcodes = {CODES_PROCESSING.SKIP})
-
-	def Disconnect(self) -> T20_StructResult:
-		""" Отключение от контейнера """
-		return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
-		                        subcodes = {CODES_PROCESSING.SKIP})
-
-	def PrepareConnect(self) -> T21_StructResult_Bool:
-		""" Подготовка подключения """
-		if   self.ConnectMode_Manual().data :
-			pass
-
-		elif self.ConnectMode_Auto().data:
-			if not self.StateConnected().data: self.Connect()
-
-		return self.StateConnected()
-
-	def PrepareDisconnect(self) -> T21_StructResult_Bool:
-		""" Подготовка отключения """
-		if   self.DisconnectMode_Manual().data    :
-			pass
-
-		elif self.DisconnectMode_Auto().data   :
-			self.Disconnect()
-
-		elif self.DisconnectMode_Timeout().data:
-			if self.disconnector is None:
-				self.disconnector = C30_ContainerSqlDisconnector(self)
-				self.disconnector.start()
-
-			self.disconnector.ResetCounter()
-
-		return self.StateConnected()
-
-	# ЗАПРОС СОСТОЯНИЯ ПОДКЛЮЧЕНИЯ
+	# Механика данных: Состояния
 	def StateConnected(self) -> T21_StructResult_Bool:
 		""" Запрос состояния подключения """
 		return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
 		                             subcodes = {CODES_PROCESSING.SKIP},
 		                             data     = True)
 
-	# УПРАВЛЕНИЕ АВТОПОДКЛЮЧЕНИЕМ
+	# Механика данных: Параметры Автоподключения
 	def ConnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool:
 		""" Режим подключения: Ручной """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
@@ -87,7 +52,7 @@ class C31_ContainerSQL(C30_Container):
 
 		elif flag        :                                     self._connect_mode  = CONNECTION_MANAGEMENT.AUTO
 
-	# УПРАВЛЕНИЕ АВТООТКЛЮЧЕНИЕМ
+	# Механика данных: Параметры Автоотключения
 	def DisconnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool:
 		""" Режим отключения: Отключено """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
@@ -116,14 +81,18 @@ class C31_ContainerSQL(C30_Container):
 
 		else            :	                                 self._disconnect_timeout = CalcBetween(3, value, 600)
 
-	# УПРАВЛЕНИЕ РЕГИСТРАЦИЕЙ КЛАССА
-	def RegisterClass(self, oci: str) -> T21_StructResult_Bool:
-		""" Регистрация класса структурного объекта """
-		return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
-		                             subcodes = {CODES_PROCESSING.SKIP},
-		                             data     = True)
+	# Механика управления: Управление подключением
+	def Connect(self) -> T20_StructResult:
+		""" Подключение к контейнеру """
+		return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
+		                        subcodes = {CODES_PROCESSING.SKIP})
 
-	# ВЫПОЛНЕНИЕ ЗАПРОСОВ
+	def Disconnect(self) -> T20_StructResult:
+		""" Отключение от контейнера """
+		return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
+		                        subcodes = {CODES_PROCESSING.SKIP})
+
+	# Механика управления: Выполнение SQL
 	def ExecSql(self, sql: str) -> T20_StructResult:
 		""" Выполнение запроса с кодом """
 		return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
@@ -158,6 +127,44 @@ class C31_ContainerSQL(C30_Container):
 		return T21_StructResult_List(code     = CODES_COMPLETION.COMPLETED,
 		                             subcodes = {CODES_PROCESSING.SKIP},
 		                             data     = [])
+
+	# Логика данных: Управление подключением
+	def PrepareConnect(self) -> T21_StructResult_Bool:
+		""" Подготовка подключения """
+		if   self.ConnectMode_Manual().data :
+			pass
+
+		elif self.ConnectMode_Auto().data:
+			if not self.StateConnected().data: self.Connect()
+
+		return self.StateConnected()
+
+	def PrepareDisconnect(self) -> T21_StructResult_Bool:
+		""" Подготовка отключения """
+		if   self.DisconnectMode_Manual().data    :
+			pass
+
+		elif self.DisconnectMode_Auto().data   :
+			self.Disconnect()
+
+		elif self.DisconnectMode_Timeout().data:
+			if self.disconnector is None:
+				self.disconnector = C30_ContainerSqlDisconnector(self)
+				self.disconnector.start()
+
+			self.disconnector.ResetCounter()
+
+		return self.StateConnected()
+
+	# Логика данных: Управление регистрацией класса
+	def RegisterClass(self, oci: str) -> T21_StructResult_Bool:
+		""" Регистрация класса структурного объекта """
+		return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
+		                             subcodes = {CODES_PROCESSING.SKIP},
+		                             data     = True)
+
+	# Логика управления
+	pass
 
 
 # 2022-11-10
