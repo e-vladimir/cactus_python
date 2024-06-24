@@ -96,18 +96,13 @@ class C30_Container(C20_MetaFrame):
 		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: D-Ячейки
-	def DeleteDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 
-	def ReadDCells(self, range_cell_cells: T21_CutRange | T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
-		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
-		                                    subcodes = {CODES_PROCESSING.SKIP})
-
-	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
-		""" Запись пакета D-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 

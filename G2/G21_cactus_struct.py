@@ -33,7 +33,7 @@ class T21_StructResult_StructCells(T20_StructResult):
 @dataclass
 class T21_StructResult_CutRange(T20_StructResult):
 	""" Результат - Диапазон CUT """
-	range: T21_CutRange | None = None
+	data: T21_CutRange | None = None
 
 
 # ТИПЫ ДАННЫХ SQL КОНТЕЙНЕРА

@@ -88,8 +88,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_exist:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA},
-			                                   data     = self._s_cells[cell.sid])
+			                                   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
 										   data = self._s_cells[cell.sid])
@@ -379,79 +378,34 @@ class C31_ContainerRAM(C30_Container):
 		return result
 
 	# Логика данных: D-Ячейки
-	# TODO: Модифицировать под ячейку | range
-	def DeleteDCells(self, range_cell_cells: T20_StructCell | list[T20_StructCell] | T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		result                             = T21_StructResult_StructCells()
 		result.code                        = CODES_COMPLETION.COMPLETED
 
 		cells_start : list[T20_StructCell] = []
-		cells_end   : list[T20_StructCell] = []
 
-		if flag_capture_delta: cells_start = self.ReadDCells(range_cell_cells).data
+		if flag_capture_delta: cells_start = self.ReadDCells(cell).data
 
-		if   type(range_cell_cells) is T20_StructCell:
-			result_check : bool = ValidateOid(range_cell_cells.oid)
-			result_check       &= ValidatePid(range_cell_cells.pid)
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
 
-			if not result_check:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = {CODES_DATA.ERROR_CHECK})
-
-			ddata               = self._d_cells.get(range_cell_cells.sid, dict())
-
-			for sid in list(ddata.keys()):
-				cell = ddata[sid]
-
-				if range_cell_cells.oci and not (cell.oci == range_cell_cells.oci): continue
-				if range_cell_cells.oid and not (cell.oid == range_cell_cells.oid): continue
-				if range_cell_cells.pid and not (cell.pid == range_cell_cells.pid): continue
-				if range_cell_cells.cvl and not (cell.cvl == range_cell_cells.cvl): continue
-				if range_cell_cells.cut and not (cell.cut == range_cell_cells.cut): continue
-
-				del ddata[sid]
-
-		elif type(range_cell_cells) is list          :
-			for cell in range_cell_cells:
-				result_check: bool = ValidateOid(cell.oid)
-				result_check      &= ValidatePid(cell.pid)
-
-				if not result_check:
-					result.subcodes.add(CODES_DATA.ERROR_CHECK)
-					continue
-
-				ddata             = self._d_cells.get(cell.sid, dict())
-
-				if cell.cut not in ddata: continue
-
-				del ddata[cell.cut]
-
-		elif type(range_cell_cells) is T21_CutRange  :
-			result_check : bool = ValidateOid(range_cell_cells.oid)
-			result_check       &= ValidatePid(range_cell_cells.pid)
-
-			if not result_check:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = {CODES_DATA.ERROR_CHECK})
-
-			ddata = self._d_cells.get(range_cell_cells.sid, dict())
-
-			cut_l = range_cell_cells.cut_l
-			cut_r = range_cell_cells.cut_r
-
-			for sid in list(ddata.keys()):
-				cell = ddata[sid]
-
-				if not CheckBetween(cut_l, cell.cut, cut_r, True): continue
-
-				del ddata[sid]
-
-		else                                         :
+		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-												subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.ERROR_TYPE})
+			                                    subcodes = {CODES_DATA.ERROR_CHECK})
+
+		ddata = self._d_cells.get(cell.sid, dict())
+
+		for sid in list(ddata.keys()):
+			cell_in_container = ddata[sid]
+
+			if cell.cut_l + cell.cut_r > 0:
+				if not CheckBetween(cell.cut_l, cell_in_container.cut, cell.cut_r, True): continue
+
+			del ddata[sid]
 
 		if flag_capture_delta:
-			cells_end   = self.ReadDCells(range_cell_cells).data
+			cells_end   = self.ReadDCells(cell).data
 			result.data = DifferenceLists(cells_start, cells_end, True)
 
 			if not result.data:
@@ -459,70 +413,29 @@ class C31_ContainerRAM(C30_Container):
 
 		return result
 
-	# TODO: Модифицировать под ячейку | range
-	def ReadDCells(self, range_cell_cells: T20_StructCell | list[T20_StructCell] | T21_CutRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		result      = T21_StructResult_StructCells()
 		result.code = CODES_COMPLETION.COMPLETED
 
-		if   type(range_cell_cells) is T20_StructCell:
-			result_check : bool = ValidateOid(range_cell_cells.oid)
-			result_check       &= ValidatePid(range_cell_cells.pid)
+		result_check : bool = ValidateOid(cell.oid)
+		result_check       &= ValidatePid(cell.pid)
 
-			if not result_check:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = {CODES_DATA.ERROR_CHECK})
-
-			ddata = self._d_cells.get(range_cell_cells.sid, dict())
-
-			for sid, cell in ddata.items():
-				if range_cell_cells.oci and not (cell.oci == range_cell_cells.oci): continue
-				if range_cell_cells.oid and not (cell.oid == range_cell_cells.oid): continue
-				if range_cell_cells.pid and not (cell.pid == range_cell_cells.pid): continue
-				if range_cell_cells.cvl and not (cell.cvl == range_cell_cells.cvl): continue
-				if range_cell_cells.cut and not (cell.cut == range_cell_cells.cut): continue
-
-				result.data.append(copy(cell))
-
-		elif type(range_cell_cells) is list          :
-			for cell in range_cell_cells:
-				result_check: bool = ValidateOid(cell.oid)
-				result_check &= ValidatePid(cell.pid)
-
-				if not result_check:
-					result.subcodes.add(CODES_DATA.ERROR_CHECK)
-					continue
-
-				ddata = self._d_cells.get(cell.sid, dict())
-
-				if cell.cut not in ddata: continue
-
-				result.data.append(copy(ddata[cell.cut]))
-
-		elif type(range_cell_cells) is T21_CutRange  :
-			result_check : bool = ValidateOid(range_cell_cells.oid)
-			result_check       &= ValidatePid(range_cell_cells.pid)
-
-			if not result_check:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = {CODES_DATA.ERROR_CHECK})
-
-			ddata = self._d_cells.get(range_cell_cells.sid, dict())
-
-			cut_l = range_cell_cells.cut_l
-			cut_r = range_cell_cells.cut_r
-
-			for sid, cell in ddata.items():
-				if not CheckBetween(cut_l, cell.cut, cut_r, True): continue
-
-				result.data.append(copy(cell))
-
-		else                                         :
+		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-												subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.ERROR_TYPE})
+			                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
-		if not result.data:
-			result.subcodes.add(CODES_DATA.NO_DATA)
+		ddata = self._d_cells.get(cell.sid, dict())
+
+		for sid, cell_in_container in ddata.items():
+			if cell.cut_l + cell.cut_r > 0:
+				if not CheckBetween(cell.cut_l, cell_in_container.cut, cell.cut_r, True): continue
+
+			result.data.append(copy(cell_in_container))
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result
 
@@ -537,7 +450,10 @@ class C31_ContainerRAM(C30_Container):
 		result.code       = result_cuts.code
 		result.subcodes   = result_cuts.subcodes
 
-		if not result_cuts.data: return result
+		if not result_cuts.data:
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+			return result
 
 		result.data       = copy(cell)
 		result.data.cut_l = min(result_cuts.data)

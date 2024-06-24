@@ -13,34 +13,19 @@ print("[== Тест Контейнера-RAM: D-Ячейки ==]")
 container = C31_ContainerRAM()
 
 cells     = list(T20_StructCell("oci", "oid", f"pid", "cvl", index) for index in range(10))
+cut_range = T21_CutRange("oci", "oid", f"pid", "cvl")
 
-result    = container.ReadDCells(cells)
+result    = container.ReadDCells(cut_range)
 check     = (result.code == CODES_COMPLETION.COMPLETED)
 check    &= (len(result.data) == 0)
 print(f"{'[+]' if check else '[ ]'} Чтение пакета D-Ячеек из пустого контейнера")
 
-result    = container.WriteDCells(cells, flag_capture_delta=True)
+for cell in cells: container.WriteDCell(cell)
+
+result    = container.ReadDCells(cut_range)
 check     = (result.code == CODES_COMPLETION.COMPLETED)
 check    &= (len(result.data) == 10)
-print(f"{'[+]' if check else '[ ]'} Запись пакета D-Ячеек")
-
-result    = container.ReadDCells(cells)
-check     = (result.code == CODES_COMPLETION.COMPLETED)
-check    &= (len(result.data) == 10)
-print(f"{'[+]' if check else '[ ]'} Чтение пакета D-Ячеек через набор полных ячеек")
-
-result    = container.ReadDCells(T20_StructCell("oci"))
-check     = (result.code == CODES_COMPLETION.INTERRUPTED)
-print(f"{'[+]' if check else '[ ]'} Отказ чтения пакета D-Ячеек через OCI")
-
-result    = container.ReadDCells(T20_StructCell("oci", "oid"))
-check     = (result.code == CODES_COMPLETION.INTERRUPTED)
-print(f"{'[+]' if check else '[ ]'} Отказ чтения пакета D-Ячеек через OCI.OID")
-
-result    = container.ReadDCells(T20_StructCell("oci", "oid", "pid"))
-check     = (result.code == CODES_COMPLETION.COMPLETED)
-check    &= (len(result.data) == 10)
-print(f"{'[+]' if check else '[ ]'} Чтение пакета D-Ячеек через OCI.OID.PID")
+print(f"{'[+]' if check else '[ ]'} Чтение пакета D-Ячеек")
 
 result    = container.ReadDCuts(T21_CutRange("oci", "oid", "pid"))
 check     = (result.code == CODES_COMPLETION.COMPLETED)
@@ -66,21 +51,7 @@ check    &= (result.data.cut_l == 5)
 check    &= (result.data.cut_r == 7)
 print(f"{'[+]' if check else '[ ]'} Чтение границ CUT D-Ячеек через OCI.OID.PID [CUT_L - CUT_R]")
 
-result    = container.DeleteDCells(T20_StructCell("oci", "oid", "pid"), flag_capture_delta=True)
+result    = container.DeleteDCells(cut_range, flag_capture_delta=True)
 check     = (result.code == CODES_COMPLETION.COMPLETED)
 check    &= (len(result.data) == 10)
-print(f"{'[+]' if check else '[ ]'} Удаление пакета D-Ячеек через OCI.OID.PID")
-
-result    = container.WriteDCells(cells)
-result    = container.DeleteDCells(T20_StructCell("oci", "oid"), flag_capture_delta=True)
-check     = (result.code == CODES_COMPLETION.INTERRUPTED)
-print(f"{'[+]' if check else '[ ]'} Отказ удаления пакета D-Ячеек через OCI.OID")
-
-result    = container.DeleteDCells(T20_StructCell("oci"), flag_capture_delta=True)
-check     = (result.code == CODES_COMPLETION.INTERRUPTED)
-print(f"{'[+]' if check else '[ ]'} Отказ удаления пакета D-Ячеек через OCI")
-
-result    = container.DeleteDCells(T21_CutRange("oci", "oid", "pid", cut_l=1, cut_r=5), flag_capture_delta=True)
-check     = (result.code == CODES_COMPLETION.COMPLETED)
-check    &= (len(result.data) == 5)
-print(f"{'[+]' if check else '[ ]'} Удаление пакета D-Ячеек через OCI.OID.PID [CUT_L - CUT_R]")
+print(f"{'[+]' if check else '[ ]'} Удаление пакета D-Ячеек")
