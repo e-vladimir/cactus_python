@@ -280,6 +280,7 @@ class C31_ContainerRAM(C30_Container):
 		""" Удаление D-Ячейки """
 		result_check : bool                  = ValidateOid(cell.oid)
 		result_check                        &= ValidatePid(cell.pid)
+		result_check                        &= bool(cell.cut)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -326,6 +327,7 @@ class C31_ContainerRAM(C30_Container):
 
 		result_check : bool = ValidateOid(cell.oid)
 		result_check       &= ValidatePid(cell.pid)
+		result_check       &= bool(cell.cut)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -377,6 +379,7 @@ class C31_ContainerRAM(C30_Container):
 		return result
 
 	# Логика данных: D-Ячейки
+	# TODO: Модифицировать под ячейку | range
 	def DeleteDCells(self, range_cell_cells: T20_StructCell | list[T20_StructCell] | T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		result                             = T21_StructResult_StructCells()
@@ -456,6 +459,7 @@ class C31_ContainerRAM(C30_Container):
 
 		return result
 
+	# TODO: Модифицировать под ячейку | range
 	def ReadDCells(self, range_cell_cells: T20_StructCell | list[T20_StructCell] | T21_CutRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		result      = T21_StructResult_StructCells()
@@ -519,39 +523,6 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result.data:
 			result.subcodes.add(CODES_DATA.NO_DATA)
-
-		return result
-
-	def WriteDCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
-		""" Запись пакета D-Ячеек """
-		result                             = T21_StructResult_StructCells()
-		result.code                        = CODES_COMPLETION.COMPLETED
-
-		cells_start : list[T20_StructCell] = []
-		cells_end   : list[T20_StructCell] = []
-
-		if flag_capture_delta: cells_start = self.ReadDCells(cells).data
-
-		for cell in cells:
-			result_check  = ValidateOci(cell.oci)
-			result_check &= ValidateOid(cell.oid)
-			result_check &= ValidatePid(cell.pid)
-
-			if not result_check:
-				result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			ddata = self._d_cells.get(cell.sid, dict())
-			ddata[cell.cut] = copy(cell)
-			self._d_cells[cell.sid] = ddata
-
-		if flag_capture_delta:
-			cells_end   = self.ReadDCells(cells).data
-			result.data = DifferenceLists(cells_start, cells_end)
-
-			if not result.data:
-				result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
