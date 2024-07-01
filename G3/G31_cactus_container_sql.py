@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 23 июн 2024
+# 01 июл 2024
 
 import threading
 import time
@@ -196,6 +196,8 @@ class C30_ContainerSqlDisconnector(threading.Thread):
 	def run(self) -> None:
 		""" Основной обработчик потока """
 		if self.container is None: return
+
+		time.sleep(0.001)
 
 		while self.Counter() < self.container.DisconnectTimeout().data:
 			time.sleep(1)
