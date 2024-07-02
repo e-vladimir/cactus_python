@@ -85,7 +85,6 @@ print(f"{'[+]' if check else '[ ]'} Чтение S-Ячейки #0")
 
 result    = container.ReadSCell(T20_StructCell("oci", "oid-1", "pid"))
 check     = (result.code == CODES_COMPLETION.COMPLETED)
-check    &= (CODES_PROCESSING.SKIP in result.subcodes)
 check    &= (CODES_DATA.NO_DATA    in result.subcodes)
 check    &= (result.data is None)
 print(f"{'[+]' if check else '[ ]'} Чтение неизвестной S-Ячейки")

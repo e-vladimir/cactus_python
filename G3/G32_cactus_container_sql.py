@@ -337,11 +337,6 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta:
 			result_cell = self.ReadSCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-
 			cell_start  = result_cell.data
 
 		sql         : str                   = f"DELETE FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}'"
@@ -360,10 +355,6 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta:
 			result_cell = self.ReadSCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
 			cell_end    = result_cell.data
 			cells       = [cell_start, cell_end]
 			cells.remove(None)
@@ -390,8 +381,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2 :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.NOT_ENOUGH})
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+			                                   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
 
@@ -466,7 +457,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
 		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
 
-		result_sql                           = self.ExecSql(sql)
+		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -478,6 +469,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if flag_capture_delta:
 			cell_end    = self.ReadSCell(cell).data
 			result.data = None if cell_end == cell_start else cell_end
+
+			if result.data is None: result.subcodes.add(CODES_PROCESSING.SKIP)
 
 		return result
 
