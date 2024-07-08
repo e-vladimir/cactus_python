@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 01 июл 2024
+# 08 июл 2024
 
 import threading
 import time
@@ -157,7 +157,7 @@ class C31_ContainerSQL(C30_Container):
 		return self.StateConnected()
 
 	# Логика данных: Управление регистрацией класса
-	def RegisterClass(self, oci: str) -> T21_StructResult_Bool:
+	def RegisterClass(self, idc: str) -> T21_StructResult_Bool:
 		""" Регистрация класса структурного объекта """
 		return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
 		                             subcodes = {CODES_PROCESSING.SKIP},

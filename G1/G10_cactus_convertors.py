@@ -3,22 +3,22 @@
 
 
 # КОНВЕРТОР ИДЕНТИФИКАТОРОВ
-def UnificationOci(oci: str) -> str:
-	""" Конвертация OCI в унифицированный вид """
-	oci = oci.replace(' ', '_', -1)
-	oci = oci.replace('-', '_', -1)
-	oci = oci.lower()
+def UnificationIdc(idc: str) -> str:
+	""" Конвертация IDC в унифицированный вид """
+	idc = idc.replace(' ', '_', -1)
+	idc = idc.replace('-', '_', -1)
+	idc = idc.lower()
 
-	return oci
+	return idc
 
 
-def OidFromSid(sid: str) -> str:
-	""" Извлечение OID из SID """
-	try   : return sid.split('.')[0]
+def IdoFromIds(ids: str) -> str:
+	""" Извлечение IDO из IDS """
+	try   : return ids.split('.')[0]
 	except: return ""
 
 
-def PidFromSid(sid: str) -> str:
-	""" Извлечение PID из SID """
-	try   : return sid.split('.')[1]
+def IdpFromIds(ids: str) -> str:
+	""" Извлечение IDP из IDS """
+	try   : return ids.split('.')[1]
 	except: return ""

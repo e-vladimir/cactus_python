@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 11 июн 2024
+# 08 июл 2024
 
 from dataclasses      import (dataclass,
                               field)
@@ -11,28 +11,28 @@ from G00_filter_codes import  FILTERS
 @dataclass
 class T20_StructCell:
 	""" Структурная ячейка """
-	oci: str = ""
+	idc: str = ""
 
-	oid: str = ""
-	pid: str = ""
+	ido: str = ""
+	idp: str = ""
 
-	cvl: str = ""
-	cut: int = 0
+	vlp: str = ""
+	vlt: int = 0
 
-	sid: str = field(init = False)
-	cid: str = field(init = False)
+	ids: str = field(init = False)
+	idf: str = field(init = False)
 
-	def __regenerate_sid_cid__(self):
-		self.__dict__["sid"] = f"{self.oid}.{self.pid}"
-		self.__dict__["cid"] = f"{self.oci}.{self.__dict__.get('sid', '')}"
+	def __regenerate_ids_idf__(self):
+		self.__dict__["ids"] = f"{self.ido}.{self.idp}"
+		self.__dict__["idf"] = f"{self.idc}.{self.__dict__.get('ids', '')}"
 
 	def __setattr__(self, key, value):
 		super().__setattr__(key, value)
 
-		if   key == "cvl": return
-		elif key == "cut": return
+		if   key == "vlp": return
+		elif key == "vlt": return
 
-		self.__regenerate_sid_cid__()
+		self.__regenerate_ids_idf__()
 
 
 # ФИЛЬТРЫ

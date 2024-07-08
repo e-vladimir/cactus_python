@@ -1,5 +1,5 @@
 # КАТАЛОГ: КАКТУС
-# 21 июн 2024
+# 08 июл 2024
 
 import enum
 
@@ -19,13 +19,14 @@ class CONTAINERS(enum.Enum):
 
 # ИДЕНТИФИКАТОРЫ СТРУКТУРЫ ДАННЫХ
 class CACTUS_STRUCT_DATA(enum.Enum):
-	OCI = (0, "oci", "_oci")
-	OID = (1, "oid", "_oid")
-	PID = (2, "pid", "_pid")
-	SID = (3, "sid", "_sid")
-	CID = (4, "cid", "_cid")
-	CVL = (5, "cvl", "_cvl")
-	CUT = (6, "cut", "_cut")
+	IDC = (0, "idc", "_idc")  # Идентификатор класса объектов
+	IDO = (1, "ido", "_ido")  # Идентификатор объекта
+	IDP = (2, "idp", "_idp")  # Идентификатор параметра объекта
+	VLP = (5, "vlp", "_vlp")  # Значение параметра объекта
+	VLT = (6, "vlt", "_vlt")  # Отметка времени актуальности
+
+	IDF = (4, "idf", "_idf")  # Идентификатор ячейки (полный)
+	IDS = (3, "ids", "_ids")  # Идентификатор ячейки (сокращённый)
 
 	def __init__(self, code: int, name_base: str, name_sql: str):
 		self.code      = code

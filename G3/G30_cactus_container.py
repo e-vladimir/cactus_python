@@ -1,5 +1,5 @@
 # КАКТУС: МЕТА-КОНТЕЙНЕР
-# 23 июн 2024
+# 08 июн 2024
 
 from G00_cactus_codes      import  CONTAINERS
 from G00_status_codes      import *
@@ -53,13 +53,13 @@ class C30_Container(C20_MetaFrame):
 		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 		                                   subcodes = {CODES_PROCESSING.SKIP})
 
-	def WriteSCell(self, cell: T20_StructCell, flag_ignore: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
 		return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: S-Ячейки
-	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_transaction_mode: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
@@ -69,12 +69,12 @@ class C30_Container(C20_MetaFrame):
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 
-	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def SyncSCells(self, cells: list[T20_StructCell], flag_transaction_mode: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 
-	def WriteSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def WriteSCells(self, cells: list[T20_StructCell], flag_transaction_mode: bool = False, flag_skip: bool = False,  flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
@@ -96,24 +96,29 @@ class C30_Container(C20_MetaFrame):
 		                                   subcodes = {CODES_PROCESSING.SKIP})
 
 	# Логика данных: D-Ячейки
-	def DeleteDCells(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell: T21_VltRange, flag_transaction_mode: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 
-	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_VltRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
 		                                    subcodes = {CODES_PROCESSING.SKIP})
 
-	# Логика данных: Диапазон CUT
-	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
+	def WriteDCells(self, cell: T21_VltRange, flag_transaction_mode: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Запись пакета D-Ячеек """
+		return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
+		                                    subcodes = {CODES_PROCESSING.SKIP})
+
+	# Логика данных: Диапазон VLT
+	def ReadDVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
 		""" Запрос границ cUT D-Ячейки """
-		return T21_StructResult_CutRange(code     = CODES_COMPLETION.COMPLETED,
+		return T21_StructResult_VltRange(code     = CODES_COMPLETION.COMPLETED,
 		                                 subcodes = {CODES_PROCESSING.SKIP})
 
-	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
-		""" Запрос списка CUT """
+	def ReadDVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
+		""" Запрос списка VLT """
 		return T21_StructResult_List(code     = CODES_COMPLETION.COMPLETED,
 		                             subcodes = {CODES_PROCESSING.SKIP})
 

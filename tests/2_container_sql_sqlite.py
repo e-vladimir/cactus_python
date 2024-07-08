@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL: SQLITE
-# 01 июл 2024
+# 08 июл 2024
 
 import time
 
@@ -49,9 +49,3 @@ result    = container.StateConnected()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после авто-отключения")
-
-container.ConnectMode_Auto(True)
-
-result    = container.RegisterClass("oci")
-check     = (result.code        == CODES_COMPLETION.COMPLETED)
-print(f"{'[+]' if check else '[ ]'} Регистрация класса OCI")

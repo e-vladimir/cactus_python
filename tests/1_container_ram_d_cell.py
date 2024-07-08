@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
-# 18 июн 2024
+# 08 июл 2024
 
 from G00_status_codes         import *
 
@@ -11,7 +11,7 @@ print("[== Тест Контейнера-RAM: D-Ячейка ==]")
 
 container = C31_ContainerRAM()
 
-cell      = T20_StructCell("oci", "oid", "pid", "cvl", 100)
+cell      = T20_StructCell("idc", "ido", "idp", "vlp", 100)
 
 result    = container.ReadDCell(cell)
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
@@ -24,7 +24,7 @@ check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= (result.data        == cell)
 print(f"{'[+]' if check else '[ ]'} Запись D-Ячейки #100")
 
-cell.cut = 101
+cell.vlt = 101
 
 result    = container.WriteDCell(cell, flag_capture_delta=True)
 check     = (result.code        == CODES_COMPLETION.COMPLETED)

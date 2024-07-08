@@ -19,21 +19,21 @@ from G32_cactus_container_sql         import *
 class C30_FilterLinear1D(C20_MetaFrame):
 	""" Линейный 1D-фильтр для структурного объекта """
 
-	def __init__(self, oci: str):
+	def __init__(self, idc: str):
 		super().__init__()
 
-		self._oci = oci
+		self._idc = idc
 
 	def Init_00(self):
 		super().Init_00()
 
-		self._oci             : str                           = ""
+		self._idc             : str                           = ""
 		self._data            : list[T20_StructCell]          = []
-		self._filters_pid_cvl : dict[str, list[T20_FilterD1]] = dict()
+		self._filters_idp_vlp : dict[str, list[T20_FilterD1]] = dict()
 
 	# УПРАВЛЕНИЕ ФИЛЬТРАЦИЕЙ
-	def _AppendFilterPidCvl(self, filter_type: FILTERS, pid: str, data: any, flag_invert: bool, flag_include: bool) -> T20_StructResult:
-		""" Добавление фильтра PID-CVL """
+	def _AppendFilterIdpVlp(self, filter_type: FILTERS, idp: str, data: any, flag_invert: bool, flag_include: bool) -> T20_StructResult:
+		""" Добавление фильтра IDP-VLP """
 		try   :
 			value  : str       = ""
 			values : list[str] = []
@@ -46,115 +46,115 @@ class C30_FilterLinear1D(C20_MetaFrame):
 			                                  filter_type   = filter_type,
 			                                  filter_value  = value,
 			                                  filter_values = values)
-			filters            = self._filters_pid_cvl.get(pid, [])
+			filters            = self._filters_idp_vlp.get(idp, [])
 			filters.append(filter_item)
-			self._filters_pid_cvl[pid] = filters
+			self._filters_idp_vlp[idp] = filters
 
 		except: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
 		                                subcodes = [CODES_DATA.ERROR_CONVERT])
 
 		return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-	def FilterPidCvlByEqual(self, pid: str, value: any, flag_invert: bool = False) -> T20_StructResult:
-		""" Фильтрация PID-CVL: Значение равно value """
-		return self._AppendFilterPidCvl(filter_type  = FILTERS.EQUAL,
-										pid          = pid,
+	def FilterIdpVlpByEqual(self, idp: str, value: any, flag_invert: bool = False) -> T20_StructResult:
+		""" Фильтрация IDP-VLP: Значение равно value """
+		return self._AppendFilterIdpVlp(filter_type  = FILTERS.EQUAL,
+										idp          = idp,
 										data         = value,
 										flag_invert  = flag_invert,
 										flag_include = True)
 
-	def FilterPidCvlByMore(self, pid: str, value: int | float, flag_invert: bool = False, flag_include: bool = False) -> T20_StructResult:
-		""" Фильтрация PID-CVL: Значение больше чем value """
-		return self._AppendFilterPidCvl(filter_type  = FILTERS.MORE,
-										pid          = pid,
+	def FilterIdpVlpByMore(self, idp: str, value: int | float, flag_invert: bool = False, flag_include: bool = False) -> T20_StructResult:
+		""" Фильтрация IDP-VLP: Значение больше чем value """
+		return self._AppendFilterIdpVlp(filter_type  = FILTERS.MORE,
+										idp          = idp,
 										data         = value,
 										flag_invert  = flag_invert,
 										flag_include = flag_include)
 
-	def FilterPidCvlByLess(self, pid: str, value: int | float, flag_invert: bool = False, flag_include: bool = False) -> T20_StructResult:
-		""" Фильтрация PID-CVL: Значение меньше чем value """
-		return self._AppendFilterPidCvl(filter_type  = FILTERS.LESS,
-										pid          = pid,
+	def FilterIdpVlpByLess(self, idp: str, value: int | float, flag_invert: bool = False, flag_include: bool = False) -> T20_StructResult:
+		""" Фильтрация IDP-VLP: Значение меньше чем value """
+		return self._AppendFilterIdpVlp(filter_type  = FILTERS.LESS,
+										idp          = idp,
 										data         = value,
 										flag_invert  = flag_invert,
 										flag_include = flag_include)
 
-	def FilterPidCvlByInclude(self, pid: str, value: str | int | float, flag_invert: bool = False) -> T20_StructResult:
-		""" Фильтрация PID-CVL: Значение включает в себя value """
-		return self._AppendFilterPidCvl(filter_type  = FILTERS.INCLUDE,
-										pid          = pid,
+	def FilterIdpVlpByInclude(self, idp: str, value: str | int | float, flag_invert: bool = False) -> T20_StructResult:
+		""" Фильтрация IDP-VLP: Значение включает в себя value """
+		return self._AppendFilterIdpVlp(filter_type  = FILTERS.INCLUDE,
+										idp          = idp,
 										data         = value,
 										flag_invert  = flag_invert,
 										flag_include = True)
 
-	def FilterPidCvlByIn(self, pid: str, values: list[str] | list[int] | list[float], flag_invert: bool = False) -> T20_StructResult:
-		""" Фильтрация PID-CVL: Value включает в себя значение """
-		return self._AppendFilterPidCvl(filter_type  = FILTERS.IN,
-										pid          = pid,
+	def FilterIdpVlpByIn(self, idp: str, values: list[str] | list[int] | list[float], flag_invert: bool = False) -> T20_StructResult:
+		""" Фильтрация IDP-VLP: Value включает в себя значение """
+		return self._AppendFilterIdpVlp(filter_type  = FILTERS.IN,
+										idp          = idp,
 										data         = values,
 										flag_invert  = flag_invert,
 										flag_include = True)
 
-	def FilterPidCvlByBetween(self, pid: str, value_l : int | float, value_r: int | float, flag_invert: bool = False, flag_include: bool = False) -> T20_StructResult:
-		""" Фильтрация PID-CVL: Значение в пределах value """
-		return self._AppendFilterPidCvl(filter_type  = FILTERS.BETWEEN,
-										pid          = pid,
+	def FilterIdpVlpByBetween(self, idp: str, value_l : int | float, value_r: int | float, flag_invert: bool = False, flag_include: bool = False) -> T20_StructResult:
+		""" Фильтрация IDP-VLP: Значение в пределах value """
+		return self._AppendFilterIdpVlp(filter_type  = FILTERS.BETWEEN,
+										idp          = idp,
 										data         = [value_l, value_r],
 										flag_invert  = flag_invert,
 										flag_include = flag_include)
 
-	def ResetFiltersPidCvl(self, pid: str = None) -> T20_StructResult:
+	def ResetFiltersIdpVlp(self, idp: str = None) -> T20_StructResult:
 		""" Сброс фильтрации """
 
-		if pid is None:
-			self._filters_pid_cvl.clear()
+		if idp is None:
+			self._filters_idp_vlp.clear()
 			return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-		elif pid in self._filters_pid_cvl:
-			del self._filters_pid_cvl[pid]
+		elif idp in self._filters_idp_vlp:
+			del self._filters_idp_vlp[idp]
 			return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
 		return T20_StructResult(code=CODES_COMPLETION.COMPLETED, subcodes=[CODES_PROCESSING.SKIP])
 
 	# ЗАХВАТ ДАННЫХ
-	def _ApplyOci(self, cell: T20_StructCell) -> bool:
-		""" Применение фильтрации по Oci """
-		return cell.oci == self._oci
+	def _ApplyIdc(self, cell: T20_StructCell) -> bool:
+		""" Применение фильтрации по Idc """
+		return cell.idc == self._idc
 
-	def _ApplyFilterPidCvl(self, cvl: str, filter_pid_cvl: T20_FilterD1) -> bool:
-		""" Применение фильтра PID-CVL """
+	def _ApplyFilterIdpVlp(self, vlp: str, filter_idp_vlp: T20_FilterD1) -> bool:
+		""" Применение фильтра IDP-VLP """
 		flag_success: bool = False
 
 		try:
-			if   filter_pid_cvl.filter_type == FILTERS.EQUAL   : flag_success = cvl == filter_pid_cvl.filter_value
+			if   filter_idp_vlp.filter_type == FILTERS.EQUAL   : flag_success = vlp == filter_idp_vlp.filter_value
 
-			elif filter_pid_cvl.filter_type == FILTERS.MORE    :
-				if filter_pid_cvl.flag_include:	                flag_success = StringToFloat(cvl) >= StringToFloat(filter_pid_cvl.filter_value)
-				else                          :                 flag_success = StringToFloat(cvl) >  StringToFloat(filter_pid_cvl.filter_value)
+			elif filter_idp_vlp.filter_type == FILTERS.MORE    :
+				if filter_idp_vlp.flag_include:	                flag_success = StringToFloat(vlp) >= StringToFloat(filter_idp_vlp.filter_value)
+				else                          :                 flag_success = StringToFloat(vlp) >  StringToFloat(filter_idp_vlp.filter_value)
 
-			elif filter_pid_cvl.filter_type == FILTERS.LESS    :
-				if filter_pid_cvl.flag_include:	                flag_success = StringToFloat(cvl) <= StringToFloat(filter_pid_cvl.filter_value)
-				else                          :                 flag_success = StringToFloat(cvl) <  StringToFloat(filter_pid_cvl.filter_value)
+			elif filter_idp_vlp.filter_type == FILTERS.LESS    :
+				if filter_idp_vlp.flag_include:	                flag_success = StringToFloat(vlp) <= StringToFloat(filter_idp_vlp.filter_value)
+				else                          :                 flag_success = StringToFloat(vlp) <  StringToFloat(filter_idp_vlp.filter_value)
 
-			elif filter_pid_cvl.filter_type == FILTERS.INCLUDE : flag_success = filter_pid_cvl.filter_value in cvl
+			elif filter_idp_vlp.filter_type == FILTERS.INCLUDE : flag_success = filter_idp_vlp.filter_value in vlp
 
-			elif filter_pid_cvl.filter_type == FILTERS.IN      : flag_success = cvl in filter_pid_cvl.filter_values
+			elif filter_idp_vlp.filter_type == FILTERS.IN      : flag_success = vlp in filter_idp_vlp.filter_values
 
-			elif filter_pid_cvl.filter_type == FILTERS.BETWEEN : flag_success = CheckBetween(StringToFloat(filter_pid_cvl.filter_values[0]), StringToFloat(cvl), StringToFloat(filter_pid_cvl.filter_values[1]), flag_include=filter_pid_cvl.flag_include)
+			elif filter_idp_vlp.filter_type == FILTERS.BETWEEN : flag_success = CheckBetween(StringToFloat(filter_idp_vlp.filter_values[0]), StringToFloat(vlp), StringToFloat(filter_idp_vlp.filter_values[1]), flag_include=filter_idp_vlp.flag_include)
 
 		except: return False
 
-		return flag_success ^ filter_pid_cvl.flag_invert
+		return flag_success ^ filter_idp_vlp.flag_invert
 
-	def _ApplyFiltersPidCvl(self, cell) -> bool:
-		""" Применение фильтрации по PID-CVL """
-		if not self._filters_pid_cvl                                : return True
+	def _ApplyFiltersIdpVlp(self, cell) -> bool:
+		""" Применение фильтрации по IDP-VLP """
+		if not self._filters_idp_vlp                                : return True
 
-		filters_pid_cvl = self._filters_pid_cvl.get(cell.pid, [])
-		if not filters_pid_cvl                                      : return False
+		filters_idp_vlp = self._filters_idp_vlp.get(cell.idp, [])
+		if not filters_idp_vlp                                      : return False
 
-		for filter_pid_cvl in filters_pid_cvl:
-			if not self._ApplyFilterPidCvl(cell.cvl, filter_pid_cvl): return False
+		for filter_idp_vlp in filters_idp_vlp:
+			if not self._ApplyFilterIdpVlp(cell.vlp, filter_idp_vlp): return False
 
 		return True
 
@@ -162,49 +162,49 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных из контейнера RAM """
 		self._data.clear()
 
-		oids : set[str] = set()
+		idos : set[str] = set()
 
 		for cell in container._s_cells.values():
-			if not self._ApplyOci(cell)          : continue
-			if not self._ApplyFiltersPidCvl(cell): continue
+			if not self._ApplyIdc(cell)          : continue
+			if not self._ApplyFiltersIdpVlp(cell): continue
 
-			oids.add(cell.oid)
+			idos.add(cell.ido)
 
-		if not oids: return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
+		if not idos: return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
 		                                     subcodes = [CODES_DATA.NO_DATA])
 
-		self._data = list(filter(lambda cell: cell.oid in oids, container._s_cells.values()))
+		self._data = list(filter(lambda cell: cell.ido in idos, container._s_cells.values()))
 
 		return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-	def _TranslateFilterPidCvlToSqlite(self, pid: str, filter_pid_cvl: T20_FilterD1) -> str:
+	def _TranslateFilterIdpVlpToSqlite(self, idp: str, filter_idp_vlp: T20_FilterD1) -> str:
 		""" Трансляция фильтра в SQLite диалект """
-		sql : str = f"({CACTUS_STRUCT_ID.SID.name_sql} LIKE '%.{pid}') AND "
+		sql : str = f"({CACTUS_STRUCT_ID.IDS.name_sql} LIKE '%.{idp}') AND "
 
-		if   filter_pid_cvl.filter_type == FILTERS.EQUAL   : sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} = '{filter_pid_cvl.filter_value}')"
+		if   filter_idp_vlp.filter_type == FILTERS.EQUAL   : sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} = '{filter_idp_vlp.filter_value}')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.MORE    :
-			if filter_pid_cvl.flag_include:                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} >= '{filter_pid_cvl.filter_value}')"
-			else                          :                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} >  '{filter_pid_cvl.filter_value}')"
+		elif filter_idp_vlp.filter_type == FILTERS.MORE    :
+			if filter_idp_vlp.flag_include:                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} >= '{filter_idp_vlp.filter_value}')"
+			else                          :                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} >  '{filter_idp_vlp.filter_value}')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.LESS    :
-			if filter_pid_cvl.flag_include:                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} <= '{filter_pid_cvl.filter_value}')"
-			else                          :                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} <  '{filter_pid_cvl.filter_value}')"
+		elif filter_idp_vlp.filter_type == FILTERS.LESS    :
+			if filter_idp_vlp.flag_include:                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} <= '{filter_idp_vlp.filter_value}')"
+			else                          :                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} <  '{filter_idp_vlp.filter_value}')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.INCLUDE : sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} LIKE '%{filter_pid_cvl.filter_value}%')"
+		elif filter_idp_vlp.filter_type == FILTERS.INCLUDE : sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} LIKE '%{filter_idp_vlp.filter_value}%')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.IN      :
-			values : list[str] = list(map("'{}'".format, filter_pid_cvl.filter_values))
-			sql               += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} IN ({', '.join(values)}))"
+		elif filter_idp_vlp.filter_type == FILTERS.IN      :
+			values : list[str] = list(map("'{}'".format, filter_idp_vlp.filter_values))
+			sql               += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} IN ({', '.join(values)}))"
 
-		elif filter_pid_cvl.filter_type == FILTERS.BETWEEN :
-			value_l : str = filter_pid_cvl.filter_values[0]
-			value_r : str = filter_pid_cvl.filter_values[1]
+		elif filter_idp_vlp.filter_type == FILTERS.BETWEEN :
+			value_l : str = filter_idp_vlp.filter_values[0]
+			value_r : str = filter_idp_vlp.filter_values[1]
 
-			sql          += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}"
+			sql          += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}"
 
-			if filter_pid_cvl.flag_include: sql += f"(({CACTUS_STRUCT_ID.CVL.name_sql} >= {value_l}) AND ({CACTUS_STRUCT_ID.CVL.name_sql} <= {value_r}))"
-			else                          : sql += f"(({CACTUS_STRUCT_ID.CVL.name_sql} > {value_l}) AND ({CACTUS_STRUCT_ID.CVL.name_sql} < {value_r}))"
+			if filter_idp_vlp.flag_include: sql += f"(({CACTUS_STRUCT_ID.VLP.name_sql} >= {value_l}) AND ({CACTUS_STRUCT_ID.VLP.name_sql} <= {value_r}))"
+			else                          : sql += f"(({CACTUS_STRUCT_ID.VLP.name_sql} > {value_l}) AND ({CACTUS_STRUCT_ID.VLP.name_sql} < {value_r}))"
 
 			sql          += ")"
 
@@ -212,34 +212,34 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		return f"({sql})"
 
-	def _TranslateFilterPidCvlToPostgreSql(self, pid: str, filter_pid_cvl: T20_FilterD1) -> str:
+	def _TranslateFilterIdpVlpToPostgreSql(self, idp: str, filter_idp_vlp: T20_FilterD1) -> str:
 		""" Трансляция фильтра в SQLite диалект """
-		sql : str = f"({CACTUS_STRUCT_ID.SID.name_sql} LIKE '%.{pid}') AND "
+		sql : str = f"({CACTUS_STRUCT_ID.IDS.name_sql} LIKE '%.{idp}') AND "
 
-		if   filter_pid_cvl.filter_type == FILTERS.EQUAL   : sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} = '{filter_pid_cvl.filter_value}')"
+		if   filter_idp_vlp.filter_type == FILTERS.EQUAL   : sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} = '{filter_idp_vlp.filter_value}')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.MORE    :
-			if filter_pid_cvl.flag_include:                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} >= '{filter_pid_cvl.filter_value}')"
-			else                          :                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} >  '{filter_pid_cvl.filter_value}')"
+		elif filter_idp_vlp.filter_type == FILTERS.MORE    :
+			if filter_idp_vlp.flag_include:                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} >= '{filter_idp_vlp.filter_value}')"
+			else                          :                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} >  '{filter_idp_vlp.filter_value}')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.LESS    :
-			if filter_pid_cvl.flag_include:                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} <= '{filter_pid_cvl.filter_value}')"
-			else                          :                 sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} <  '{filter_pid_cvl.filter_value}')"
+		elif filter_idp_vlp.filter_type == FILTERS.LESS    :
+			if filter_idp_vlp.flag_include:                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} <= '{filter_idp_vlp.filter_value}')"
+			else                          :                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} <  '{filter_idp_vlp.filter_value}')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.INCLUDE : sql += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} LIKE '%{filter_pid_cvl.filter_value}%')"
+		elif filter_idp_vlp.filter_type == FILTERS.INCLUDE : sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} LIKE '%{filter_idp_vlp.filter_value}%')"
 
-		elif filter_pid_cvl.filter_type == FILTERS.IN      :
-			values : list[str] = list(map("'{}'".format, filter_pid_cvl.filter_values))
-			sql               += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}{CACTUS_STRUCT_ID.CVL.name_sql} IN ({', '.join(values)}))"
+		elif filter_idp_vlp.filter_type == FILTERS.IN      :
+			values : list[str] = list(map("'{}'".format, filter_idp_vlp.filter_values))
+			sql               += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_ID.VLP.name_sql} IN ({', '.join(values)}))"
 
-		elif filter_pid_cvl.filter_type == FILTERS.BETWEEN :
-			value_l : str = filter_pid_cvl.filter_values[0]
-			value_r : str = filter_pid_cvl.filter_values[1]
+		elif filter_idp_vlp.filter_type == FILTERS.BETWEEN :
+			value_l : str = filter_idp_vlp.filter_values[0]
+			value_r : str = filter_idp_vlp.filter_values[1]
 
-			sql          += f"({'NOT ' if filter_pid_cvl.flag_invert else ''}"
+			sql          += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}"
 
-			if filter_pid_cvl.flag_include: sql += f"(({CACTUS_STRUCT_ID.CVL.name_sql}::float >= {value_l}) AND ({CACTUS_STRUCT_ID.CVL.name_sql}::float <= {value_r}))"
-			else                          : sql += f"(({CACTUS_STRUCT_ID.CVL.name_sql}::float > {value_l}) AND ({CACTUS_STRUCT_ID.CVL.name_sql}::float < {value_r}))"
+			if filter_idp_vlp.flag_include: sql += f"(({CACTUS_STRUCT_ID.VLP.name_sql}::float >= {value_l}) AND ({CACTUS_STRUCT_ID.VLP.name_sql}::float <= {value_r}))"
+			else                          : sql += f"(({CACTUS_STRUCT_ID.VLP.name_sql}::float > {value_l}) AND ({CACTUS_STRUCT_ID.VLP.name_sql}::float < {value_r}))"
 
 			sql          += ")"
 
@@ -251,37 +251,37 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных из контейнера SQLite """
 		self._data.clear()
 
-		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_ID.SID.name_sql} FROM {UnificationOci(self._oci)} "
+		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_ID.IDS.name_sql} FROM {UnificationIdc(self._idc)} "
 		result              = container.ExecSqlSelectVList(sql)
 		if not result.code == CODES_COMPLETION.COMPLETED : return T20_StructResult(result.code)
-		capture_oids        = set(map(OidFromSid, result.items))
+		capture_idos        = set(map(IdoFromIds, result.items))
 
 		filters : list[str] = []
 
-		for pid, filters_pid_cvl in self._filters_pid_cvl.items():
-			for filter_pid_cvl in filters_pid_cvl: filters.append(self._TranslateFilterPidCvlToSqlite(pid, filter_pid_cvl))
+		for idp, filters_idp_vlp in self._filters_idp_vlp.items():
+			for filter_idp_vlp in filters_idp_vlp: filters.append(self._TranslateFilterIdpVlpToSqlite(idp, filter_idp_vlp))
 
 		for filter_item in filters:
 			result       = container.ExecSqlSelectVList(sql + f" WHERE {filter_item}")
 			if not result.code == RESULT_OK  : return T20_StructResult(result.code)
-			capture_oids = capture_oids & set(map(OidFromSid, result.items))
+			capture_idos = capture_idos & set(map(IdoFromIds, result.items))
 
-		oids                = list(map("'{}'".format, capture_oids))
-		sql                 = f"SELECT {CACTUS_STRUCT_ID.SID.name_sql}, {CACTUS_STRUCT_ID.CVL.name_sql}, {CACTUS_STRUCT_ID.CUT.name_sql} from {UnificationOci(self._oci)} WHERE (substr({CACTUS_STRUCT_ID.SID.name_sql}, 1, instr({CACTUS_STRUCT_ID.SID.name_sql}, '.') - 1) IN ({', '.join(oids)}))"
+		idos                = list(map("'{}'".format, capture_idos))
+		sql                 = f"SELECT {CACTUS_STRUCT_ID.IDS.name_sql}, {CACTUS_STRUCT_ID.VLP.name_sql}, {CACTUS_STRUCT_ID.VLT.name_sql} from {UnificationIdc(self._idc)} WHERE (substr({CACTUS_STRUCT_ID.IDS.name_sql}, 1, instr({CACTUS_STRUCT_ID.IDS.name_sql}, '.') - 1) IN ({', '.join(idos)}))"
 
 		result_cells        = container.ExecSqlSelectMatrix(sql)
 		if not result_cells.code == RESULT_OK: return T20_StructResult(result_cells.code)
 
 		for raw_data in result_cells.items:
 			try:
-				sid     = raw_data[0]
-				oid_pid = sid.split('.')
-				oid     = oid_pid[0]
-				pid     = oid_pid[1]
-				cvl     = raw_data[1]
-				cut     = int(raw_data[2])
+				ids     = raw_data[0]
+				ido_idp = ids.split('.')
+				ido     = ido_idp[0]
+				idp     = ido_idp[1]
+				vlp     = raw_data[1]
+				vlt     = int(raw_data[2])
 
-				self._data.append(T20_StructCell(oci=self._oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+				self._data.append(T20_StructCell(idc=self._idc, ido=ido, idp=idp, vlp=vlp, vlt=vlt))
 			except: continue
 
 		if not self._data                   : return T20_StructResult(RESULT_WARNING_NO_DATA)
@@ -292,39 +292,39 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных из контейнера PostgreSQL """
 		self._data.clear()
 
-		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_ID.SID.name_sql} FROM \"{UnificationOci(self._oci)}\" "
+		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_ID.IDS.name_sql} FROM \"{UnificationIdc(self._idc)}\" "
 
 		result              = container.ExecSqlSelectVList(sql)
 		if not result.code == RESULT_OK      : return T20_StructResult(result.code)
 
-		capture_oids        = set(map(OidFromSid, result.items))
+		capture_idos        = set(map(IdoFromIds, result.items))
 		filters : list[str] = []
 
-		for pid, filters_pid_cvl in self._filters_pid_cvl.items():
-			for filter_pid_cvl in filters_pid_cvl: filters.append(self._TranslateFilterPidCvlToPostgreSql(pid, filter_pid_cvl))
+		for idp, filters_idp_vlp in self._filters_idp_vlp.items():
+			for filter_idp_vlp in filters_idp_vlp: filters.append(self._TranslateFilterIdpVlpToPostgreSql(idp, filter_idp_vlp))
 
 		for filter_item in filters:
 			result       = container.ExecSqlSelectVList(sql + f" WHERE {filter_item}")
 			if not result.code == RESULT_OK  : return T20_StructResult(result.code)
 
-			capture_oids = capture_oids & set(map(OidFromSid, result.items))
+			capture_idos = capture_idos & set(map(IdoFromIds, result.items))
 
-		oids                = list(map("'{}'".format, capture_oids))
-		sql                 = f"SELECT {CACTUS_STRUCT_ID.SID.name_sql}, {CACTUS_STRUCT_ID.CVL.name_sql}, {CACTUS_STRUCT_ID.CUT.name_sql} from \"{UnificationOci(self._oci)}\" WHERE (split_part({CACTUS_STRUCT_ID.SID.name_sql}, '.', 1) IN ({', '.join(oids)}))"
+		idos                = list(map("'{}'".format, capture_idos))
+		sql                 = f"SELECT {CACTUS_STRUCT_ID.IDS.name_sql}, {CACTUS_STRUCT_ID.VLP.name_sql}, {CACTUS_STRUCT_ID.VLT.name_sql} from \"{UnificationIdc(self._idc)}\" WHERE (split_part({CACTUS_STRUCT_ID.IDS.name_sql}, '.', 1) IN ({', '.join(idos)}))"
 
 		result_cells        = container.ExecSqlSelectMatrix(sql)
 		if not result_cells.code == RESULT_OK: return T20_StructResult(result_cells.code)
 
 		for raw_data in result_cells.items:
 			try:
-				sid     = raw_data[0]
-				oid_pid = sid.split('.')
-				oid     = oid_pid[0]
-				pid     = oid_pid[1]
-				cvl     = raw_data[1]
-				cut     = int(raw_data[2])
+				ids     = raw_data[0]
+				ido_idp = ids.split('.')
+				ido     = ido_idp[0]
+				idp     = ido_idp[1]
+				vlp     = raw_data[1]
+				vlt     = int(raw_data[2])
 
-				self._data.append(T20_StructCell(oci=self._oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+				self._data.append(T20_StructCell(idc=self._idc, ido=ido, idp=idp, vlp=vlp, vlt=vlt))
 			except: continue
 
 		if not self._data                    : return T20_StructResult(RESULT_WARNING_NO_DATA)
@@ -333,7 +333,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 	def Capture(self, container_name: str) -> T20_StructResult:
 		""" Захват данных """
-		if not self._oci                      : return T21_StructResult_List(RESULT_ERROR_DATA_NOT_ENOUGH)
+		if not self._idc                      : return T21_StructResult_List(RESULT_ERROR_DATA_NOT_ENOUGH)
 
 		container = controller_containers.Container(container_name)
 		if container is None                  : return T21_StructResult_List(RESULT_ERROR_ACCESS_CONNECTION)
@@ -344,35 +344,35 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		return T20_StructResult(RESULT_ERROR_EXEC)
 
-	# ЗАПРОС OID
-	def Oids(self, sort_by_pid: str = None) -> T21_StructResult_List:
-		""" Запрос OID """
-		oids   : set[str]             = set(map(lambda cell: cell.oid, self._data))
-		if not oids: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
+	# ЗАПРОС IDO
+	def Idos(self, sort_by_idp: str = None) -> T21_StructResult_List:
+		""" Запрос IDO """
+		idos   : set[str]             = set(map(lambda cell: cell.ido, self._data))
+		if not idos: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
-		if sort_by_pid is None: return T21_StructResult_List(RESULT_OK, list(oids))
+		if sort_by_idp is None: return T21_StructResult_List(RESULT_OK, list(idos))
 
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == sort_by_pid, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.oid, cell.cvl], data))
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == sort_by_idp, self._data))
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
 		values                        = DistinctAndSortList2D(values, 1, True, True)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
 		return T21_StructResult_List(RESULT_OK, list(map(lambda item: item[0], values)))
 
 	# ЗАПРОС ДАННЫХ
-	def ToStrings(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос CVL для PID списком строк """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list[str]            = list(map(lambda cell: cell.cvl, data))
+	def ToStrings(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос VLP для IDP списком строк """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[str]            = list(map(lambda cell: cell.vlp, data))
 		values                        = DistinctAndSortList1D(values, flag_distinct=flag_distinct, flag_sort=flag_sort)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToIntegers(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос CVL для PID списком целых чисел """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list                 = list(map(lambda cell: cell.cvl, data))
+	def ToIntegers(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос VLP для IDP списком целых чисел """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list                 = list(map(lambda cell: cell.vlp, data))
 
 		try   : values = StringsToIntegers(values)
 		except: return T21_StructResult_List(RESULT_ERROR_CONVERT)
@@ -382,10 +382,10 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToFloats(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос CVL для PID списком дробных чисел """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list                 = list(map(lambda cell: cell.cvl, data))
+	def ToFloats(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос VLP для IDP списком дробных чисел """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list                 = list(map(lambda cell: cell.vlp, data))
 
 		try   : values = StringsToFloats(values)
 		except: return T21_StructResult_List(RESULT_ERROR_CONVERT)
@@ -395,10 +395,10 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToBooleans(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос CVL для PID списком логических значений """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list                 = list(map(lambda cell: cell.cvl, data))
+	def ToBooleans(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос VLP для IDP списком логических значений """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list                 = list(map(lambda cell: cell.vlp, data))
 
 		try   : values = StringsToBooleans(values)
 		except: return T21_StructResult_List(RESULT_ERROR_CONVERT)
@@ -408,10 +408,10 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToDateTimes(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос CVL для PID списком отметок даты-времени """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list                 = list(map(lambda cell: cell.cvl, data))
+	def ToDateTimes(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос VLP для IDP списком отметок даты-времени """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list                 = list(map(lambda cell: cell.vlp, data))
 
 		try   : values = StringsToDatetimes(values)
 		except: return T21_StructResult_List(RESULT_ERROR_CONVERT)
@@ -426,46 +426,46 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 	""" Линейный 2D-Фильтр для структурного объекта """
 
 	# Запрос данных
-	def ToStringsWithOids(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос OID-CLV для PID со списком строк """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.oid, cell.cvl], data))
+	def ToStringsWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком строк """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
 		values                        = DistinctAndSortList2D(values, 1, flag_distinct=flag_distinct, flag_sort=flag_sort)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToIntegersWithOids(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос OID-CLV для PID со списком целых чисел """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.oid, StringToInteger(cell.cvl)], data))
+	def ToIntegersWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком целых чисел """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, StringToInteger(cell.vlp)], data))
 		values                        = DistinctAndSortList2D(values, 1, flag_distinct=flag_distinct, flag_sort=flag_sort)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToFloatsWithOids(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос OID-CLV для PID со списком дробных чисел """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.oid, StringToFloat(cell.cvl)], data))
+	def ToFloatsWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком дробных чисел """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, StringToFloat(cell.vlp)], data))
 		values                        = DistinctAndSortList2D(values, 1, flag_distinct=flag_distinct, flag_sort=flag_sort)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToBooleansWithOids(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос OID-CLV для PID со списком логических значений """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.oid, StringToBoolean(cell.cvl)], data))
+	def ToBooleansWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком логических значений """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, StringToBoolean(cell.vlp)], data))
 		values                        = DistinctAndSortList2D(values, 1, flag_distinct=flag_distinct, flag_sort=flag_sort)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 
 		return T21_StructResult_List(RESULT_OK, values)
 
-	def ToDateTimesWithOids(self, pid: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос OID-CLV для PID со списком DateTime """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.pid == pid, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.oid, StringToDateTime(cell.cvl)], data))
+	def ToDateTimesWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком DateTime """
+		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, StringToDateTime(cell.vlp)], data))
 		values                        = DistinctAndSortList2D(values, 1, flag_distinct=flag_distinct, flag_sort=flag_sort)
 		if not values: return T21_StructResult_List(RESULT_WARNING_NO_DATA)
 

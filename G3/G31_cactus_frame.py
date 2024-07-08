@@ -1,5 +1,5 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТРУНОГО ПАРАМЕТРА
-# 10 июн 2024
+# 08 июл 2024
 
 from G00_cactus_codes  import *
 from G00_status_codes  import CODES_COMPLETION
@@ -13,11 +13,11 @@ from G30_cactus_frame  import C30_StructField, C30_StructFrame
 class C31_StructFieldCsRs(C30_StructField):
 	""" Структурный параметр CS-RS """
 
-	def __init__(self, struct_frame: C30_StructFrame, pid: str, default_cvl: any = None):
-		super().__init__(struct_frame, pid, default_cvl)
+	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
+		super().__init__(struct_frame, idp, default_vlp)
 
-		self.cs = C30_StructField(self.struct_frame, f"{pid}_{CS_POSTFIX}", default_cvl)
-		self.rs = C30_StructField(self.struct_frame, f"{pid}_{RS_POSTFIX}", default_cvl)
+		self.cs = C30_StructField(self.struct_frame, f"{idp}_{CS_POSTFIX}", default_vlp)
+		self.rs = C30_StructField(self.struct_frame, f"{idp}_{RS_POSTFIX}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
@@ -26,7 +26,7 @@ class C31_StructFieldCsRs(C30_StructField):
 		self.rs : C30_StructField | None = None
 
 	# УПРАВЛЕНИЕ CS ПАРАМЕТРОМ
-	def MemoryCvlFromCs(self, container_name_cs: str, container_name: str) -> T20_StructResult:
+	def MemoryVlpFromCs(self, container_name_cs: str, container_name: str) -> T20_StructResult:
 		""" Запомнить CS-значение как S-Данные """
 		result_value_cs = self.cs.ToString(container_name_cs)
 		if not result_value_cs.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code = result_value_cs.code)
@@ -36,12 +36,12 @@ class C31_StructFieldCsRs(C30_StructField):
 
 		return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-	def WriteCsCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_StructResult:
+	def WriteCsVlp(self, container_name_dst: str, vlp: str, vlt: int = 0) -> T20_StructResult:
 		""" Записать CS-значение как D-Данные """
-		return self.cs.WriteCvl(container_name_dst, cvl, cut)
+		return self.cs.WriteVlp(container_name_dst, vlp, vlt)
 
 	# УПРАВЛЕНИЕ RS ПАРАМЕТРОМ
-	def MemoryCvlFromRs(self, container_name_rs: str, container_name: str) -> T20_StructResult:
+	def MemoryVlpFromRs(self, container_name_rs: str, container_name: str) -> T20_StructResult:
 		""" Запомнить CS-значение как S-Данные """
 		result_value_rs = self.rs.ToString(container_name_rs)
 		if not result_value_rs.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(result_value_rs.code)
@@ -51,9 +51,9 @@ class C31_StructFieldCsRs(C30_StructField):
 
 		return T20_StructResult(code=CODES_COMPLETION.COMPLETED)
 
-	def WriteRsCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_StructResult:
+	def WriteRsVlp(self, container_name_dst: str, vlp: str, vlt: int = 0) -> T20_StructResult:
 		""" Записать CS-значение как D-Данные """
-		return self.rs.WriteCvl(container_name_dst, cvl, cut)
+		return self.rs.WriteVlp(container_name_dst, vlp, vlt)
 
 	# АНАЛИЗ CS\RS ЗНАЧЕНИЙ
 	def CheckEqualCsRs(self, container_name: str) -> T21_StructResult_Bool:
@@ -70,11 +70,11 @@ class C31_StructFieldCsRs(C30_StructField):
 class C31_StructFieldSrcDst(C20_MetaFrame):
 	""" Структурный параметр SRC-DST """
 
-	def __init__(self, struct_frame: C30_StructFrame, pid: str, default_cvl: any = None):
+	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__()
 
-		self.src = C30_StructField(struct_frame, f"{pid}_{SRC_POSTFIX}", default_cvl)
-		self.dst = C30_StructField(struct_frame, f"{pid}_{DST_POSTFIX}", default_cvl)
+		self.src = C30_StructField(struct_frame, f"{idp}_{SRC_POSTFIX}", default_vlp)
+		self.dst = C30_StructField(struct_frame, f"{idp}_{DST_POSTFIX}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()

@@ -1,27 +1,27 @@
 # КАКТУС: ВАЛИДАТОРЫ ДАННЫХ
-# 2022-11-19
+# 08 июл 2024
 
-def ValidateOci(oci: str) -> bool:
-	""" Валидация OCI """
-	if      not oci: return False
-	elif ' ' in oci: return False
-	elif '.' in oci: return False
-	elif '-' in oci: return False
-
-	return True
-
-
-def ValidateOid(oid: str) -> bool:
-	""" Валидация OID """
-	if      not oid: return False
-	elif '.' in oid: return False
+def ValidateIdc(idc: str) -> bool:
+	""" Валидация IDC """
+	if      not idc: return False
+	elif ' ' in idc: return False
+	elif '.' in idc: return False
+	elif '-' in idc: return False
 
 	return True
 
 
-def ValidatePid(oid: str) -> bool:
-	""" Валидация PID """
-	if      not oid: return False
-	elif '.' in oid: return False
+def ValidateIdo(ido: str) -> bool:
+	""" Валидация IDO """
+	if      not ido: return False
+	elif '.' in ido: return False
+
+	return True
+
+
+def ValidateIdp(ido: str) -> bool:
+	""" Валидация IDP """
+	if      not ido: return False
+	elif '.' in ido: return False
 
 	return True

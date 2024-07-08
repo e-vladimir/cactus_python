@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 15 июн 2024
+# 08 июл 2024
 
 import s3m
 
@@ -12,10 +12,10 @@ from   G20_struct_result import T20_StructResult
 
 # ТИПЫ ДАННЫХ СТРУКТУРНОЙ ЯЧЕЙКИ
 @dataclass
-class T21_CutRange(T20_StructCell):
-	""" Диапазон CUT """
-	cut_l: int = 0  # Левая граница диапазона (меньшее)
-	cut_r: int = 0  # Правая граница диапазона (большее)
+class T21_VltRange(T20_StructCell):
+	""" Диапазон VLT """
+	vlt_l: int = 0  # Левая граница диапазона (меньшее)
+	vlt_r: int = 0  # Правая граница диапазона (большее)
 
 
 @dataclass
@@ -31,9 +31,9 @@ class T21_StructResult_StructCells(T20_StructResult):
 
 
 @dataclass
-class T21_StructResult_CutRange(T20_StructResult):
-	""" Результат - Диапазон CUT """
-	data: T21_CutRange | None = None
+class T21_StructResult_VltRange(T20_StructResult):
+	""" Результат - Диапазон VLT """
+	data: T21_VltRange | None = None
 
 
 # ТИПЫ ДАННЫХ SQL КОНТЕЙНЕРА

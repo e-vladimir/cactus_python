@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 01 июл 2024
+# 08 июл 2024
 
 import psycopg2
 import sqlite3
@@ -81,7 +81,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		try   :
 			cursor = self.connection.cursor()
-			cursor.execute('PRAGMA journal_mode=MEMORY;')
+			cursor.exevlte('PRAGMA journal_mode=MEMORY;')
 		except:
 			pass
 
@@ -117,8 +117,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		try:
 			sql_cursor      = self.connection.cursor()
 
-			if   type(sql) is str  : sql_cursor.execute(sql + ';')
-			elif type(sql) is list : sql_cursor.executescript('\n'.join(sql))
+			if   type(sql) is str  : sql_cursor.exevlte(sql + ';')
+			elif type(sql) is list : sql_cursor.exevltescript('\n'.join(sql))
 
 			self.connection.commit()
 
@@ -283,9 +283,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		return result
 
 	# Логика данных: Управление регистрацией класса
-	def RegisterClass(self, oci: str) -> T21_StructResult_Bool:
+	def RegisterClass(self, idc: str) -> T21_StructResult_Bool:
 		""" Регистрация класса структурного объекта """
-		if not ValidateOci(oci): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
+		if not ValidateIdc(idc): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
 								                              subcodes = {CODES_DATA.ERROR_CHECK},
 								                              data     = False)
 
@@ -293,28 +293,28 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result.code = CODES_COMPLETION.COMPLETED
 		result.data = True
 
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci} ({CACTUS_STRUCT_DATA.SID.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.CVL.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.CUT.name_sql} INT NOT NULL)"
+		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci}_ ({CACTUS_STRUCT_DATA.SID.name_sql} TEXT, {CACTUS_STRUCT_DATA.CVL.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.CUT.name_sql} INT NOT NULL)"
+		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_sid_ ON {oci}_ ({CACTUS_STRUCT_DATA.SID.name_sql})"
+		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{idc}_ids_ ON {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_cut_ ON {oci}_ ({CACTUS_STRUCT_DATA.CUT.name_sql})"
+		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{idc}_vlt_ ON {idc}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -326,8 +326,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Управление S-Ячейкой
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		result_check  : bool                = ValidateOid(cell.oid)
-		result_check                       &= ValidatePid(cell.pid)
+		result_check  : bool                = ValidateIdo(cell.ido)
+		result_check                       &= ValidateIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -339,7 +339,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_cell = self.ReadSCell(cell)
 			cell_start  = result_cell.data
 
-		sql         : str                   = f"DELETE FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}'"
+		sql         : str                   = f"DELETE FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql                          = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
@@ -365,14 +365,14 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
+		result_check : bool      = ValidateIdo(cell.ido)
+		result_check            &= ValidateIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}'"
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -388,11 +388,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		try                                 :
 			result_cell     = T20_StructCell()
-			result_cell.oci = cell.oci
-			result_cell.oid = cell.oid
-			result_cell.pid = cell.pid
-			result_cell.cvl = data[0]
-			result_cell.cut = int(data[1])
+			result_cell.idc = cell.idc
+			result_cell.ido = cell.ido
+			result_cell.idp = cell.idp
+			result_cell.vlp = data[0]
+			result_cell.vlt = int(data[1])
 		except                              :
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 			                                   subcodes = {CODES_DATA.ERROR_CONVERT})
@@ -402,8 +402,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool = ValidateOid(cell.oid)
-		result_check       &= ValidatePid(cell.pid)
+		result_check : bool = ValidateIdo(cell.ido)
+		result_check       &= ValidateIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -417,7 +417,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		cell_in_container   = result_cell.data
 
 		result_write : bool = True
-		if cell_in_container is not None: result_write = (cell_in_container.cut < cell.cut)
+		if cell_in_container is not None: result_write = (cell_in_container.vlt < cell.vlt)
 
 		result = T21_StructResult_StructCell()
 		result.code = CODES_COMPLETION.COMPLETED
@@ -442,8 +442,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result_check : bool                  = ValidateOid(cell.oid)
-		result_check                        &= ValidatePid(cell.pid)
+		result_check : bool                  = ValidateIdo(cell.ido)
+		result_check                        &= ValidateIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -453,9 +453,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
-		sql          : str  = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
-		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
+		sql          : str  = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
+		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}', {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
@@ -492,18 +492,18 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cells_start  = result_cells.data
 
 		if type(cell_cells) is T20_StructCell:
-			if not ValidateOci(cell_cells.oci): return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			if not ValidateIdc(cell_cells.idc): return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 			                                                                        subcodes = {CODES_DATA.ERROR_CHECK})
 
-			sql     : str   = f"DELETE FROM {cell_cells.oci}"
+			sql     : str   = f"DELETE FROM {cell_cells.idc}"
 			filters : list[str] = []
 
-			if   cell_cells.oid and cell_cells.pid: filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} = '{cell_cells.sid}'")
-			elif cell_cells.oid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '{cell_cells.oid}.%'")
-			elif cell_cells.pid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '%.{cell_cells.oid}'")
+			if   cell_cells.ido and cell_cells.idp: filters.append(f"{CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell_cells.ids}'")
+			elif cell_cells.ido                   : filters.append(f"{CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}.%'")
+			elif cell_cells.idp                   : filters.append(f"{CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%.{cell_cells.ido}'")
 
-			if   cell_cells.cvl                   : filters.append(f"{CACTUS_STRUCT_DATA.CVL.name_sql} = '{cell_cells.cvl}'")
-			if   cell_cells.cut                   : filters.append(f"{CACTUS_STRUCT_DATA.CUT.name_sql} = '{cell_cells.cut}'")
+			if   cell_cells.vlp                   : filters.append(f"{CACTUS_STRUCT_DATA.VLP.name_sql} = '{cell_cells.vlp}'")
+			if   cell_cells.vlt                   : filters.append(f"{CACTUS_STRUCT_DATA.VLT.name_sql} = '{cell_cells.vlt}'")
 
 			if filters: sql += f" WHERE {' AND '.join(filters)}"
 			result_sql       = self.ExecSql(sql)
@@ -516,16 +516,16 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql : list[str] = []
 
 			for cell in cell_cells:
-				result_check  = ValidateOci(cell.oci)
-				result_check &= ValidateOid(cell.oid)
-				result_check &= ValidatePid(cell.pid)
+				result_check  = ValidateIdc(cell.idc)
+				result_check &= ValidateIdo(cell.ido)
+				result_check &= ValidateIdp(cell.idp)
 
 				if not result_check:
 					result.subcodes.add(CODES_PROCESSING.PARTIAL)
 					result.subcodes.add(CODES_DATA.ERROR_CHECK)
 					continue
 
-				sql.append(f"DELETE FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}';")
+				sql.append(f"DELETE FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}';")
 				self.ExecSqlSelectRowCount(sql)
 
 		else:
@@ -552,19 +552,19 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if type(cell_cells) is T20_StructCell:
 			cells   : list[T20_StructCell] = []
 
-			if not ValidateOci(cell_cells.oci)                  :
+			if not ValidateIdc(cell_cells.idc)                  :
 				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 			                                        subcodes = {CODES_DATA.ERROR_CHECK})
 
-			sql     : str                  = f"SELECT {CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell_cells.oci}"
+			sql     : str                  = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell_cells.idc}"
 			filters : list[str]            = []
 
-			if   cell_cells.oid and cell_cells.pid: filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} = '{cell_cells.oid}.{cell_cells.pid}'")
-			elif cell_cells.oid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '{cell_cells.oid}.%'")
-			elif cell_cells.pid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '%.{cell_cells.oid}'")
+			if   cell_cells.ido and cell_cells.idp: filters.append(f"{CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell_cells.ido}.{cell_cells.idp}'")
+			elif cell_cells.ido                   : filters.append(f"{CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}.%'")
+			elif cell_cells.idp                   : filters.append(f"{CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%.{cell_cells.ido}'")
 
-			if   cell_cells.cvl                   : filters.append(f"{CACTUS_STRUCT_DATA.CVL.name_sql} = '{cell_cells.cvl}'")
-			if   cell_cells.cut                   : filters.append(f"{CACTUS_STRUCT_DATA.CUT.name_sql} = '{cell_cells.cut}'")
+			if   cell_cells.vlp                   : filters.append(f"{CACTUS_STRUCT_DATA.VLP.name_sql} = '{cell_cells.vlp}'")
+			if   cell_cells.vlt                   : filters.append(f"{CACTUS_STRUCT_DATA.VLT.name_sql} = '{cell_cells.vlt}'")
 
 			if filters:	sql               += f" WHERE {' AND '.join(filters)}"
 
@@ -576,14 +576,14 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			for raw_data in result_sql.data:
 				try:
-					oid_pid = raw_data[0].split('.')
+					ido_idp = raw_data[0].split('.')
 
-					oid     = oid_pid[0]
-					pid     = oid_pid[1]
-					cvl     = raw_data[1]
-					cut     = int(raw_data[2])
+					ido     = ido_idp[0]
+					idp     = ido_idp[1]
+					vlp     = raw_data[1]
+					vlt     = int(raw_data[2])
 
-					cells.append(T20_StructCell(oci=cell_cells.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+					cells.append(T20_StructCell(idc=cell_cells.idc, ido=ido, idp=idp, vlp=vlp, vlt=vlt))
 				except:
 					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
 					result.subcodes.add(CODES_PROCESSING.PARTIAL)
@@ -601,16 +601,16 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql_selectes: list[str]                 = []
 
 			for cell in cell_cells:
-				result_check  = ValidateOci(cell.oci)
-				result_check &= ValidateOid(cell.oid)
-				result_check &= ValidatePid(cell.pid)
+				result_check  = ValidateIdc(cell.idc)
+				result_check &= ValidateIdo(cell.ido)
+				result_check &= ValidateIdp(cell.idp)
 
 				if not result_check:
 					result.subcodes.add(CODES_PROCESSING.PARTIAL)
 					result.subcodes.add(CODES_DATA.ERROR_CHECK)
 					continue
 
-				sql_selectes.append(f"SELECT '{cell.oci}' AS {CACTUS_STRUCT_DATA.OCI.name_sql}, {CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci} WHERE ({CACTUS_STRUCT_DATA.SID.name_sql} == '{cell.sid}')")
+				sql_selectes.append(f"SELECT '{cell.idc}' AS {CACTUS_STRUCT_DATA.IDC.name_sql}, {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc} WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} == '{cell.ids}')")
 
 			sql         : str                       = " UNION ALL ".join(sql_selectes)
 			result_sql                              = self.ExecSqlSelectMatrix(sql)
@@ -621,15 +621,15 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			for raw_data in result_sql.data:
 				try:
-					oci     = raw_data[0]
-					sid     = raw_data[1]
-					oid_pid = sid.split('.')
-					oid     = oid_pid[0]
-					pid     = oid_pid[1]
-					cvl     = raw_data[2]
-					cut     = int(raw_data[3])
+					idc     = raw_data[0]
+					ids     = raw_data[1]
+					ido_idp = ids.split('.')
+					ido     = ido_idp[0]
+					idp     = ido_idp[1]
+					vlp     = raw_data[2]
+					vlt     = int(raw_data[3])
 
-					cells.append(T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+					cells.append(T20_StructCell(idc=idc, ido=ido, idp=idp, vlp=vlp, vlt=vlt))
 				except:
 					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
 					result.subcodes.add(CODES_PROCESSING.PARTIAL)
@@ -662,17 +662,17 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cells_start  = result_cells.data
 
 		for cell in cells:
-			result_check = ValidateOci(cell.oci)
-			result_check &= ValidateOid(cell.oid)
-			result_check &= ValidatePid(cell.pid)
+			result_check = ValidateIdc(cell.idc)
+			result_check &= ValidateIdo(cell.ido)
+			result_check &= ValidateIdp(cell.idp)
 
 			if not result_check:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				continue
 
-			sql : str = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut} WHERE {CACTUS_STRUCT_DATA.CUT.name_sql} < {cell.cut}"
+			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {CACTUS_STRUCT_DATA.VLT.name_sql} < {cell.vlt}"
 
 			self.ExecSql(sql)
 
@@ -705,18 +705,18 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cells_start  = result_cells.data
 
 		for cell in cells:
-			result_check              = ValidateOci(cell.oci)
-			result_check             &= ValidateOid(cell.oid)
-			result_check             &= ValidatePid(cell.pid)
+			result_check              = ValidateIdc(cell.idc)
+			result_check             &= ValidateIdo(cell.ido)
+			result_check             &= ValidateIdp(cell.idp)
 
 			if not result_check:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				result.subcodes.add(CODES_DATA.ERROR_CHECK)
 				continue
 
-			sql : str          = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
-			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
+			sql : str          = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
+			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}', {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
 			self.ExecSql(sql)
 
@@ -735,10 +735,10 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Управление D-Ячейкой
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		result_check : bool                  = ValidateOid(cell.oci)
-		result_check                        &= ValidatePid(cell.oid)
-		result_check                        &= ValidatePid(cell.pid)
-		result_check                        &= bool(cell.cut)
+		result_check : bool                  = ValidateIdo(cell.idc)
+		result_check                        &= ValidateIdp(cell.ido)
+		result_check                        &= ValidateIdp(cell.idp)
+		result_check                        &= bool(cell.vlt)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -755,7 +755,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			cell_start  = result_cell.data
 
-		sql                                  = f"DELETE FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' AND {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
+		sql                                  = f"DELETE FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}' AND {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 		result_sql                          = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
@@ -789,15 +789,15 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.cut)
+		result_check : bool      = ValidateIdo(cell.ido)
+		result_check            &= ValidateIdp(cell.idp)
+		result_check            &= bool(cell.vlt)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql                      = f"SELECT {CACTUS_STRUCT_DATA.CVL.name_sql} FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' AND {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
+		sql                      = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql} FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}' AND {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -811,7 +811,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		data         : list[str] = result_sql.data
 
 		result_cell              = copy(cell)
-		result_cell.cvl          = data[0]
+		result_cell.vlp          = data[0]
 
 		result                   = T21_StructResult_StructCell()
 		result.code              = CODES_COMPLETION.COMPLETED
@@ -821,10 +821,10 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		result_check : bool                  = ValidateOid(cell.oci)
-		result_check                        &= ValidatePid(cell.oid)
-		result_check                        &= ValidatePid(cell.pid)
-		result_check                        &= bool(cell.cut)
+		result_check : bool                  = ValidateIdo(cell.idc)
+		result_check                        &= ValidateIdp(cell.ido)
+		result_check                        &= ValidateIdp(cell.idp)
+		result_check                        &= bool(cell.vlt)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -841,7 +841,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			cell_start  = result_cell.data
 
-		sql        = f"UPDATE {cell.oci}_ SET {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}' WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' AND {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
+		sql        = f"UPDATE {cell.idc}_ SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}' WHERE {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}' AND {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 		result_sql = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
@@ -874,7 +874,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		return result
 
 	# Логика данных: Управление пакетом D-Ячеек
-	def DeleteDCells(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+	def DeleteDCells(self, cell: T21_VltRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
 		result                             = T21_StructResult_StructCells()
 		result.code                        = CODES_COMPLETION.COMPLETED
@@ -890,21 +890,21 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			cells_start  = result_cells.data
 
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
+		result_check : bool      = ValidateIdo(cell.ido)
+		result_check            &= ValidateIdp(cell.idp)
+		result_check            &= bool(cell.idc)
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 			                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 		filters      : list[str] = []
-		filters.append(f"({CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}')")
+		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
 
-		if   cell.cut_l : filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l})")
-		if   cell.cut_r : filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r})")
+		if   cell.vlt_l : filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= {cell.vlt_l})")
+		if   cell.vlt_r : filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt_r})")
 
-		sql          : str       = f"DELETE FROM {cell.oci}_"
+		sql          : str       = f"DELETE FROM {cell.idc}_"
 		sql                     += f" WHERE {' AND '.join(filters)}"
 
 		result_sql               = self.ExecSql(sql)
@@ -925,26 +925,26 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return result
 
-	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
+	def ReadDCells(self, cell: T21_VltRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
 		result      = T21_StructResult_StructCells()
 		result.code = CODES_COMPLETION.COMPLETED
 
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
+		result_check : bool      = ValidateIdo(cell.ido)
+		result_check            &= ValidateIdp(cell.idp)
+		result_check            &= bool(cell.idc)
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 			                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 		filters      : list[str] = []
-		filters.append(f"({CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}')")
+		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
 
-		if cell.cut_l: filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l})")
-		if cell.cut_r: filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r})")
+		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= {cell.vlt_l})")
+		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt_r})")
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci}_ "
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ "
 		sql                     += f"WHERE " + (" AND ".join(filters))
 
 		result_sql               = self.ExecSqlSelectMatrix(sql)
@@ -955,15 +955,15 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		for raw_data in result_sql.data:
 			try:
-				sid     = raw_data[0]
-				oid_pid = sid.split('.')
+				ids     = raw_data[0]
+				ido_idp = ids.split('.')
 
-				oid     = oid_pid[0]
-				pid     = oid_pid[1]
-				cvl     = raw_data[1]
-				cut     = int(raw_data[2])
+				ido     = ido_idp[0]
+				idp     = ido_idp[1]
+				vlp     = raw_data[1]
+				vlt     = int(raw_data[2])
 
-				result.data.append(T20_StructCell(oci=cell.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
+				result.data.append(T20_StructCell(idc=cell.idc, ido=ido, idp=idp, vlp=vlp, vlt=vlt))
 			except:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				result.subcodes.add(CODES_DATA.ERROR_CONVERT)
@@ -975,50 +975,50 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		return result
 
 	# Логика данных: Выборки D-Ячеек
-	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
-		""" Запрос границ CUT D-Ячейки """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
+	def ReadDVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
+		""" Запрос границ VLT D-Ячейки """
+		result_check : bool      = ValidateIdo(cell.ido)
+		result_check            &= ValidateIdp(cell.idp)
+		result_check            &= bool(cell.idc)
 
 		if not result_check:
-			return T21_StructResult_CutRange(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
 			                                 subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql    = f"SELECT MIN({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_0, MAX({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_1 FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' "
-		if cell.cut_l: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l}) "
-		if cell.cut_r: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r}) "
+		sql    = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}) AS {CACTUS_STRUCT_DATA.VLT.name_sql}_0, MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) AS {CACTUS_STRUCT_DATA.VLT.name_sql}_1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}' "
+		if cell.vlt_l: sql += f"AND ({CACTUS_STRUCT_DATA.VLT.name_sql} >= {cell.vlt_l}) "
+		if cell.vlt_r: sql += f"AND ({CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt_r}) "
 
 		result_sql = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_CutRange(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
 			                                 subcodes = result_sql.subcodes)
 
 		try:
 			data   = result_sql.data
-			cut_l  = int(data[0])
-			cut_r  = int(data[1])
+			vlt_l  = int(data[0])
+			vlt_r  = int(data[1])
 		except:
-			return T21_StructResult_CutRange(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
 			                                 subcodes = {CODES_DATA.ERROR_CONVERT})
 
-		return T21_StructResult_CutRange(code = CODES_COMPLETION.COMPLETED,
-		                                 data = T21_CutRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
+		return T21_StructResult_VltRange(code = CODES_COMPLETION.COMPLETED,
+		                                 data = T21_VltRange(idc=cell.idc, ido=cell.ido, idp=cell.idp, vlt_l=vlt_l, vlt_r=vlt_r))
 
-	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
-		""" Запрос списка CUT """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
+	def ReadDVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
+		""" Запрос списка VLT """
+		result_check : bool      = ValidateIdo(cell.ido)
+		result_check            &= ValidateIdp(cell.idp)
+		result_check            &= bool(cell.idc)
 
 		if not result_check:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
 			                             subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' "
-		if cell.cut_l: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l}) "
-		if cell.cut_r: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r}) "
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}' "
+		if cell.vlt_l: sql += f"AND ({CACTUS_STRUCT_DATA.VLT.name_sql} >= {cell.vlt_l}) "
+		if cell.vlt_r: sql += f"AND ({CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt_r}) "
 
 		result_sql = self.ExecSqlSelectVList(sql)
 
@@ -1125,7 +1125,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		try:
 			cursor = self.connection.cursor()
-			cursor.execute('PRAGMA journal_mode=MEMORY;')
+			cursor.exevlte('PRAGMA journal_mode=MEMORY;')
 		except:
 			pass
 
@@ -1163,8 +1163,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		try:
 			sql_cursor      = self.connection.cursor()
 
-			if   type(sql) is str  : sql_cursor.execute(sql + ';')
-			elif type(sql) is list : sql_cursor.executescript('\n'.join(sql))
+			if   type(sql) is str  : sql_cursor.exevlte(sql + ';')
+			elif type(sql) is list : sql_cursor.exevltescript('\n'.join(sql))
 
 			self.connection.commit()
 
@@ -1323,808 +1323,5 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
 			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 			case _: pass
-
-		return result
-
-	# Логика данных: Управление регистрацией класса
-	def RegisterClass(self, oci: str) -> T21_StructResult_Bool:
-		""" Регистрация класса структурного объекта """
-		if not ValidateOci(oci): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-								                              subcodes = {CODES_DATA.ERROR_CHECK},
-								                              data     = False)
-
-		result      = T21_StructResult_Bool()
-		result.code = CODES_COMPLETION.COMPLETED
-		result.data = True
-
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci} ({CACTUS_STRUCT_DATA.SID.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.CVL.name_sql} TEXT, {CACTUS_STRUCT_DATA.CUT.name_sql} INT)"
-		result_s_table = self.ExecSql(sql)
-		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.PARTIAL)
-			result.subcodes.add(CODES_DB.ERROR_SQL)
-
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_sid ON {oci} ({CACTUS_STRUCT_DATA.SID.name_sql})"
-		result_s_table = self.ExecSql(sql)
-		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.PARTIAL)
-			result.subcodes.add(CODES_DB.ERROR_SQL)
-
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {oci}_ ({CACTUS_STRUCT_DATA.SID.name_sql} TEXT, {CACTUS_STRUCT_DATA.CVL.name_sql} TEXT, {CACTUS_STRUCT_DATA.CUT.name_sql} INT)"
-		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.PARTIAL)
-			result.subcodes.add(CODES_DB.ERROR_SQL)
-
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_sid_ ON {oci}_ ({CACTUS_STRUCT_DATA.SID.name_sql})"
-		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.PARTIAL)
-			result.subcodes.add(CODES_DB.ERROR_SQL)
-
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{oci}_cut_ ON {oci}_ ({CACTUS_STRUCT_DATA.CUT.name_sql})"
-		result_s_index = self.ExecSql(sql)
-		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_PROCESSING.PARTIAL)
-			result.subcodes.add(CODES_DB.ERROR_SQL)
-
-		return result
-
-	# Логика данных: Управление S-Ячейкой
-	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
-		""" Удаление S-Ячейки """
-		result_check  : bool                = ValidateOid(cell.oid)
-		result_check                       &= ValidatePid(cell.pid)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		cell_start  : T20_StructCell | None = None
-
-		if flag_capture_delta:
-			result_cell = self.ReadSCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-
-			cell_start  = result_cell.data
-
-		sql         : str                   = f"DELETE FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}'"
-		result_sql                          = self.ExecSqlSelectRowCount(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		elif   result_sql.data == 0                          :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
-
-		result                              = T21_StructResult_StructCell()
-		result.code                         = CODES_COMPLETION.COMPLETED
-
-		if flag_capture_delta:
-			result_cell = self.ReadSCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
-
-			result.data = cells[0]
-
-		return result
-
-	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
-		""" Запрос S-Ячейки """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}'"
-		result_sql               = self.ExecSqlSelectHList(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		data         : list[str] = result_sql.data
-		if len(data) < 2 :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.NOT_ENOUGH})
-
-		result                   = T21_StructResult_StructCell()
-
-		try                                 :
-			result_cell     = T20_StructCell()
-			result_cell.oci = cell.oci
-			result_cell.oid = cell.oid
-			result_cell.pid = cell.pid
-			result_cell.cvl = data[0]
-			result_cell.cut = int(data[1])
-		except                              :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CONVERT})
-
-		result.data = result_cell
-		return result
-
-	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
-		""" Синхронизация S-Ячейки """
-		result_check : bool = ValidateOid(cell.oid)
-		result_check       &= ValidatePid(cell.pid)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		result_cell         = self.ReadSCell(cell)
-		if not result_cell.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_cell.subcodes)
-
-		cell_in_container   = result_cell.data
-
-		result_write : bool = True
-		if cell_in_container is not None: result_write = (cell_in_container.cut < cell.cut)
-
-		result = T21_StructResult_StructCell()
-		result.code = CODES_COMPLETION.COMPLETED
-
-		if not result_write:
-			result.subcodes.add(CODES_PROCESSING.SKIP)
-
-			if flag_capture_delta: result.data = cell_in_container
-
-			return result
-
-		result_cell         = self.WriteSCell(cell, False, flag_capture_delta)
-		if not result_cell.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_cell.subcodes)
-
-		result.subcodes = result_cell.subcodes
-
-		if flag_capture_delta: result.data = result_cell.data
-
-		return result
-
-	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
-		""" Запись S-Ячейки """
-		result_check : bool                  = ValidateOid(cell.oid)
-		result_check                        &= ValidatePid(cell.pid)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		cell_start   : T20_StructCell | None = None
-
-		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
-
-		sql          : str  = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
-		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
-
-		result_sql                           = self.ExecSql(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		result                               = T21_StructResult_StructCell()
-		result.code                          = CODES_COMPLETION.COMPLETED
-
-		if flag_capture_delta:
-			cell_end    = self.ReadSCell(cell).data
-			result.data = None if cell_end == cell_start else cell_end
-
-		return result
-
-	# Логика данных: Управление пакетом S-Ячеек
-	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
-		""" Удаление пакета S-Ячеек """
-		result                             = T21_StructResult_StructCells()
-		result.code                        = CODES_COMPLETION.COMPLETED
-
-		cells_start : list[T20_StructCell] = []
-
-		if flag_capture_delta:
-			result_cells = self.ReadSCells(cell_cells)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_start  = result_cells.data
-
-		if type(cell_cells) is T20_StructCell:
-			if not ValidateOci(cell_cells.oci): return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                                                        subcodes = {CODES_DATA.ERROR_CHECK})
-
-			sql     : str   = f"DELETE FROM {cell_cells.oci}"
-			filters : list[str] = []
-
-			if   cell_cells.oid and cell_cells.pid: filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} = '{cell_cells.sid}'")
-			elif cell_cells.oid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '{cell_cells.oid}.%'")
-			elif cell_cells.pid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '%.{cell_cells.oid}'")
-
-			if   cell_cells.cvl                   : filters.append(f"{CACTUS_STRUCT_DATA.CVL.name_sql} = '{cell_cells.cvl}'")
-			if   cell_cells.cut                   : filters.append(f"{CACTUS_STRUCT_DATA.CUT.name_sql} = '{cell_cells.cut}'")
-
-			if filters: sql += f" WHERE {' AND '.join(filters)}"
-			result_sql       = self.ExecSql(sql)
-
-			if not result_sql.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_sql.subcodes)
-
-		elif type(cell_cells) is list:
-			sql : list[str] = []
-
-			for cell in cell_cells:
-				result_check  = ValidateOci(cell.oci)
-				result_check &= ValidateOid(cell.oid)
-				result_check &= ValidatePid(cell.pid)
-
-				if not result_check:
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
-					result.subcodes.add(CODES_DATA.ERROR_CHECK)
-					continue
-
-				sql.append(f"DELETE FROM {cell.oci} WHERE {CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}';")
-
-			sql.insert(0, "BEGIN;")
-
-			result_sql      = self.ExecSql(sql)
-
-			if not result_sql.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_sql.subcodes)
-
-		else:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.ERROR_TYPE})
-
-		if flag_capture_delta:
-			result_cells = self.ReadSCells(cell_cells)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_end   = result_cells.data
-			result.data = DifferenceLists(cells_start, cells_end, True)
-
-		return result
-
-	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
-		""" Запрос пакета S-Ячеек """
-		result      = T21_StructResult_StructCells()
-		result.code = CODES_COMPLETION.COMPLETED
-
-		if type(cell_cells) is T20_StructCell:
-			cells   : list[T20_StructCell] = []
-
-			if not ValidateOci(cell_cells.oci)                  :
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                        subcodes = {CODES_DATA.ERROR_CHECK})
-
-			sql     : str                  = f"SELECT {CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell_cells.oci}"
-			filters : list[str]            = []
-
-			if   cell_cells.oid and cell_cells.pid: filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} = '{cell_cells.oid}.{cell_cells.pid}'")
-			elif cell_cells.oid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '{cell_cells.oid}.%'")
-			elif cell_cells.pid                   : filters.append(f"{CACTUS_STRUCT_DATA.SID.name_sql} LIKE '%.{cell_cells.oid}'")
-
-			if   cell_cells.cvl                   : filters.append(f"{CACTUS_STRUCT_DATA.CVL.name_sql} = '{cell_cells.cvl}'")
-			if   cell_cells.cut                   : filters.append(f"{CACTUS_STRUCT_DATA.CUT.name_sql} = '{cell_cells.cut}'")
-
-			if filters:	sql               += f" WHERE {' AND '.join(filters)}"
-			result_sql                     = self.ExecSqlSelectMatrix(sql)
-
-			if not result_sql.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_sql.subcodes)
-
-			for raw_data in result_sql.data:
-				try:
-					oid_pid = raw_data[0].split('.')
-
-					oid     = oid_pid[0]
-					pid     = oid_pid[1]
-					cvl     = raw_data[1]
-					cut     = int(raw_data[2])
-
-					cells.append(T20_StructCell(oci=cell_cells.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
-				except:
-					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
-
-			match len(cells):
-				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
-				case 1: result.subcodes.add(CODES_DATA.SINGLE)
-
-			return result
-
-		elif type(cell_cells) is list:
-			cells       : dict[str, T20_StructCell] = dict()
-			result_cells: list[T20_StructCell]      = []
-			oci         : str                       = ""
-
-			for cell in cell_cells:
-				result_check  = ValidateOci(cell.oci)
-				result_check &= ValidateOid(cell.oid)
-				result_check &= ValidatePid(cell.pid)
-
-				if not result_check:
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
-					result.subcodes.add(CODES_DATA.ERROR_CHECK)
-					continue
-
-				cells[cell.sid] = cell
-				if not oci: oci = cell.oci
-
-			sql         : str                       = f"SELECT {CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {oci} "
-			if cells:
-				sids : list[str] = list(map("'{}'".format, cells.keys()))
-				sql             += f"WHERE {CACTUS_STRUCT_DATA.SID.name_sql} IN ({', '.join(sids)})"
-
-			result_sql                              = self.ExecSqlSelectMatrix(sql)
-
-			if not result_sql.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = result.code,
-				                                    subcodes = result_sql.subcodes)
-
-			for raw_data in result_sql.data:
-				try:
-					sid     = raw_data[0]
-					oid_pid = sid.split('.')
-					oid     = oid_pid[0]
-					pid     = oid_pid[1]
-					cvl     = raw_data[1]
-					cut     = int(raw_data[2])
-
-					result_cells.append(T20_StructCell(oci=oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
-				except:
-					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
-
-			match len(cells):
-				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
-				case 1:	result.subcodes.add(CODES_DATA.SINGLE)
-
-			return result
-
-		else:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.COMPLETED,
-			                                    subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.ERROR_TYPE})
-
-	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
-		""" Запись пакета S-Ячеек """
-		result                             = T21_StructResult_StructCells()
-		result.code                        = CODES_COMPLETION.COMPLETED
-
-		cells_start : list[T20_StructCell] = []
-
-		if flag_capture_delta:
-			result_cells = self.ReadSCells(cells)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_start  = result_cells.data
-
-		sql : list[str] = []
-
-		for cell in cells:
-			result_check = ValidateOci(cell.oci)
-			result_check &= ValidateOid(cell.oid)
-			result_check &= ValidatePid(cell.pid)
-
-			if not result_check:
-				result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			sql_insert : str = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-			sql_insert      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut} WHERE {CACTUS_STRUCT_DATA.CUT.name_sql} < {cell.cut}"
-			sql_insert      += f";"
-
-			sql.append(sql_insert)
-
-		if not sql:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.NO_DATA})
-
-		sql.insert(0, "BEGIN;")
-
-		result_sql          = self.ExecSql(sql)
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result.subcodes)
-
-		if flag_capture_delta:
-			result_cells = self.ReadSCells(cells)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_end   = result_cells.data
-			result.data = DifferenceLists(cells_start, cells_end)
-
-		return result
-
-	def WriteSCells(self, cells: list[T20_StructCell], flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
-		""" Запись пакета S-Ячеек """
-		result                             = T21_StructResult_StructCells()
-		result.code                        = CODES_COMPLETION.COMPLETED
-
-		cells_start : list[T20_StructCell] = []
-
-		if flag_capture_delta:
-			result_cells = self.ReadSCells(cells)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_start  = result_cells.data
-
-		sql         : list[str]            = []
-
-		for cell in cells:
-			result_check              = ValidateOci(cell.oci)
-			result_check             &= ValidateOid(cell.oid)
-			result_check             &= ValidatePid(cell.pid)
-
-			if not result_check:
-				result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				result.subcodes.add(CODES_DATA.ERROR_CHECK)
-				continue
-
-			sql_insert : str          = f"INSERT INTO {cell.oci} ({CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql}) VALUES ('{cell.sid}', '{cell.cvl}', {cell.cut}) "
-			if flag_skip: sql_insert += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO NOTHING"
-			else        : sql_insert += f"ON CONFLICT ({CACTUS_STRUCT_DATA.SID.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}', {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}', {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
-
-			sql.append(sql_insert)
-
-		if not sql:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.NO_DATA})
-
-		sql.insert(0, "BEGIN;")
-
-		result_sql                         = self.ExecSql(sql)
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result.subcodes)
-
-		if flag_capture_delta:
-			result_cells = self.ReadSCells(cells)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_end    = result_cells.data
-			result.data  = DifferenceLists(cells_start, cells_end)
-
-		return result
-
-	# Логика данных: Управление D-Ячейкой
-	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
-		""" Удаление D-Ячейки """
-		result_check : bool                  = ValidateOid(cell.oci)
-		result_check                        &= ValidatePid(cell.oid)
-		result_check                        &= ValidatePid(cell.pid)
-		result_check                        &= bool(cell.cut)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		cell_start   : T20_StructCell | None = None
-
-		if flag_capture_delta:
-			result_cell = self.ReadDCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-
-			cell_start  = result_cell.data
-
-		sql                                  = f"DELETE FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' AND {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
-		result_sql                          = self.ExecSqlSelectRowCount(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		elif   result_sql.data == 0                          :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
-
-		result                               = T21_StructResult_StructCell()
-		result.code                          = CODES_COMPLETION.COMPLETED
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		if flag_capture_delta:
-			result_cell = self.ReadDCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
-
-			result.data = cells[0]
-
-		return result
-
-	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
-		""" Запрос D-Ячейки """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.cut)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		sql                      = f"SELECT {CACTUS_STRUCT_DATA.CVL.name_sql} FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' AND {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
-		result_sql               = self.ExecSqlSelectHList(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		if CODES_DATA.NO_DATA in result_sql.subcodes:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.NOT_ENOUGH})
-
-		data         : list[str] = result_sql.data
-
-		result_cell              = copy(cell)
-		result_cell.cvl          = data[0]
-
-		result                   = T21_StructResult_StructCell()
-		result.code              = CODES_COMPLETION.COMPLETED
-		result.data              = result_cell
-
-		return result
-
-	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
-		""" Запись D-Ячейки """
-		result_check : bool                  = ValidateOid(cell.oci)
-		result_check                        &= ValidatePid(cell.oid)
-		result_check                        &= ValidatePid(cell.pid)
-		result_check                        &= bool(cell.cut)
-
-		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
-
-		cell_start   : T20_StructCell | None = None
-
-		if flag_capture_delta:
-			result_cell = self.ReadDCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-
-			cell_start  = result_cell.data
-
-		sql        = f"UPDATE {cell.oci}_ SET {CACTUS_STRUCT_DATA.CVL.name_sql}='{cell.cvl}' WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' AND {CACTUS_STRUCT_DATA.CUT.name_sql}={cell.cut}"
-		result_sql = self.ExecSqlSelectRowCount(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		elif   result_sql.data == 0                          :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
-
-		result                               = T21_StructResult_StructCell()
-		result.code                          = CODES_COMPLETION.COMPLETED
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
-
-		if flag_capture_delta:
-			result_cell = self.ReadDCell(cell)
-
-			if not result_cell.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-				                                   subcodes = result_cell.subcodes)
-			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
-
-			result.data = cells[0]
-
-		return result
-
-	# Логика данных: Управление пакетом D-Ячеек
-	def DeleteDCells(self, cell: T21_CutRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
-		""" Удаление пакета D-Ячеек """
-		result                             = T21_StructResult_StructCells()
-		result.code                        = CODES_COMPLETION.COMPLETED
-
-		cells_start : list[T20_StructCell] = []
-
-		if flag_capture_delta:
-			result_cells = self.ReadDCells(cell)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_start  = result_cells.data
-
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
-
-		if not result_check:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.ERROR_CHECK})
-
-		filters      : list[str] = []
-		filters.append(f"({CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}')")
-
-		if   cell.cut_l : filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l})")
-		if   cell.cut_r : filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r})")
-
-		sql          : str       = f"DELETE FROM {cell.oci}_"
-		sql                     += f" WHERE {' AND '.join(filters)}"
-
-		result_sql               = self.ExecSql(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED :
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result_sql.subcodes)
-
-		if flag_capture_delta:
-			result_cells = self.ReadDCells(cell)
-
-			if not result_cells.code == CODES_COMPLETION.COMPLETED:
-				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_cells.subcodes)
-
-			cells_end   = result_cells.data
-			result.data = DifferenceLists(cells_start, cells_end, True)
-
-		return result
-
-	def ReadDCells(self, cell: T21_CutRange) -> T21_StructResult_StructCells:
-		""" Запрос пакета D-Ячеек """
-		result      = T21_StructResult_StructCells()
-		result.code = CODES_COMPLETION.COMPLETED
-
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
-
-		if not result_check:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.ERROR_CHECK})
-
-		filters      : list[str] = []
-		filters.append(f"({CACTUS_STRUCT_DATA.SID.name_sql} = '{cell.sid}')")
-
-		if cell.cut_l: filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l})")
-		if cell.cut_r: filters.append(f"({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r})")
-
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.SID.name_sql}, {CACTUS_STRUCT_DATA.CVL.name_sql}, {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci}_ "
-		sql                     += f"WHERE " + (" AND ".join(filters))
-
-		result_sql               = self.ExecSqlSelectMatrix(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result.subcodes)
-
-		for raw_data in result_sql.data:
-			try:
-				sid     = raw_data[0]
-				oid_pid = sid.split('.')
-
-				oid     = oid_pid[0]
-				pid     = oid_pid[1]
-				cvl     = raw_data[1]
-				cut     = int(raw_data[2])
-
-				result.data.append(T20_StructCell(oci=cell.oci, oid=oid, pid=pid, cvl=cvl, cut=cut))
-			except:
-				result.subcodes.add(CODES_PROCESSING.PARTIAL)
-				result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-
-		match len(result.data):
-			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
-			case 1: result.subcodes.add(CODES_DATA.SINGLE)
-
-		return result
-
-	# Логика данных: Выборки D-Ячеек
-	def ReadDCutRange(self, cell: T21_CutRange) -> T21_StructResult_CutRange:
-		""" Запрос границ CUT D-Ячейки """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
-
-		if not result_check:
-			return T21_StructResult_CutRange(code     = CODES_COMPLETION.INTERRUPTED,
-			                                 subcodes = {CODES_DATA.ERROR_CHECK})
-
-		sql    = f"SELECT MIN({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_0, MAX({CACTUS_STRUCT_DATA.CUT.name_sql}) AS {CACTUS_STRUCT_DATA.CUT.name_sql}_1 FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' "
-		if cell.cut_l: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l}) "
-		if cell.cut_r: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r}) "
-
-		result_sql = self.ExecSqlSelectHList(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_CutRange(code     = CODES_COMPLETION.INTERRUPTED,
-			                                 subcodes = result_sql.subcodes)
-
-		try:
-			data   = result_sql.data
-			cut_l  = int(data[0])
-			cut_r  = int(data[1])
-		except:
-			return T21_StructResult_CutRange(code     = CODES_COMPLETION.INTERRUPTED,
-			                                 subcodes = {CODES_DATA.ERROR_CONVERT})
-
-		return T21_StructResult_CutRange(code = CODES_COMPLETION.COMPLETED,
-		                                 data = T21_CutRange(oci=cell.oci, oid=cell.oid, pid=cell.pid, cut_l=cut_l, cut_r=cut_r))
-
-	def ReadDCuts(self, cell: T21_CutRange) -> T21_StructResult_List:
-		""" Запрос списка CUT """
-		result_check : bool      = ValidateOid(cell.oid)
-		result_check            &= ValidatePid(cell.pid)
-		result_check            &= bool(cell.oci)
-
-		if not result_check:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CHECK})
-
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.CUT.name_sql} FROM {cell.oci}_ WHERE {CACTUS_STRUCT_DATA.SID.name_sql}='{cell.sid}' "
-		if cell.cut_l: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} >= {cell.cut_l}) "
-		if cell.cut_r: sql += f"AND ({CACTUS_STRUCT_DATA.CUT.name_sql} <= {cell.cut_r}) "
-
-		result_sql = self.ExecSqlSelectVList(sql)
-
-		if not result_sql.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = result_sql.subcodes)
-
-		result      = T21_StructResult_List()
-		result.code = CODES_COMPLETION.COMPLETED
-		result.data = result_sql.data
-
-		match len(result_sql.data):
-			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
-			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result

@@ -13,11 +13,11 @@ from   G10_cactus_convertors            import BooleanToString,       \
 											   StringToDateTime,      \
 											   StringToFloat,         \
 											   StringToInteger,       \
-											   UnificationOci
+											   UnificationIdc
 from   G10_cactus_generators            import GenerateID
-from   G10_cactus_validators            import ValidateOci,           \
-											   ValidateOid,           \
-											   ValidatePid
+from   G10_cactus_validators            import ValidateIdc,           \
+											   ValidateIdo,           \
+											   ValidateIdp
 from   G10_datetime                     import CurrentUTime
 from   G20_meta_frame                   import C20_MetaFrame
 from   G30_cactus_controller_containers import controller_containers
@@ -42,55 +42,55 @@ SEPARATOR_LIST : str = '\n'
 class C30_StructFrame(C20_MetaFrame):
 	""" КАКТУС: СТРУКТУРНЫЙ ОБЪЕКТ """
 
-	_oci : str = ""
+	_idc : str = ""
 
-	def __init__(self, oid: str = ""):
+	def __init__(self, ido: str = ""):
 		super().__init__()
 
-		self.Oid(oid)
+		self.Ido(ido)
 
 		self.InitFields()
 
 	def Init_00(self):
 		super().Init_00()
 
-		self._oid : str = ""
+		self._ido : str = ""
 
-	# УПРАВЛЕНИЕ OCI
+	# УПРАВЛЕНИЕ IDC
 	@classmethod
-	def Oci(cls) -> T21_ResultString:
-		""" Запрос oci """
-		translated_oci: str = UnificationOci(cls._oci)
-		result_code   : int = RESULT_ERROR_CHECK_VALIDATE if not ValidateOci(translated_oci) else RESULT_OK
+	def Idc(cls) -> T21_ResultString:
+		""" Запрос idc """
+		translated_idc: str = UnificationIdc(cls._idc)
+		result_code   : int = RESULT_ERROR_CHECK_VALIDATE if not ValidateIdc(translated_idc) else RESULT_OK
 
-		return T21_ResultString(result_code, translated_oci)
+		return T21_ResultString(result_code, translated_idc)
 
-	# УПРАВЛЕНИЕ OID
-	def Oid(self, oid: str = None) -> T21_ResultString:
-		""" Запрос/Установка oid """
-		if oid is None:
-			if not ValidateOid(self._oid): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._oid)
+	# УПРАВЛЕНИЕ IDO
+	def Ido(self, ido: str = None) -> T21_ResultString:
+		""" Запрос/Установка ido """
+		if ido is None:
+			if not ValidateIdo(self._ido): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._ido)
 
-			return T21_ResultString(RESULT_OK, self._oid)
+			return T21_ResultString(RESULT_OK, self._ido)
 
-		if not ValidateOid(oid): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, oid)
-		self._oid = oid
+		if not ValidateIdo(ido): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, ido)
+		self._ido = ido
 
-		return T21_ResultString(RESULT_OK, self._oid)
+		return T21_ResultString(RESULT_OK, self._ido)
 
-	def GenerateOid(self) -> T21_ResultString:
-		""" Генерация OID """
-		return self.Oid(GenerateID())
+	def GenerateIdo(self) -> T21_ResultString:
+		""" Генерация IDO """
+		return self.Ido(GenerateID())
 
 	# УПРАВЛЕНИЕ РЕГИСТРАЦИЕЙ ОБЪЕКТА
 	def RegisterObject(self, container_name: str) -> T20_ResultCode:
 		""" Регистрация объекта в контейнере """
 		cell      = T20_StructCell()
-		cell.oci  = self.Oci().text
-		cell.oid  = self.Oid().text
-		cell.pid  = OCI
-		cell.cvl  = self.Oci().text
-		cell.cut  = CurrentUTime()
+		cell.idc  = self.Idc().text
+		cell.ido  = self.Ido().text
+		cell.idp  = IDC
+		cell.vlp  = self.Idc().text
+		cell.vlt  = CurrentUTime()
 
 		container = controller_containers.Container(container_name)
 		if container is None: return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
@@ -100,8 +100,8 @@ class C30_StructFrame(C20_MetaFrame):
 	def DeleteObject(self, container_name: str) -> T20_ResultCode:
 		""" Удаление объекта из контейнера """
 		cell      = T20_StructCell()
-		cell.oci  = self.Oci().text
-		cell.oid  = self.Oid().text
+		cell.idc  = self.Idc().text
+		cell.ido  = self.Ido().text
 
 		container = controller_containers.Container(container_name)
 
@@ -118,8 +118,8 @@ class C30_StructFrame(C20_MetaFrame):
 
 		if   container is None                : code = RESULT_WARNING_NOT_IMPLEMENTED
 		elif container.Type_RAM().flag       : code = RESULT_WARNING_NOT_IMPLEMENTED
-		elif container.Type_SQLite().flag    : code = container.RegisterClass(cls.Oci().text).code
-		elif container.Type_PostgreSQL().flag: code = container.RegisterClass(cls.Oci().text).code
+		elif container.Type_SQLite().flag    : code = container.RegisterClass(cls.Idc().text).code
+		elif container.Type_PostgreSQL().flag: code = container.RegisterClass(cls.Idc().text).code
 
 		return T20_ResultCode(code)
 
@@ -132,7 +132,7 @@ class C30_StructFrame(C20_MetaFrame):
 		container_dst                    = controller_containers.Container(container_name_dst)
 		if container_dst is None          : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
-		obj_cell : T20_StructCell        = T20_StructCell(oci=self.Oci().text, oid=self.Oid().text)
+		obj_cell : T20_StructCell        = T20_StructCell(idc=self.Idc().text, ido=self.Ido().text)
 		cells_src: T21_ResultStructCells = container_src.ReadSCells(obj_cell)
 
 		if not cells_src.code == RESULT_OK: return T20_ResultCode(cells_src.code)
@@ -147,7 +147,7 @@ class C30_StructFrame(C20_MetaFrame):
 		container_2                            = controller_containers.Container(container_name_2)
 		if container_2 is None          : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
-		cell_object: T20_StructCell            = T20_StructCell(oci=self.Oci().text, oid=self.Oid().text)
+		cell_object: T20_StructCell            = T20_StructCell(idc=self.Idc().text, ido=self.Ido().text)
 
 		cells_1    : T21_ResultStructCells     = container_1.ReadSCells(cell_object)
 		if not cells_1.code == RESULT_OK: return T20_ResultCode(cells_1.code)
@@ -158,13 +158,13 @@ class C30_StructFrame(C20_MetaFrame):
 		cells      : dict[str, T20_StructCell] = dict()
 
 		for cell_raw in (cells_1.cells + cells_2.cells):
-			cell = cells.get(cell_raw.sid, cell_raw)
+			cell = cells.get(cell_raw.ids, cell_raw)
 
-			if cell_raw.cut > cell.cut:
-				cell.cvl = cell_raw.cvl
-				cell.cut = cell_raw.cut
+			if cell_raw.vlt > cell.vlt:
+				cell.vlp = cell_raw.vlp
+				cell.vlt = cell_raw.vlt
 
-			cells[cell.sid] = cell
+			cells[cell.ids] = cell
 
 		cells      : list[T20_StructCell]      = list(cells.values())
 
@@ -176,38 +176,38 @@ class C30_StructFrame(C20_MetaFrame):
 
 		return T20_ResultCode(RESULT_OK)
 
-	# ЗАПРОСЫ OID
+	# ЗАПРОСЫ IDO
 	@classmethod
-	def Oids(self, container_name: str) -> T21_ResultList:
-		""" Запрос списка OID объектов класса из контейнера """
+	def Idos(self, container_name: str) -> T21_ResultList:
+		""" Запрос списка IDO объектов класса из контейнера """
 		container                        = controller_containers.Container(container_name)
 		if container is None              : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
 
-		cls_cell : T20_StructCell        = T20_StructCell(oci=self.Oci().text)
+		cls_cell : T20_StructCell        = T20_StructCell(idc=self.Idc().text)
 		cells_raw: T21_ResultStructCells = container.ReadSCells(cls_cell)
 		if not cells_raw.code == RESULT_OK: return T21_ResultList(cells_raw.code)
 
-		oids     : list[str]             = list(set(map(lambda cell: cell.oid, cells_raw.cells)))
-		if not oids                       : return T21_ResultList(RESULT_WARNING_NO_DATA)
+		idos     : list[str]             = list(set(map(lambda cell: cell.ido, cells_raw.cells)))
+		if not idos                       : return T21_ResultList(RESULT_WARNING_NO_DATA)
 
-		return T21_ResultList(RESULT_OK, oids)
+		return T21_ResultList(RESULT_OK, idos)
 
 	# ЗАПРОСЫ S-ДАННЫХ
-	def Pids(self, container_name: str) -> T21_ResultList:
-		""" Запрос списка PID S-Ячеек из контейнера """
-		if not ValidateOid(self._oid)     : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+	def Idps(self, container_name: str) -> T21_ResultList:
+		""" Запрос списка IDP S-Ячеек из контейнера """
+		if not ValidateIdo(self._ido)     : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
 
 		container                        = controller_containers.Container(container_name)
 		if container is None              : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
 
-		cls_cell : T20_StructCell        = T20_StructCell(oci=self.Oci().text, oid=self.Oid().text)
+		cls_cell : T20_StructCell        = T20_StructCell(idc=self.Idc().text, ido=self.Ido().text)
 		cells_raw: T21_ResultStructCells = container.ReadSCells(cls_cell)
 		if not cells_raw.code == RESULT_OK: return T21_ResultList(cells_raw.code)
 
-		oids     : list[str]             = list(set(map(lambda cell: cell.pid, cells_raw.cells)))
-		if not oids                       : return T21_ResultList(RESULT_WARNING_NO_DATA)
+		idos     : list[str]             = list(set(map(lambda cell: cell.idp, cells_raw.cells)))
+		if not idos                       : return T21_ResultList(RESULT_WARNING_NO_DATA)
 
-		return T21_ResultList(RESULT_OK, oids)
+		return T21_ResultList(RESULT_OK, idos)
 
 	# УПРАВЛЕНИЕ СТРУКТУРНЫМИ ПАРАМЕТРАМИ
 	def InitFields(self):
@@ -219,92 +219,92 @@ class C30_StructField(C20_MetaFrame):
 	""" КАКТУС: СТРУКТУРНЫЙ ПАРАМЕТР """
 	""" 2022-11-19 """
 
-	def __init__(self, struct_frame: C30_StructFrame, pid: str, default_cvl: any = None):
+	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__()
 
-		self._pid         = pid
+		self._idp         = idp
 		self.struct_frame = struct_frame
 
-		if default_cvl is not None: self.DefaultCvl(default_cvl)
+		if default_vlp is not None: self.DefaultVlp(default_vlp)
 
 	def Init_00(self):
 		super().Init_00()
-		self._default_cvl: str = ""
-		self._pid        : str = ""
+		self._default_vlp: str = ""
+		self._idp        : str = ""
 
 	def Init_10(self):
 		super().Init_10()
 		self.struct_frame : C30_StructFrame | None = None
 
 	# ЗАПРОСЫ ИДЕНТИФИКАТОРОВ
-	def Sid(self) -> T21_ResultString:
-		""" Запрос SID """
-		oid: T21_ResultString = T21_ResultString()
-		pid: T21_ResultString = self.Pid()
-		sid: str              = f"{oid.text}.{pid.text}"
+	def Ids(self) -> T21_ResultString:
+		""" Запрос IDS """
+		ido: T21_ResultString = T21_ResultString()
+		idp: T21_ResultString = self.Idp()
+		ids: str              = f"{ido.text}.{idp.text}"
 
-		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT, sid)
+		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT, ids)
 
-		oid                   = self.struct_frame.Oid()
-		sid                   = f"{oid.text}.{pid.text}"
-		if not oid.code == RESULT_OK: return T21_ResultString(oid.code, sid)
+		ido                   = self.struct_frame.Ido()
+		ids                   = f"{ido.text}.{idp.text}"
+		if not ido.code == RESULT_OK: return T21_ResultString(ido.code, ids)
 
-		return T21_ResultString(RESULT_OK, sid)
+		return T21_ResultString(RESULT_OK, ids)
 
-	def Cid(self) -> T21_ResultString:
-		""" Запрос CID """
-		oci: T21_ResultString = T21_ResultString()
-		oid: T21_ResultString = T21_ResultString()
-		pid: T21_ResultString = self.Pid()
-		cid: str              = f"{oci.text}.{oid.text}.{pid.text}"
+	def Idf(self) -> T21_ResultString:
+		""" Запрос IDF """
+		idc: T21_ResultString = T21_ResultString()
+		ido: T21_ResultString = T21_ResultString()
+		idp: T21_ResultString = self.Idp()
+		idf: str              = f"{idc.text}.{ido.text}.{idp.text}"
 
-		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT, cid)
+		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT, idf)
 
-		oci                   = self.struct_frame.Oci()
-		oid                   = self.struct_frame.Oid()
-		cid: str              = f"{oci.text}.{oid.text}.{pid.text}"
-		if not oci.code == RESULT_OK: return T21_ResultString(oci.code, cid)
-		if not oid.code == RESULT_OK: return T21_ResultString(oid.code, cid)
+		idc                   = self.struct_frame.Idc()
+		ido                   = self.struct_frame.Ido()
+		idf: str              = f"{idc.text}.{ido.text}.{idp.text}"
+		if not idc.code == RESULT_OK: return T21_ResultString(idc.code, idf)
+		if not ido.code == RESULT_OK: return T21_ResultString(ido.code, idf)
 
-		return T21_ResultString(RESULT_OK, cid)
+		return T21_ResultString(RESULT_OK, idf)
 
-	def Pid(self) -> T21_ResultString:
-		""" Запрос PID """
-		if not ValidatePid(self._pid): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._pid)
+	def Idp(self) -> T21_ResultString:
+		""" Запрос IDP """
+		if not ValidateIdp(self._idp): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._idp)
 
-		return T21_ResultString(RESULT_OK, self._pid)
+		return T21_ResultString(RESULT_OK, self._idp)
 
 	# УПРАВЛЕНИЕ ЗНАЧЕНИЕМ ПО-УМОЛЧАНИЮ
-	def DefaultCvl(self, cvl: any = None) -> T21_ResultString:
+	def DefaultVlp(self, vlp: any = None) -> T21_ResultString:
 		""" Запрос/Установка значения параметра по умолчанию """
-		if cvl is None: return T21_ResultString(RESULT_OK, self._default_cvl)
+		if vlp is None: return T21_ResultString(RESULT_OK, self._default_vlp)
 
-		if   type(cvl) is int  : self._default_cvl = f"{cvl}"
-		elif type(cvl) is float: self._default_cvl = f"{cvl:0.5f}"
-		elif type(cvl) is bool : self._default_cvl = BooleanToString(cvl)
-		elif type(cvl) is list : self._default_cvl = SEPARATOR_LIST.join(list(map(str, cvl)))
-		elif type(cvl) is str  : self._default_cvl = cvl
+		if   type(vlp) is int  : self._default_vlp = f"{vlp}"
+		elif type(vlp) is float: self._default_vlp = f"{vlp:0.5f}"
+		elif type(vlp) is bool : self._default_vlp = BooleanToString(vlp)
+		elif type(vlp) is list : self._default_vlp = SEPARATOR_LIST.join(list(map(str, vlp)))
+		elif type(vlp) is str  : self._default_vlp = vlp
 
 	# КОНВЕРТАЦИЯ ИЗ ТИПА ДАННЫХ
-	def _WriteCvlInSCell(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_ResultCode:
+	def _WriteVlpInSCell(self, container_name_dst: str, vlp: str, vlt: int = 0) -> T20_ResultCode:
 		""" Системный метод записи данных для конверторов """
 		container = controller_containers.Container(container_name_dst)
 		if container is None        : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T20_ResultCode(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK: return T20_ResultCode(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK: return T20_ResultCode(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK: return T20_ResultCode(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK: return T20_ResultCode(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK: return T20_ResultCode(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK: return T20_ResultCode(idp.code)
 
-		if cut == 0: cut = CurrentUTime()
+		if vlt == 0: vlt = CurrentUTime()
 
-		cell      = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text, cvl=cvl, cut=cut)
+		cell      = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text, vlp=vlp, vlt=vlt)
 
 		return T20_ResultCode(container.WriteSCell(cell).code)
 
@@ -313,32 +313,32 @@ class C30_StructField(C20_MetaFrame):
 		try   : data = BooleanToString(flag)
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromDatetime(self, container_name_dst: str, dtime: datetime.datetime) -> T20_ResultCode:
 		""" Из логического значения """
 		try   : data = DatetimeToString(dtime)
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromInteger(self, container_name_dst: str, value: int) -> T20_ResultCode:
 		""" Из целого числа """
 		try   : data = f"{value:d}"
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromFloat(self, container_name_dst: str, value: float) -> T20_ResultCode:
 		""" Из дробного числа """
 		try               : data = f"{value:0.5f}"
 		except SyntaxError: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromString(self, container_name_dst: str, text: str) -> T20_ResultCode:
 		""" Из строки """
-		return self._WriteCvlInSCell(container_name_dst, text)
+		return self._WriteVlpInSCell(container_name_dst, text)
 
 	# КОНВЕРТАЦИЯ ИЗ СПИСКА ТИПА ДАННЫХ
 	def FromBooleans(self, container_name_dst: str, data: list[bool]) -> T20_ResultCode:
@@ -346,70 +346,70 @@ class C30_StructField(C20_MetaFrame):
 		try   : data = SEPARATOR_LIST.join(list(map(BooleanToString, data)))
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromDatetimes(self, container_name_dst: str, data: list[datetime.datetime]) -> T20_ResultCode:
 		""" Из списка логических значений """
 		try   : data = SEPARATOR_LIST.join(list(map(DatetimeToString, data)))
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromIntegers(self, container_name_dst: str, data: list[int]) -> T20_ResultCode:
 		""" Из списка целых чисел """
 		try   : data = SEPARATOR_LIST.join(list(map(format, data)))
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromFloats(self, container_name_dst: str, data: list[float]) -> T20_ResultCode:
 		""" Из списка дробных чисел """
 		try   : data = SEPARATOR_LIST.join(list(map("{:0.5f}".format, data)))
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	def FromStrings(self, container_name_dst: str, data: list[str]) -> T20_ResultCode:
 		""" Из списка строк """
 		try   : data = SEPARATOR_LIST.join(data)
 		except: return T20_ResultCode(RESULT_ERROR_CONVERT)
 
-		return self._WriteCvlInSCell(container_name_dst, data)
+		return self._WriteVlpInSCell(container_name_dst, data)
 
 	# КОНВЕРТАЦИЯ В ТИП ДАННЫХ
-	def _ReadCvlSCell(self, container_name_src: str) -> T21_ResultString:
+	def _ReadVlpSCell(self, container_name_src: str) -> T21_ResultString:
 		""" Системный метод чтения данных для конверторов """
 		container = controller_containers.Container(container_name_src)
 		if container is None        : return T21_ResultString(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK: return T21_ResultString(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK: return T21_ResultString(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK: return T21_ResultString(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK: return T21_ResultString(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK: return T21_ResultString(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK: return T21_ResultString(idp.code)
 
-		cell_src  = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text)
+		cell_src  = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text)
 		cell      = container.ReadSCell(cell_src)
 
-		return T21_ResultString(cell.code, cell.cell.cvl)
+		return T21_ResultString(cell.code, cell.cell.vlp)
 
 	def ToBoolean(self, container_name_src: str) -> T21_ResultBool:
 		""" В логическое значение """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		try   : return T21_ResultBool(result.code, StringToBoolean(value))
 		except: return T21_ResultBool(RESULT_ERROR_CONVERT)
 
 	def ToDatetime(self, container_name_src: str) -> T21_ResultDatetime:
 		""" В Datetime """
-		result  = self._ReadCvlSCell(container_name_src)
-		value   = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result  = self._ReadVlpSCell(container_name_src)
+		value   = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		convert = StringToDateTime(value)
 		if convert is None:	return T21_ResultDatetime(RESULT_ERROR_CONVERT)
@@ -418,32 +418,32 @@ class C30_StructField(C20_MetaFrame):
 
 	def ToInteger(self, container_name_src: str) -> T21_ResultInt:
 		""" В целое число """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		try   : return T21_ResultInt(result.code, StringToInteger(value))
 		except: return T21_ResultInt(RESULT_ERROR_CONVERT)
 
 	def ToFloat(self, container_name_src: str) -> T21_ResultFloat:
 		""" В дробное число """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		try   : return T21_ResultFloat(result.code, StringToFloat(value))
 		except: return T21_ResultFloat(RESULT_ERROR_CONVERT)
 
 	def ToString(self, container_name_src: str) -> T21_ResultString:
 		""" В строку """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		return T21_ResultString(result.code, value)
 
 	# КОНВЕРТАЦИЯ В СПИСОК ТИПА ДАННЫХ
 	def ToBooleans(self, container_name_src : str) -> T21_ResultList:
 		""" В список логических значений """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		if not value.strip(): return T21_ResultList(result.code, [])
 
@@ -452,8 +452,8 @@ class C30_StructField(C20_MetaFrame):
 
 	def ToDatetimes(self, container_name_src : str) -> T21_ResultList:
 		""" В список Datetime """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		if not value.strip(): return T21_ResultList(result.code, [])
 
@@ -462,8 +462,8 @@ class C30_StructField(C20_MetaFrame):
 
 	def ToIntegers(self, container_name_src: str) -> T21_ResultList:
 		""" В список целых чисел """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		if not value.strip(): return T21_ResultList(result.code, [])
 
@@ -472,8 +472,8 @@ class C30_StructField(C20_MetaFrame):
 
 	def ToFloats(self, container_name_src: str) -> T21_ResultList:
 		""" В список дробных чисел """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		if not value.strip(): return T21_ResultList(result.code, [])
 
@@ -484,8 +484,8 @@ class C30_StructField(C20_MetaFrame):
 
 	def ToStrings(self, container_name_src: str) -> T21_ResultList:
 		""" В список строк """
-		result = self._ReadCvlSCell(container_name_src)
-		value  = result.text if result.code == RESULT_OK else self.DefaultCvl().text
+		result = self._ReadVlpSCell(container_name_src)
+		value  = result.text if result.code == RESULT_OK else self.DefaultVlp().text
 
 		if not value.strip(): return T21_ResultList(result.code, [])
 
@@ -493,26 +493,26 @@ class C30_StructField(C20_MetaFrame):
 		except: return T21_ResultList(RESULT_ERROR_CONVERT)
 
 	# УПРАВЛЕНИЕ S-ДАННЫМИ
-	def Cut(self, container_name_src: str) -> T21_ResultInt:
-		""" Запрос cut """
+	def Vlt(self, container_name_src: str) -> T21_ResultInt:
+		""" Запрос vlt """
 		container = controller_containers.Container(container_name_src)
 		if container is None        : return T21_ResultInt(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T21_ResultInt(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK: return T21_ResultInt(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK: return T21_ResultInt(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK: return T21_ResultInt(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK: return T21_ResultInt(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK: return T21_ResultInt(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK: return T21_ResultInt(idp.code)
 
-		cell_src  = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text)
+		cell_src  = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text)
 		cell      = container.ReadSCell(cell_src)
 
-		return T21_ResultInt(cell.code, cell.cell.cut)
+		return T21_ResultInt(cell.code, cell.cell.vlt)
 
 	def CopyToContainer(self, container_name_src: str, container_name_dst: str) -> T20_ResultCode:
 		""" Копирование S-Ячейки из контейнера в контейнер """
@@ -522,16 +522,16 @@ class C30_StructField(C20_MetaFrame):
 		container_dst                   = controller_containers.Container(container_name_dst)
 		if container_dst is None         : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
-		oid                             = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK     : return T21_ResultStructCell(oid.code)
+		ido                             = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK     : return T21_ResultStructCell(ido.code)
 
-		oci                             = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK     : return T21_ResultStructCell(oci.code)
+		idc                             = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK     : return T21_ResultStructCell(idc.code)
 
-		pid                             = self.Pid()
-		if not pid.code == RESULT_OK     : return T21_ResultStructCell(pid.code)
+		idp                             = self.Idp()
+		if not idp.code == RESULT_OK     : return T21_ResultStructCell(idp.code)
 
-		cell     : T20_StructCell       = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text)
+		cell     : T20_StructCell       = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text)
 		cell_src : T21_ResultStructCell = container_src.ReadSCell(cell)
 
 		if not cell_src.code == RESULT_OK: return T21_ResultStructCell(cell_src.code)
@@ -546,24 +546,24 @@ class C30_StructField(C20_MetaFrame):
 		container_2                   = controller_containers.Container(container_name_2)
 		if container_2 is None              : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
-		oid                           = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK        : return T21_ResultStructCell(oid.code)
+		ido                           = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK        : return T21_ResultStructCell(ido.code)
 
-		oci                           = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK        : return T21_ResultStructCell(oci.code)
+		idc                           = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK        : return T21_ResultStructCell(idc.code)
 
-		pid                           = self.Pid()
-		if not pid.code == RESULT_OK        : return T21_ResultStructCell(pid.code)
+		idp                           = self.Idp()
+		if not idp.code == RESULT_OK        : return T21_ResultStructCell(idp.code)
 
-		cell   : T20_StructCell       = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text)
+		cell   : T20_StructCell       = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text)
 		cell_1 : T21_ResultStructCell = container_1.ReadSCell(cell)
 		if not cell_1.code == RESULT_OK     : return T21_ResultStructCell(cell_1.code)
 
 		cell_2 : T21_ResultStructCell = container_2.ReadSCell(cell)
 		if not cell_2.code == RESULT_OK     : return T21_ResultStructCell(cell_2.code)
 
-		if cell_1.cell.cut > cell_2.cell.cut: return container_2.SyncSCell(cell_1.cell)
-		if cell_2.cell.cut > cell_1.cell.cut: return container_1.SyncSCell(cell_2.cell)
+		if cell_1.cell.vlt > cell_2.cell.vlt: return container_2.SyncSCell(cell_1.cell)
+		if cell_2.cell.vlt > cell_1.cell.vlt: return container_1.SyncSCell(cell_2.cell)
 
 		return T20_ResultCode(RESULT_OK)
 
@@ -572,16 +572,16 @@ class C30_StructField(C20_MetaFrame):
 		container_src                   = controller_containers.Container(container_name_src)
 		if container_src is None         : return T21_ResultStructCell(RESULT_ERROR_ACCESS_CONNECTION)
 
-		oid                             = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK     : return T21_ResultStructCell(oid.code)
+		ido                             = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK     : return T21_ResultStructCell(ido.code)
 
-		oci                             = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK     : return T21_ResultStructCell(oci.code)
+		idc                             = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK     : return T21_ResultStructCell(idc.code)
 
-		pid                             = self.Pid()
-		if not pid.code == RESULT_OK     : return T21_ResultStructCell(pid.code)
+		idp                             = self.Idp()
+		if not idp.code == RESULT_OK     : return T21_ResultStructCell(idp.code)
 
-		cell     : T20_StructCell       = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text)
+		cell     : T20_StructCell       = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text)
 		cell_src : T21_ResultStructCell = container_src.ReadSCell(cell)
 
 		if not cell_src.code == RESULT_OK: return T21_ResultStructCell(cell_src.code)
@@ -589,118 +589,118 @@ class C30_StructField(C20_MetaFrame):
 		return container_src.DeleteSCell(cell_src.cell)
 
 	# УПРАВЛЕНИЕ D-ДАННЫМИ
-	def WriteCvl(self, container_name_dst: str, cvl: str, cut: int = 0) -> T20_ResultCode:
+	def WriteVlp(self, container_name_dst: str, vlp: str, vlt: int = 0) -> T20_ResultCode:
 		""" Добавление записи D-Данных """
 		container = controller_containers.Container(container_name_dst)
 		if container is None        : return T20_ResultCode(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T20_ResultCode(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK: return T20_ResultCode(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK: return T20_ResultCode(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK: return T20_ResultCode(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK: return T20_ResultCode(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK: return T20_ResultCode(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK: return T20_ResultCode(idp.code)
 
-		if cut == 0: cut = CurrentUTime()
+		if vlt == 0: vlt = CurrentUTime()
 
-		cell      = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text, cvl=cvl, cut=cut)
+		cell      = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text, vlp=vlp, vlt=vlt)
 		result    = container.WriteDCell(cell)
 
 		return T20_ResultCode(result.code)
 
-	def ReadCvl(self, container_name_src: str, cut: int = 0) -> T21_ResultString:
+	def ReadVlp(self, container_name_src: str, vlt: int = 0) -> T21_ResultString:
 		""" Запрос записи D-Данных """
 		container = controller_containers.Container(container_name_src)
 		if container is None        : return T21_ResultString(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None: return T21_ResultString(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK: return T21_ResultString(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK: return T21_ResultString(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK: return T21_ResultString(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK: return T21_ResultString(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK: return T21_ResultString(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK: return T21_ResultString(idp.code)
 
-		if cut == 0:
-			cuts = self.CutRange(container_name_src)
-			if not cuts.code == RESULT_OK: return T21_ResultString(cuts.code)
-			if not cuts                  : return T21_ResultString(RESULT_WARNING_NO_DATA)
+		if vlt == 0:
+			vlts = self.VltRange(container_name_src)
+			if not vlts.code == RESULT_OK: return T21_ResultString(vlts.code)
+			if not vlts                  : return T21_ResultString(RESULT_WARNING_NO_DATA)
 
-			cut = cuts.cut_r
+			vlt = vlts.vlt_r
 
-		cell      = T20_StructCell(oci=oci.text, oid=oid.text, pid=pid.text, cut=cut)
+		cell      = T20_StructCell(idc=idc.text, ido=ido.text, idp=idp.text, vlt=vlt)
 		result    = container.ReadDCell(cell)
 
-		return T21_ResultString(result.code, result.cell.cvl)
+		return T21_ResultString(result.code, result.cell.vlp)
 
-	def CutRange(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultRange:
-		""" Запрос границ cut D-Данных """
+	def VltRange(self, container_name_src: str, vlt_l: int = 0, vlt_r: int = 0) -> T21_ResultRange:
+		""" Запрос границ vlt D-Данных """
 		container = controller_containers.Container(container_name_src)
 		if container is None          : return T21_ResultRange(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None  : return T21_ResultRange(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK  : return T21_ResultRange(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK  : return T21_ResultRange(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK  : return T21_ResultRange(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK  : return T21_ResultRange(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK  : return T21_ResultRange(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK  : return T21_ResultRange(idp.code)
 
-		cell      = T21_StructRange(oci=oci.text, oid=oid.text, pid=pid.text, cut_l=cut_l, cut_r=cut_r)
-		result    = container.ReadDCutRange(cell)
+		cell      = T21_StructRange(idc=idc.text, ido=ido.text, idp=idp.text, vlt_l=vlt_l, vlt_r=vlt_r)
+		result    = container.ReadDVltRange(cell)
 
-		return T21_ResultRange(result.code, cut_l=result.range.cut_l, cut_r=result.range.cut_r)
+		return T21_ResultRange(result.code, vlt_l=result.range.vlt_l, vlt_r=result.range.vlt_r)
 
-	def Cuts(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultList:
-		""" Запрос списка cut в диапазоне cut D-Данных """
+	def Vlts(self, container_name_src: str, vlt_l: int = 0, vlt_r: int = 0) -> T21_ResultList:
+		""" Запрос списка vlt в диапазоне vlt D-Данных """
 		container = controller_containers.Container(container_name_src)
 		if container is None          : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None  : return T21_ResultList(RESULT_ERROR_DATA_STRUCT)
 
-		oid       = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK  : return T21_ResultList(oid.code)
+		ido       = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK  : return T21_ResultList(ido.code)
 
-		oci       = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK  : return T21_ResultList(oci.code)
+		idc       = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK  : return T21_ResultList(idc.code)
 
-		pid       = self.Pid()
-		if not pid.code == RESULT_OK  : return T21_ResultList(pid.code)
+		idp       = self.Idp()
+		if not idp.code == RESULT_OK  : return T21_ResultList(idp.code)
 
-		cell      = T21_StructRange(oci=oci.text, oid=oid.text, pid=pid.text, cut_l=cut_l, cut_r=cut_r)
+		cell      = T21_StructRange(idc=idc.text, ido=ido.text, idp=idp.text, vlt_l=vlt_l, vlt_r=vlt_r)
 
-		return container.ReadDCuts(cell)
+		return container.ReadDVlts(cell)
 
-	def Cvls(self, container_name_src: str, cut_l: int = 0, cut_r: int = 0) -> T21_ResultDict:
-		""" Запрос cvl/cut в диапазоне cut D-Данных """
+	def Vlps(self, container_name_src: str, vlt_l: int = 0, vlt_r: int = 0) -> T21_ResultDict:
+		""" Запрос vlp/vlt в диапазоне vlt D-Данных """
 		container = controller_containers.Container(container_name_src)
 		if container is None          : return T21_ResultDict(RESULT_ERROR_ACCESS_CONNECTION)
 
 		if self.struct_frame is None  : return T21_ResultDict(RESULT_ERROR_DATA_STRUCT)
 
-		oid                     = self.struct_frame.Oid()
-		if not oid.code == RESULT_OK  : return T21_ResultDict(oid.code)
+		ido                     = self.struct_frame.Ido()
+		if not ido.code == RESULT_OK  : return T21_ResultDict(ido.code)
 
-		oci                     = self.struct_frame.Oci()
-		if not oci.code == RESULT_OK  : return T21_ResultDict(oci.code)
+		idc                     = self.struct_frame.Idc()
+		if not idc.code == RESULT_OK  : return T21_ResultDict(idc.code)
 
-		pid                     = self.Pid()
-		if not pid.code == RESULT_OK  : return T21_ResultDict(pid.code)
+		idp                     = self.Idp()
+		if not idp.code == RESULT_OK  : return T21_ResultDict(idp.code)
 
-		cell                    = T21_StructRange(oci=oci.text, oid=oid.text, pid=pid.text, cut_l=cut_l, cut_r=cut_r)
+		cell                    = T21_StructRange(idc=idc.text, ido=ido.text, idp=idp.text, vlt_l=vlt_l, vlt_r=vlt_r)
 		dcells                  = container.ReadDCells(cell)
 		result : dict[int, str] = dict()
 
-		for cell in dcells.cells: result[cell.cut] = cell.cvl
+		for cell in dcells.cells: result[cell.vlt] = cell.vlp
 
 		return T21_ResultDict(dcells.code, result)
