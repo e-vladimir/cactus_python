@@ -1,4 +1,6 @@
-from G00_status_codes import CODES_COMPLETION
+# 08 июл 2024
+
+from G00_status_codes                 import CODES_COMPLETION
 from G30_cactus_controller_containers import controller_containers
 
 print("")
@@ -21,4 +23,3 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 result = controller_containers.ContainerNames()
 check  = check and (result.code == CODES_COMPLETION.COMPLETED) and (result.data == [])
 print(f"{'[+]' if check else '[ ]'} Отмена регистрации контейнера RAM")
-
