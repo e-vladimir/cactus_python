@@ -85,11 +85,11 @@ class C31_ContainerRAM(C30_Container):
 		result_exist : bool = cell.ids in self._s_cells
 
 		if not result_exist:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
-										   data = self._s_cells[cell.ids])
+										   data = copy(self._s_cells[cell.ids]))
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
@@ -281,5 +281,96 @@ class C31_ContainerRAM(C30_Container):
 
 		return result
 
+	# Логика данных: D-Ячейка
+	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+		""" Удаление D-Ячейки """
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+		result_check                            &= bool(cell.vlt)
+
+		if not result_check:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		result_exist : bool                      = cell.vlt in dcells
+
+		if not result_exist:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+											   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
+
+		cell_start  : T20_StructCell | None = None
+		cell_end    : T20_StructCell | None = None
+
+		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
+
+		del dcells[cell.vlt]
+
+		result                              = T21_StructResult_StructCell()
+		result.code                         = CODES_COMPLETION.COMPLETED
+
+		if flag_capture_delta:
+			cell_end = self.ReadSCell(cell).data
+			cells    = [cell_start, cell_end]
+			cells.remove(None)
+
+			result.data = cells[0]
+
+		return result
+
+	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
+		""" Запрос D-Ячейки """
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+		result_check                            &= bool(cell.vlt)
+
+		if not result_check:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		result_exist : bool                      = cell.vlt in dcells
+
+		if not result_exist:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.NO_DATA})
+
+		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
+		                                   data = copy(dcells[cell.vlt]))
+
+	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+		""" Запись D-Ячейки """
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+		result_check                            &= bool(cell.vlt)
+
+		if not result_check:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		cell_start  : T20_StructCell | None = None
+		cell_end    : T20_StructCell | None = None
+
+		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
+
+		dcells[cell.vlt] = cell
+		self._d_cells[cell.ids] = dcells
+
+		result                              = T21_StructResult_StructCell()
+		result.code                         = CODES_COMPLETION.COMPLETED
+
+		if flag_capture_delta:
+			cell_end = self.ReadDCell(cell).data
+
+			cells    = [cell_start, cell_end]
+			cells.remove(None)
+
+			result.data = cells[0]
+
+		return result
 	# Логика управления
 	pass
