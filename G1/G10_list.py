@@ -33,11 +33,11 @@ def DistinctAndSortList2D(values: list, index_processing_item: int, flag_distinc
 	except: return []
 
 
-def DifferenceLists(list_1: list, list_2: list, flag_reverse: bool = False) -> list:
+def DifferenceLists(list_1: list, list_2: list, flag_cmp_1_to_2: bool = False) -> list:
 	""" Разница между списками """
 	result = []
 
-	if flag_reverse:
+	if flag_cmp_1_to_2:
 		for item in list_1:
 			if item in list_2: continue
 

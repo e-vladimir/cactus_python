@@ -15,9 +15,9 @@ from   G10_cactus_convertors            import BooleanToString,       \
 											   StringToInteger,       \
 											   UnificationIdc
 from   G10_cactus_generators            import GenerateID
-from   G10_cactus_validators            import ValidateIdc,           \
-											   ValidateIdo,           \
-											   ValidateIdp
+from   G10_cactus_check            import CheckIdc,           \
+											   CheckIdo,           \
+											   CheckIdp
 from   G10_datetime                     import CurrentUTime
 from   G20_meta_frame                   import C20_MetaFrame
 from   G30_cactus_controller_containers import controller_containers
@@ -61,7 +61,7 @@ class C30_StructFrame(C20_MetaFrame):
 	def Idc(cls) -> T21_ResultString:
 		""" Запрос idc """
 		translated_idc: str = UnificationIdc(cls._idc)
-		result_code   : int = RESULT_ERROR_CHECK_VALIDATE if not ValidateIdc(translated_idc) else RESULT_OK
+		result_code   : int = RESULT_ERROR_CHECK_VALIDATE if not CheckIdc(translated_idc) else RESULT_OK
 
 		return T21_ResultString(result_code, translated_idc)
 
@@ -69,11 +69,11 @@ class C30_StructFrame(C20_MetaFrame):
 	def Ido(self, ido: str = None) -> T21_ResultString:
 		""" Запрос/Установка ido """
 		if ido is None:
-			if not ValidateIdo(self._ido): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._ido)
+			if not CheckIdo(self._ido): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._ido)
 
 			return T21_ResultString(RESULT_OK, self._ido)
 
-		if not ValidateIdo(ido): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, ido)
+		if not CheckIdo(ido): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, ido)
 		self._ido = ido
 
 		return T21_ResultString(RESULT_OK, self._ido)
@@ -195,7 +195,7 @@ class C30_StructFrame(C20_MetaFrame):
 	# ЗАПРОСЫ S-ДАННЫХ
 	def Idps(self, container_name: str) -> T21_ResultList:
 		""" Запрос списка IDP S-Ячеек из контейнера """
-		if not ValidateIdo(self._ido)     : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
+		if not CheckIdo(self._ido)     : return T21_ResultList(RESULT_ERROR_CHECK_VALIDATE)
 
 		container                        = controller_containers.Container(container_name)
 		if container is None              : return T21_ResultList(RESULT_ERROR_ACCESS_CONNECTION)
@@ -270,7 +270,7 @@ class C30_StructField(C20_MetaFrame):
 
 	def Idp(self) -> T21_ResultString:
 		""" Запрос IDP """
-		if not ValidateIdp(self._idp): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._idp)
+		if not CheckIdp(self._idp): return T21_ResultString(RESULT_ERROR_CHECK_VALIDATE, self._idp)
 
 		return T21_ResultString(RESULT_OK, self._idp)
 

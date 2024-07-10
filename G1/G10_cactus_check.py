@@ -1,8 +1,8 @@
-# КАКТУС: ВАЛИДАТОРЫ ДАННЫХ
-# 08 июл 2024
+# КАКТУС: ПРОВЕРКА ДАННЫХ
+# 09 июл 2024
 
-def ValidateIdc(idc: str) -> bool:
-	""" Валидация IDC """
+def CheckIdc(idc: str) -> bool:
+	""" Проверка IDC """
 	if      not idc: return False
 	elif ' ' in idc: return False
 	elif '.' in idc: return False
@@ -11,16 +11,16 @@ def ValidateIdc(idc: str) -> bool:
 	return True
 
 
-def ValidateIdo(ido: str) -> bool:
-	""" Валидация IDO """
+def CheckIdo(ido: str) -> bool:
+	""" Проверка IDO """
 	if      not ido: return False
 	elif '.' in ido: return False
 
 	return True
 
 
-def ValidateIdp(ido: str) -> bool:
-	""" Валидация IDP """
+def CheckIdp(ido: str) -> bool:
+	""" Проверка IDP """
 	if      not ido: return False
 	elif '.' in ido: return False
 

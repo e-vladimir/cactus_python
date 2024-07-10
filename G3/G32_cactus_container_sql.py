@@ -9,7 +9,7 @@ from   copy                     import copy
 from   G00_cactus_codes         import *
 from   G00_status_codes         import *
 
-from   G10_cactus_validators    import *
+from   G10_cactus_check    import *
 from   G10_list                 import DifferenceLists
 
 from   G21_cactus_struct        import *
@@ -285,9 +285,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Управление регистрацией класса
 	def RegisterClass(self, idc: str) -> T21_StructResult_Bool:
 		""" Регистрация класса структурного объекта """
-		if not ValidateIdc(idc): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-								                              subcodes = {CODES_DATA.ERROR_CHECK},
-								                              data     = False)
+		if not CheckIdc(idc): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                   subcodes = {CODES_DATA.ERROR_CHECK},
+		                                                   data     = False)
 
 		result      = T21_StructResult_Bool()
 		result.code = CODES_COMPLETION.COMPLETED
@@ -326,8 +326,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Управление S-Ячейкой
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		result_check  : bool                = ValidateIdo(cell.ido)
-		result_check                       &= ValidateIdp(cell.idp)
+		result_check  : bool                = CheckIdo(cell.ido)
+		result_check                       &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -365,8 +365,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result_check : bool      = ValidateIdo(cell.ido)
-		result_check            &= ValidateIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -402,8 +402,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool = ValidateIdo(cell.ido)
-		result_check       &= ValidateIdp(cell.idp)
+		result_check : bool = CheckIdo(cell.ido)
+		result_check       &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -442,8 +442,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result_check : bool                  = ValidateIdo(cell.ido)
-		result_check                        &= ValidateIdp(cell.idp)
+		result_check : bool                  = CheckIdo(cell.ido)
+		result_check                        &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -492,8 +492,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cells_start  = result_cells.data
 
 		if type(cell_cells) is T20_StructCell:
-			if not ValidateIdc(cell_cells.idc): return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                                                        subcodes = {CODES_DATA.ERROR_CHECK})
+			if not CheckIdc(cell_cells.idc): return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                                                     subcodes = {CODES_DATA.ERROR_CHECK})
 
 			sql     : str   = f"DELETE FROM {cell_cells.idc}"
 			filters : list[str] = []
@@ -516,9 +516,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql : list[str] = []
 
 			for cell in cell_cells:
-				result_check  = ValidateIdc(cell.idc)
-				result_check &= ValidateIdo(cell.ido)
-				result_check &= ValidateIdp(cell.idp)
+				result_check  = CheckIdc(cell.idc)
+				result_check &= CheckIdo(cell.ido)
+				result_check &= CheckIdp(cell.idp)
 
 				if not result_check:
 					result.subcodes.add(CODES_PROCESSING.PARTIAL)
@@ -552,7 +552,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if type(cell_cells) is T20_StructCell:
 			cells   : list[T20_StructCell] = []
 
-			if not ValidateIdc(cell_cells.idc)                  :
+			if not CheckIdc(cell_cells.idc)                  :
 				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 			                                        subcodes = {CODES_DATA.ERROR_CHECK})
 
@@ -601,9 +601,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql_selectes: list[str]                 = []
 
 			for cell in cell_cells:
-				result_check  = ValidateIdc(cell.idc)
-				result_check &= ValidateIdo(cell.ido)
-				result_check &= ValidateIdp(cell.idp)
+				result_check  = CheckIdc(cell.idc)
+				result_check &= CheckIdo(cell.ido)
+				result_check &= CheckIdp(cell.idp)
 
 				if not result_check:
 					result.subcodes.add(CODES_PROCESSING.PARTIAL)
@@ -662,9 +662,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cells_start  = result_cells.data
 
 		for cell in cells:
-			result_check = ValidateIdc(cell.idc)
-			result_check &= ValidateIdo(cell.ido)
-			result_check &= ValidateIdp(cell.idp)
+			result_check = CheckIdc(cell.idc)
+			result_check &= CheckIdo(cell.ido)
+			result_check &= CheckIdp(cell.idp)
 
 			if not result_check:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
@@ -705,9 +705,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cells_start  = result_cells.data
 
 		for cell in cells:
-			result_check              = ValidateIdc(cell.idc)
-			result_check             &= ValidateIdo(cell.ido)
-			result_check             &= ValidateIdp(cell.idp)
+			result_check              = CheckIdc(cell.idc)
+			result_check             &= CheckIdo(cell.ido)
+			result_check             &= CheckIdp(cell.idp)
 
 			if not result_check:
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
@@ -735,9 +735,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Управление D-Ячейкой
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		result_check : bool                  = ValidateIdo(cell.idc)
-		result_check                        &= ValidateIdp(cell.ido)
-		result_check                        &= ValidateIdp(cell.idp)
+		result_check : bool                  = CheckIdo(cell.idc)
+		result_check                        &= CheckIdp(cell.ido)
+		result_check                        &= CheckIdp(cell.idp)
 		result_check                        &= bool(cell.vlt)
 
 		if not result_check:
@@ -789,8 +789,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		result_check : bool      = ValidateIdo(cell.ido)
-		result_check            &= ValidateIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.vlt)
 
 		if not result_check:
@@ -821,9 +821,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		result_check : bool                  = ValidateIdo(cell.idc)
-		result_check                        &= ValidateIdp(cell.ido)
-		result_check                        &= ValidateIdp(cell.idp)
+		result_check : bool                  = CheckIdo(cell.idc)
+		result_check                        &= CheckIdp(cell.ido)
+		result_check                        &= CheckIdp(cell.idp)
 		result_check                        &= bool(cell.vlt)
 
 		if not result_check:
@@ -890,8 +890,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			cells_start  = result_cells.data
 
-		result_check : bool      = ValidateIdo(cell.ido)
-		result_check            &= ValidateIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.idc)
 
 		if not result_check:
@@ -930,8 +930,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result      = T21_StructResult_StructCells()
 		result.code = CODES_COMPLETION.COMPLETED
 
-		result_check : bool      = ValidateIdo(cell.ido)
-		result_check            &= ValidateIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.idc)
 
 		if not result_check:
@@ -977,8 +977,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Выборки D-Ячеек
 	def ReadDVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
 		""" Запрос границ VLT D-Ячейки """
-		result_check : bool      = ValidateIdo(cell.ido)
-		result_check            &= ValidateIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.idc)
 
 		if not result_check:
@@ -1008,8 +1008,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadDVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
 		""" Запрос списка VLT """
-		result_check : bool      = ValidateIdo(cell.ido)
-		result_check            &= ValidateIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.idc)
 
 		if not result_check:

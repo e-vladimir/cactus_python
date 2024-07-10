@@ -15,7 +15,7 @@ cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=20)
 result = container.ReadSCell(cell)
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-print("[+]" if check else "[ ]", "Чтение")
+print("[+]" if check else "[ ]", "Чтение из пустого контейнера")
 
 result = container.DeleteSCell(cell)
 check  = result.code == CODES_COMPLETION.COMPLETED
@@ -62,3 +62,8 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_PROCESSING.SKIP in result.subcodes
 check &= result.data is None
 print("[+]" if check else "[ ]", "Пропуск записи с захватом изменений")
+
+result = container.ReadSCell(cell)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print("[+]" if check else "[ ]", "Чтение")
