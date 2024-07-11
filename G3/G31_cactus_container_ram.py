@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 08 июл 2024
+# 11 июл 2024
 
 from copy                  import copy
 
@@ -10,6 +10,7 @@ from G10_cactus_check      import *
 from G10_list              import DifferenceLists
 
 from G21_cactus_struct     import *
+from G21_struct_result     import T21_StructResult_List
 
 from G30_cactus_container  import C30_Container
 
@@ -150,7 +151,7 @@ class C31_ContainerRAM(C30_Container):
 
 		return result
 
-	# Логика данных: S-Ячейки
+	# Логика данных: Пакет S-Ячеек
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_transaction_mode: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		result                               = T21_StructResult_StructCells()
@@ -372,5 +373,133 @@ class C31_ContainerRAM(C30_Container):
 			result.data = cells[0]
 
 		return result
+
+	# Логика данных: Пакет D-Ячеек
+	def DeleteDCells(self, cell: T21_VltRange, flag_transaction_mode: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Удаление пакета D-Ячеек """
+		result                                   = T21_StructResult_StructCells()
+
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+
+		if not result_check:
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+										        subcodes = {CODES_DATA.ERROR_CHECK})
+
+		cells_before  : list[T20_StructCell] = []
+		cells_after   : list[T20_StructCell] = []
+
+		if flag_capture_delta:
+			result_read  = self.ReadDCells(cell)
+			if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                                                                           subcodes = result_read.subcodes)
+			cells_before = result_read.data
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		for vlt in list(dcells.keys()):
+			if bool(cell.vlt_l) and (vlt < cell.vlt_l): continue
+			if bool(cell.vlt_r) and (vlt > cell.vlt_r): continue
+
+			del dcells[vlt]
+
+		if flag_capture_delta:
+			result_read = self.ReadDCells(cell)
+			if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                                                                           subcodes = result_read.subcodes)
+			cells_after = result_read.data
+			result.data = DifferenceLists(cells_before, cells_after, True)
+
+			match len(result.data):
+				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+				case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	def ReadDCells(self, cell: T21_VltRange) -> T21_StructResult_StructCells:
+		""" Запрос пакета D-Ячеек """
+		result                                   = T21_StructResult_StructCells()
+
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+
+		if not result_check:
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+										        subcodes = {CODES_DATA.ERROR_CHECK})
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		for dcell in dcells.values():
+			if bool(cell.vlt_l) and (dcell.vlt < cell.vlt_l): continue
+			if bool(cell.vlt_r) and (dcell.vlt > cell.vlt_r): continue
+
+			result.data.append(copy(dcell))
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	# Логика данных: Диапазон VLT
+	def ReadDVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
+		""" Запрос границ cUT D-Ячейки """
+		result                                   = T21_StructResult_VltRange()
+		result.data                              = T21_VltRange()
+
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+
+		if not result_check:
+			return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
+										     subcodes = {CODES_DATA.ERROR_CHECK})
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		if not dcells: result.subcodes.add(CODES_DATA.NO_DATA)
+
+		vlt_min      : int | None                = None
+		vlt_max      : int | None                = None
+
+		for dcell in dcells.values():
+			if bool(cell.vlt_l) and (dcell.vlt < cell.vlt_l): continue
+			if bool(cell.vlt_r) and (dcell.vlt > cell.vlt_r): continue
+
+			if vlt_min is None: vlt_min = dcell.vlt
+			if vlt_max is None: vlt_max = dcell.vlt
+
+			vlt_min = min(vlt_min, dcell.vlt)
+			vlt_max = max(vlt_max, dcell.vlt)
+
+		result.data.vlt_l = vlt_min
+		result.data.vlt_r = vlt_max
+
+		return result
+
+	def ReadDVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
+		""" Запрос списка VLT """
+		result                                   = T21_StructResult_List()
+
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+
+		if not result_check:
+			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+										 subcodes = {CODES_DATA.ERROR_CHECK})
+
+		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		for dcell in dcells.values():
+			if bool(cell.vlt_l) and (dcell.vlt < cell.vlt_l): continue
+			if bool(cell.vlt_r) and (dcell.vlt > cell.vlt_r): continue
+
+			result.data.append(dcell.vlt)
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
 	# Логика управления
 	pass
