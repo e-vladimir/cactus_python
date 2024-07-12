@@ -72,6 +72,8 @@ cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=22)
 
 result = container.SyncSCell(cell, flag_capture_delta=False)
 check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCell(cell)
+check &= result.data == cell
 print("[+]" if check else "[ ]", "Синхронизация ячейки (обновление) без захвата изменений")
 
 cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=25)
@@ -85,6 +87,8 @@ cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=20)
 
 result = container.SyncSCell(cell, flag_capture_delta=False)
 check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCell(cell)
+check &= result.data.vlt == 25
 print("[+]" if check else "[ ]", "Синхронизация ячейки (пропуск) без захвата изменений")
 
 result = container.SyncSCell(cell, flag_capture_delta=True)
