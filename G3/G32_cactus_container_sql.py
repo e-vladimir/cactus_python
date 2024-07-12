@@ -287,9 +287,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		                                                   subcodes = {CODES_DATA.ERROR_CHECK},
 		                                                   data     = False)
 
-		result      = T21_StructResult_Bool()
-		result.code = CODES_COMPLETION.COMPLETED
-		result.data = True
+		result         = T21_StructResult_Bool()
+		result.code    = CODES_COMPLETION.COMPLETED
+		result.data    = True
 
 		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
