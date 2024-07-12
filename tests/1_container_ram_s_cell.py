@@ -67,3 +67,29 @@ result = container.ReadSCell(cell)
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= result.data == cell
 print("[+]" if check else "[ ]", "Чтение")
+
+cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=22)
+
+result = container.SyncSCell(cell, flag_capture_delta=False)
+check  = result.code == CODES_COMPLETION.COMPLETED
+print("[+]" if check else "[ ]", "Синхронизация ячейки (обновление) без захвата изменений")
+
+cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=25)
+
+result = container.SyncSCell(cell, flag_capture_delta=True)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check  = result.data == cell
+print("[+]" if check else "[ ]", "Синхронизация ячейки (обновление) с захватом изменений")
+
+cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=20)
+
+result = container.SyncSCell(cell, flag_capture_delta=False)
+check  = result.code == CODES_COMPLETION.COMPLETED
+print("[+]" if check else "[ ]", "Синхронизация ячейки (пропуск) без захвата изменений")
+
+result = container.SyncSCell(cell, flag_capture_delta=True)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= CODES_PROCESSING.SKIP in result.subcodes
+check  = result.data.vlt == 25
+print("[+]" if check else "[ ]", "Синхронизация ячейки (пропуск) с захватом изменений")
+
