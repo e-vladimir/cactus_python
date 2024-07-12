@@ -40,10 +40,10 @@ container.DisconnectMode_Timeout(True)
 container.DisconnectTimeout(2)
 
 container.Connect()
-for index in range(4):
+for index in range(6):
 	time.sleep(1)
 	result = container.StateConnected()
-	print(f"[{4 - index}] Текущее состояние: {'Подключено' if result.data else 'Отключено'}")
+	print(f"[{5 - index}] Текущее состояние: {'Подключено' if result.data else 'Отключено'}")
 
 result    = container.StateConnected()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
