@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
-# 10 июл 2024
+# 12 июл 2024
 
 from G00_status_codes         import *
 from G20_cactus_struct        import T20_StructCell
@@ -48,12 +48,10 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 check &= result.data == cell
 print("[+]" if check else "[ ]", "Запись с захватом изменений")
 
-cell.vlt = 21
-
 result = container.WriteDCell(cell, flag_capture_delta=True)
 check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cell
-print("[+]" if check else "[ ]", "Перезапись c захватом изменений")
+check &= CODES_PROCESSING.SKIP in result.subcodes
+print("[+]" if check else "[ ]", "Пропуск при перезаписи")
 
 result = container.ReadDCell(cell)
 check  = result.code == CODES_COMPLETION.COMPLETED

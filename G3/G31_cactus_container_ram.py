@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 11 июл 2024
+# 12 июл 2024
 
 from copy                  import copy
 
@@ -357,6 +357,10 @@ class C31_ContainerRAM(C30_Container):
 		cell_end    : T20_StructCell | None = None
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
+
+		if cell.vlt in dcells:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+											   subcodes = {CODES_PROCESSING.SKIP})
 
 		dcells[cell.vlt] = cell
 		self._d_cells[cell.ids] = dcells
