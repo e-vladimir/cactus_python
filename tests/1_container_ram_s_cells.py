@@ -116,3 +116,27 @@ result = container.DeleteSCells(cells, False, True)
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= len(result.data) == 10
 print("[+]" if check else "[ ]", "Удаление по списку c захватом изменений в последовательном режиме")
+
+cells = [T20_StructCell(idc="idc", ido="ido", idp=f"idp_{index}", vlp=f"value_{index}", vlt=10+index) for index in range(10)]
+result = container.SyncSCells(cells, False, False)
+check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCells(cells)
+print(result)
+check &= result.data == cells
+print("[+]" if check else "[ ]", "Синхронизация (обновление) без захвата изменений в последовательном режиме")
+
+cells = [T20_StructCell(idc="idc", ido="ido", idp=f"idp_{index}", vlp=f"value_{index}", vlt=20+index) for index in range(10)]
+result = container.SyncSCells(cells, False, True)
+print(result)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 10
+print("[+]" if check else "[ ]", "Синхронизация (обновление) с захватом изменений в последовательном режиме")
+
+result = container.SyncSCells(cells, False, False)
+check  = result.code == CODES_COMPLETION.COMPLETED
+print("[+]" if check else "[ ]", "Синхронизация (пропуск) без захвата изменений в последовательном режиме")
+
+result = container.SyncSCells(cells, False, False)
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print("[+]" if check else "[ ]", "Синхронизация (пропуск) с захватом изменений в последовательном режиме")

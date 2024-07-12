@@ -1,8 +1,12 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
 # 09 июл 2024
 
+import time
+
 from G00_status_codes         import *
+
 from G20_cactus_struct        import T20_StructCell
+
 from G31_cactus_container_ram import C31_ContainerRAM
 
 print("")
@@ -10,90 +14,167 @@ print("[== Тест Контейнера-RAM: S-Ячейка ==]")
 
 container = C31_ContainerRAM()
 
-cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=20)
+cell       = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=0)
+cell_wrong = T20_StructCell(idc="idc",            idp="idp", vlp="???", vlt=0)
 
+time_0 = time.time()
+result = container.ReadSCell(cell_wrong)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+check &= CODES_DATA.ERROR_CHECK in result.subcodes
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Попытка чтения ячейки с некорректными данными")
+
+time_0 = time.time()
 result = container.ReadSCell(cell)
+time_1 = time.time()
 check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.NO_DATA in result.subcodes
-print("[+]" if check else "[ ]", "Чтение из пустого контейнера")
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующей ячейки")
 
-result = container.DeleteSCell(cell)
+time_0 = time.time()
+result = container.DeleteSCell(cell_wrong, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+check &= CODES_DATA.ERROR_CHECK in result.subcodes
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Попытка удаления ячейки с некорректными данными (без захвата изменений)")
+
+time_0 = time.time()
+result = container.DeleteSCell(cell, False)
+time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-print("[+]" if check else "[ ]", "Удаление без захвата изменений")
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление несуществующей ячейки (без захвата изменений)")
 
-result = container.DeleteSCell(cell, flag_capture_delta=True)
+time_0 = time.time()
+result = container.DeleteSCell(cell, False)
+time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-print("[+]" if check else "[ ]", "Удаление с захватом изменений")
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление несуществующей ячейки (с захватом изменений)")
 
-result = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=False)
-check  = result.code == CODES_COMPLETION.COMPLETED
-print("[+]" if check else "[ ]", "Запись без захвата изменений")
-
-result = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=False)
-check  = result.code == CODES_COMPLETION.COMPLETED
-print("[+]" if check else "[ ]", "Перезапись без захвата изменений")
-
-result = container.WriteSCell(cell, flag_skip=True, flag_capture_delta=False)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check &= CODES_PROCESSING.SKIP in result.subcodes
-print("[+]" if check else "[ ]", "Пропуск записи без захвата изменений")
-
-result = container.DeleteSCell(cell, flag_capture_delta=True)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cell
-print("[+]" if check else "[ ]", "Удаление c захватом изменений")
-
-result = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=True)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cell
-print("[+]" if check else "[ ]", "Запись с захватом изменений")
-
-cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=21)
-
-result = container.WriteSCell(cell, flag_skip=False, flag_capture_delta=True)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cell
-print("[+]" if check else "[ ]", "Перезапись c захватом изменений")
-
-result = container.WriteSCell(cell, flag_skip=True, flag_capture_delta=True)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check &= CODES_PROCESSING.SKIP in result.subcodes
-check &= result.data is None
-print("[+]" if check else "[ ]", "Пропуск записи с захватом изменений")
-
+time_0 = time.time()
+result = container.WriteSCell(cell_wrong, False, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+check &= CODES_DATA.ERROR_CHECK in result.subcodes
 result = container.ReadSCell(cell)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cell
-print("[+]" if check else "[ ]", "Чтение")
+check &= result.code == CODES_COMPLETION.INTERRUPTED
+check &= CODES_DATA.NO_DATA in result.subcodes
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Попытка записи ячейки с некорректными данными (без пропуска, без захвата изменений)")
 
-cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=22)
-
-result = container.SyncSCell(cell, flag_capture_delta=False)
+time_0 = time.time()
+result = container.WriteSCell(cell, False, False)
+time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCell(cell)
+check &= result.code == CODES_COMPLETION.COMPLETED
 check &= result.data == cell
-print("[+]" if check else "[ ]", "Синхронизация ячейки (обновление) без захвата изменений")
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Запись ячейки (без пропуска, без захвата изменений)")
 
-cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=25)
+cell.vlp = "123"
 
-result = container.SyncSCell(cell, flag_capture_delta=True)
-check  = result.code == CODES_COMPLETION.COMPLETED
-check  = result.data == cell
-print("[+]" if check else "[ ]", "Синхронизация ячейки (обновление) с захватом изменений")
-
-cell = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=20)
-
-result = container.SyncSCell(cell, flag_capture_delta=False)
+time_0 = time.time()
+result = container.WriteSCell(cell, False, False)
+time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCell(cell)
-check &= result.data.vlt == 25
-print("[+]" if check else "[ ]", "Синхронизация ячейки (пропуск) без захвата изменений")
+check &= result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись ячейки (без пропуска, без захвата изменений)")
 
-result = container.SyncSCell(cell, flag_capture_delta=True)
+cell.vlp = "321"
+
+time_0 = time.time()
+result = container.WriteSCell(cell, False, True)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись ячейки (без пропуска, c захватом изменений)")
+
+cell.vlp = "111"
+
+time_0 = time.time()
+result = container.WriteSCell(cell, True, False)
+time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_PROCESSING.SKIP in result.subcodes
-check  = result.data.vlt == 25
-print("[+]" if check else "[ ]", "Синхронизация ячейки (пропуск) с захватом изменений")
+result = container.ReadSCell(cell)
+check &= result.data.vlp == "321"
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Пропуск перезаписи ячейки (без захвата изменений)")
 
+time_0 = time.time()
+result = container.WriteSCell(cell, True, True)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= CODES_PROCESSING.SKIP in result.subcodes
+result = container.ReadSCell(cell)
+check &= result.data.vlp == "321"
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Пропуск перезаписи ячейки (с захватом изменений)")
+
+time_0 = time.time()
+result = container.DeleteSCell(cell, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCell(cell)
+check &= CODES_DATA.NO_DATA in result.subcodes
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление ячейки (без захвата изменений)")
+
+time_0 = time.time()
+result = container.SyncSCell(cell_wrong, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+check &= CODES_DATA.ERROR_CHECK in result.subcodes
+result = container.ReadSCell(cell)
+check &= result.code == CODES_COMPLETION.INTERRUPTED
+check &= CODES_DATA.NO_DATA in result.subcodes
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Попытка синхронизации ячейки с некорректными данными (без захвата изменений)")
+
+time_0 = time.time()
+result = container.SyncSCell(cell, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCell(cell)
+check &= result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация ячейки (запись) (без захвата изменений)")
+
+cell.vlt = 1
+
+time_0 = time.time()
+result = container.SyncSCell(cell, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCell(cell)
+check &= result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация ячейки (обновление) (без захвата изменений)")
+
+cell.vlt = 0
+
+time_0 = time.time()
+result = container.SyncSCell(cell, False)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+result = container.ReadSCell(cell)
+check &= result.code == CODES_COMPLETION.COMPLETED
+check &= result.data.vlt == 1
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация ячейки (пропуск) (без захвата изменений)")
+
+cell.vlt = 2
+
+time_0 = time.time()
+result = container.SyncSCell(cell, True)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация ячейки (обновление) (с захватом изменений)")
+
+cell.vlt = 0
+
+time_0 = time.time()
+result = container.SyncSCell(cell, True)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= CODES_PROCESSING.SKIP in result.subcodes
+check &= result.data.vlt == 2
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация ячейки (пропуск) (с захватом изменений)")

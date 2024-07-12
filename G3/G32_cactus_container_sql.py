@@ -408,7 +408,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			                                   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_cell         = self.ReadSCell(cell)
-		if not result_cell.code == CODES_COMPLETION.COMPLETED:
+		check_error  : bool = not result_cell.code == CODES_COMPLETION.INTERRUPTED
+		check_error        &= CODES_DATA.NO_DATA in result_cell.subcodes
+		if check_error:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 			                                   subcodes = result_cell.subcodes)
 
