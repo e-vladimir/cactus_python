@@ -120,6 +120,14 @@ check &= CODES_DATA.NO_DATA in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление ячейки (без захвата изменений)")
 
 time_0 = time.time()
+result = container.WriteSCell(cell, False, False)
+result = container.DeleteSCell(cell, True)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == cell
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление ячейки (с захватом изменений)")
+
+time_0 = time.time()
 result = container.SyncSCell(cell_wrong, False)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.INTERRUPTED
