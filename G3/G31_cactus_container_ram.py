@@ -437,6 +437,76 @@ class C31_ContainerRAM(C30_Container):
 
 		return result
 
+	# Логика данных: Пакет D-Ячеек
+	def DeleteDCells(self, cell: T21_VltRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Удаление пакета D-Ячеек """
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+
+		if not result_check:
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                    subcodes = {CODES_DATA.ERROR_CHECK})
+
+		result                                   = T21_StructResult_StructCells()
+
+		cells_before : list[T20_StructCell]      = []
+		cells_after  : list[T20_StructCell]      = []
+
+		if flag_capture_delta: cells_before = self.ReadDCells(cell).data
+
+		dcells = self._d_cells.get(cell.ids, dict())
+
+		for vlt in list(dcells.keys()):
+			result_skip  = False
+			result_skip ^= bool(cell.vlt_l) and vlt >= cell.vlt_l
+			result_skip ^= bool(cell.vlt_r) and vlt <= cell.vlt_r
+
+			if result_skip: continue
+
+			del dcells[vlt]
+
+		if flag_capture_delta:
+			cells_after = self.ReadDCells(cell).data
+
+			result.data = DifferenceLists(cells_before, cells_after, True)
+
+			match len(result.data):
+				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+				case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	def ReadDCells(self, cell: T21_VltRange) -> T21_StructResult_StructCells:
+		""" Запрос пакета D-Ячеек """
+		result_check : bool                      = CheckIdo(cell.ido)
+		result_check                            &= CheckIdp(cell.idp)
+
+		if not result_check:
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                    subcodes = {CODES_DATA.ERROR_CHECK})
+
+		result                                   = T21_StructResult_StructCells()
+
+		cells_before : list[T20_StructCell]      = []
+		cells_after  : list[T20_StructCell]      = []
+
+		dcells = self._d_cells.get(cell.ids, dict())
+
+		for vlt in list(dcells.keys()):
+			result_skip  = False
+			result_skip ^= bool(cell.vlt_l) and vlt >= cell.vlt_l
+			result_skip ^= bool(cell.vlt_r) and vlt <= cell.vlt_r
+
+			if result_skip: continue
+
+			result.data.append(dcells[vlt])
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
 	# Логика данных: Диапазон VLT
 	def ReadVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
 		""" Запрос границ cUT D-Ячейки """
