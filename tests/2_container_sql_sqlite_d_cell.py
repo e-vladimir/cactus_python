@@ -11,7 +11,7 @@ from G20_cactus_struct        import T20_StructCell
 from G32_cactus_container_sql import C32_ContainerSQLite
 
 print("")
-print("[== Тест Контейнера-SQL.SQLite: S-Ячейка ==]")
+print("[== Тест Контейнера-SQL.SQLite: D-Ячейка ==]")
 
 try   : os.remove("./data.sqlite")
 except: pass
