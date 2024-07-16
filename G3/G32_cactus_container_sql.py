@@ -8,6 +8,7 @@ from   G00_cactus_codes         import *
 from   G00_status_codes         import *
 
 from   G10_cactus_check         import *
+from G10_cactus_convertors import IdoFromIds, IdpFromIds
 from   G10_list                 import DifferenceLists
 
 from   G21_cactus_struct        import *
@@ -40,7 +41,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def OptionsFilename(self, filename: str = None) -> T21_StructResult_String:
 		""" Запрос/Установка параметра подключения: Имя файла """
 		if filename is None: return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
-		                                                    data = self._options_filename)
+															data = self._options_filename)
 
 		else               :                                       self._options_filename = filename
 
@@ -65,17 +66,17 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		""" Подключение к СУБД """
 		if self.StateConnected().data:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
-			                             subcodes = {CODES_PROCESSING.SKIP})
+										 subcodes = {CODES_PROCESSING.SKIP})
 
 		self.connection = None
 		
 		try   :
 			self.connection = s3m.Connection(path              = self.OptionsFilename().data,
-	                                         isolation_level   = None,
-	                                         check_same_thread = False)
+											 isolation_level   = None,
+											 check_same_thread = False)
 		except:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_CONNECTION})
+										 subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try   :
 			cursor = self.connection.cursor()
@@ -86,14 +87,14 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		self.PrepareDisconnect()
 
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = True)
+									 data = True)
 
 	def Disconnect(self) -> T21_StructResult_Bool:
 		""" Отключение от СУБД """
 		if self.connection is None:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
-			                             subcodes = {CODES_PROCESSING.SKIP},
-			                             data     = True)
+										 subcodes = {CODES_PROCESSING.SKIP},
+										 data     = True)
 
 		try   : self.connection.close()
 		except: pass
@@ -101,7 +102,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		self.connection = None
 
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = True)
+									 data = True)
 
 	# Механика управления: Выполнение SQL
 	def ExecSql(self, sql: str | list[str]) -> T31_StructResult_CursorS3m:
@@ -110,38 +111,38 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if self.connection is None:
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-		                                      subcodes = {CODES_DB.ERROR_CONNECTION})
+											  subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			sql_cursor      = self.connection.cursor()
 
-			if   type(sql) is str  : sql_cursor.execute(sql + ';')
+			if   type(sql) is str  : sql_cursor.execute(sql + ';' if ';' not in sql else '')
 			elif type(sql) is list : sql_cursor.executescript('\n'.join(sql))
 
 			self.connection.commit()
 
 			return T31_StructResult_CursorS3m(code   = CODES_COMPLETION.COMPLETED,
-			                                  cursor = sql_cursor)
+											  cursor = sql_cursor)
 
 		except sqlite3.IntegrityError:
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_DB})
+											  subcodes = {CODES_DB.ERROR_DB})
 
 		except sqlite3.ProgrammingError:
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_SQL})
+											  subcodes = {CODES_DB.ERROR_SQL})
 
 		except sqlite3.OperationalError:  # Сюда попадают и ошибки SQL-синтаксиса
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_SQL})
+											  subcodes = {CODES_DB.ERROR_SQL})
 
 		except:
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_DB})
+											  subcodes = {CODES_DB.ERROR_DB})
 
 	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_StructResult_Int:
 		"""Выполнение запроса с числом строк"""
@@ -150,7 +151,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			self.PrepareDisconnect()
 
 			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
-			                            subcodes = result_cursor.subcodes)
+										subcodes = result_cursor.subcodes)
 
 		try   :
 			cursor      = result_cursor.cursor
@@ -158,21 +159,21 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
-			                            subcodes = {CODES_DB.ERROR_DB})
+										subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
 		return T21_StructResult_Int(code = CODES_COMPLETION.COMPLETED,
-		                            data = count)
+									data = count)
 
-	def ExecSqlSelectSingle(self, sql: str) -> T21_StructResult_String:
+	def ExecSqlSelectSingle(self, sql: str | list[str]) -> T21_StructResult_String:
 		"""Выполнение запроса с получением значения"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 
 			return T21_StructResult_String(code     = result_cursor.code,
-			                               subcodes = result_cursor.subcodes)
+										   subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -180,24 +181,24 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-			                               subcodes = {CODES_DB.ERROR_DB})
+										   subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
 		if not data:
 			return T21_StructResult_String(code     = CODES_COMPLETION.COMPLETED,
-		                                   subcodes = {CODES_DATA.NO_DATA})
+										   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
-		                               data = data[0])
+									   data = data[0])
 
-	def ExecSqlSelectHList(self, sql: str) -> T21_StructResult_List:
+	def ExecSqlSelectHList(self, sql: str | list[str]) -> T21_StructResult_List:
 		"""Выполнение запроса с получением горизонтального списка значений"""
 		result_cursor = self.ExecSql(sql)
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 			return T21_StructResult_List(code     = result_cursor.code,
-			                             subcodes = result_cursor.subcodes)
+										 subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -207,7 +208,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			if data is None: data = []
 		except:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_DB})
+										 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -222,13 +223,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return result
 
-	def ExecSqlSelectVList(self, sql: str) -> T21_StructResult_List:
+	def ExecSqlSelectVList(self, sql: str | list[str]) -> T21_StructResult_List:
 		"""Выполнение запроса с получением вертикального списка значений"""
 		result_cursor  = self.ExecSql(sql)
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 			return T21_StructResult_List(code     = result_cursor.code,
-			                             subcodes = result_cursor.subcodes)
+										 subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -236,7 +237,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_DB})
+										 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -251,13 +252,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return result
 
-	def ExecSqlSelectMatrix(self, sql: str) -> T21_StructResult_List:
+	def ExecSqlSelectMatrix(self, sql: str | list[str]) -> T21_StructResult_List:
 		"""Выполнение запроса с получением матрицы"""
 		result_cursor  = self.ExecSql(sql)
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 			return T21_StructResult_List(code     = result_cursor.code,
-			                             subcodes = result_cursor.subcodes)
+										 subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -265,7 +266,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_DB})
+										 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -280,12 +281,12 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return result
 
-	# Логика данных: Управление регистрацией класса
+	# Логика данных: Регистрация класса
 	def RegisterClass(self, idc: str) -> T21_StructResult_Bool:
 		""" Регистрация класса структурного объекта """
 		if not CheckIdc(idc): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                   subcodes = {CODES_DATA.ERROR_CHECK},
-		                                                   data     = False)
+														   subcodes = {CODES_DATA.ERROR_CHECK},
+														   data     = False)
 
 		result         = T21_StructResult_Bool()
 		result.code    = CODES_COMPLETION.COMPLETED
@@ -321,11 +322,12 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return result
 
-	# Логика данных: Управление S-Ячейкой
+	# Логика данных: S-Ячейка
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		result_check  : bool                = CheckIdo(cell.ido)
-		result_check                       &= CheckIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -342,11 +344,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
+											   subcodes = result_sql.subcodes)
 
 		elif   result_sql.data == 0                          :
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
+											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                              = T21_StructResult_StructCell()
 		result.code                         = CODES_COMPLETION.COMPLETED
@@ -363,24 +365,25 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result_check : bool      = CheckIdo(cell.ido)
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
+											   subcodes = result_sql.subcodes)
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2 :
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
+											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
 
@@ -393,26 +396,27 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_cell.vlt = int(data[1])
 		except                              :
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CONVERT})
+											   subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		result.data = result_cell
 		return result
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool = CheckIdo(cell.ido)
-		result_check       &= CheckIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_cell         = self.ReadSCell(cell)
 		check_error  : bool = not result_cell.code == CODES_COMPLETION.INTERRUPTED
 		check_error        &= CODES_DATA.NO_DATA in result_cell.subcodes
 		if check_error:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_cell.subcodes)
+											   subcodes = result_cell.subcodes)
 
 		cell_in_container   = result_cell.data
 
@@ -432,7 +436,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_cell         = self.WriteSCell(cell, False, flag_capture_delta)
 		if not result_cell.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_cell.subcodes)
+											   subcodes = result_cell.subcodes)
 
 		result.subcodes = result_cell.subcodes
 
@@ -442,12 +446,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result_check : bool                  = CheckIdo(cell.ido)
-		result_check                        &= CheckIdp(cell.idp)
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cell_start   : T20_StructCell | None = None
 
@@ -455,13 +460,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		sql          : str  = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
 		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
-		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.IDS.name_sql}='{cell.ids}', {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
+		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
+											   subcodes = result_sql.subcodes)
 
 		result                               = T21_StructResult_StructCell()
 		result.code                          = CODES_COMPLETION.COMPLETED
@@ -473,6 +478,345 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			if result.data is None: result.subcodes.add(CODES_PROCESSING.SKIP)
 		elif not result_sql.data:
 			result.subcodes.add(CODES_PROCESSING.SKIP)
+
+		return result
+
+	# Логика данных: Пакет S-Ячеек
+	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Удаление пакета S-Ячеек """
+		result_check : bool = False
+		result_check       ^= type(cell_cells) is T20_StructCell
+		result_check       ^= type(cell_cells) is list
+
+		if not result_check:
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+												subcodes = {CODES_DATA.ERROR_TYPE})
+
+		cells_before : list[T20_StructCell] = []
+		cells_after  : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_before = self.ReadSCells(cell_cells).data
+
+		result            = T21_StructResult_StructCells()
+
+		if   type(cell_cells) is T20_StructCell:
+			result_check : bool = CheckIdo(cell_cells.idc)
+
+			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
+
+			sql     : str       = f"DELETE FROM {cell_cells.idc}"
+
+			filters : list[str] = []
+			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}%')")
+			if bool(cell_cells.idp): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%{cell_cells.idp}')")
+			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '{cell_cells.vlp}' = '{cell_cells.vlp}')")
+			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} LIKE '{cell_cells.vlt}' = '{cell_cells.vlt}')")
+
+			if filters: sql += " WHERE " + ' AND '.join(filters)
+
+			result_sql          = self.ExecSqlSelectMatrix(sql)
+
+			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+																	                                  subcodes = result_sql.subcodes)
+
+			for raw_line in result_sql.data:
+				try:
+					ids = raw_line[0]
+					vlp = raw_line[1]
+					vlt = raw_line[2]
+
+					result_cell = T20_StructCell()
+					result_cell.idc = cell_cells.idc
+					result_cell.ido = IdoFromIds(ids)
+					result_cell.idp = IdpFromIds(ids)
+					result_cell.vlp = vlp
+					result_cell.vlt = int(vlt)
+				except:
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+
+		elif type(cell_cells) is list          :
+			filters : dict[str, list[str]] = dict()
+
+			for cell in cell_cells:
+				result_check: bool      = CheckIdo(cell.idc)
+				result_check           &= CheckIdp(cell.ido)
+				result_check           &= CheckIdp(cell.idp)
+
+				if not result_check:
+					result.subcodes.add(CODES_DATA.ERROR_CHECK)
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+					continue
+
+				filters_idc : list[str] = filters.get(cell.idc, [])
+				filters_idc.append(cell.ids)
+
+				filters[cell.idc]       = filters_idc
+
+			sql    : list[str]            = []
+			sql.append("BEGIN TRANSACTION;")
+
+			for idc, idss in filters.items():
+				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql += ', '.join(f"'{ids}'" for ids in idss)
+				select_sql += ");"
+
+				sql.append(select_sql)
+
+			sql.append("COMMIT;")
+
+			result_sql          = self.ExecSqlSelectMatrix(sql)
+
+			if not result_sql.code == CODES_COMPLETION.COMPLETED:
+				self.ExecSql("ROLLBACK;")
+
+				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+				                                    subcodes = result_sql.subcodes)
+
+			for raw_line in result_sql.data:
+				try:
+					ids = raw_line[0]
+					vlp = raw_line[1]
+					vlt = raw_line[2]
+
+					result_cell = T20_StructCell()
+					result_cell.idc = cell_cells.idc
+					result_cell.ido = IdoFromIds(ids)
+					result_cell.idp = IdpFromIds(ids)
+					result_cell.vlp = vlp
+					result_cell.vlt = int(vlt)
+				except:
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+
+		if flag_capture_delta:
+			cells_after = self.ReadSCells(cell_cells).data
+
+			result.data = DifferenceLists(cells_before, cells_after, True)
+
+			match len(result.data):
+				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+				case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
+		""" Запрос пакета S-Ячеек """
+		result_check : bool = False
+		result_check       ^= type(cell_cells) is T20_StructCell
+		result_check       ^= type(cell_cells) is list
+
+		if not result_check:
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+												subcodes = {CODES_DATA.ERROR_TYPE})
+
+		result            = T21_StructResult_StructCells()
+
+		if   type(cell_cells) is T20_StructCell:
+			result_check : bool = CheckIdo(cell_cells.idc)
+
+			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
+
+			sql     : str       = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell_cells.idc}"
+
+			filters : list[str] = []
+			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}%')")
+			if bool(cell_cells.idp): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%{cell_cells.idp}')")
+			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '{cell_cells.vlp}' = '{cell_cells.vlp}')")
+			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} LIKE '{cell_cells.vlt}' = '{cell_cells.vlt}')")
+
+			if filters: sql += " WHERE " + ' AND '.join(filters)
+
+			result_sql          = self.ExecSqlSelectMatrix(sql)
+
+			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+																	                                  subcodes = result_sql.subcodes)
+
+			for raw_line in result_sql.data:
+				try:
+					ids = raw_line[0]
+					vlp = raw_line[1]
+					vlt = raw_line[2]
+
+					result_cell = T20_StructCell()
+					result_cell.idc = cell_cells.idc
+					result_cell.ido = IdoFromIds(ids)
+					result_cell.idp = IdpFromIds(ids)
+					result_cell.vlp = vlp
+					result_cell.vlt = int(vlt)
+
+					result.data.append(result_cell)
+				except:
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+
+		elif type(cell_cells) is list          :
+			filters : dict[str, list[str]] = dict()
+
+			for cell in cell_cells:
+				result_check: bool      = CheckIdo(cell.idc)
+				result_check           &= CheckIdp(cell.ido)
+				result_check           &= CheckIdp(cell.idp)
+
+				if not result_check:
+					result.subcodes.add(CODES_DATA.ERROR_CHECK)
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+					continue
+
+				filters_idc : list[str] = filters.get(cell.idc, [])
+				filters_idc.append(cell.ids)
+
+				filters[cell.idc]       = filters_idc
+
+			sql    : list[str]            = []
+
+			for idc, idss in filters.items():
+				select_sql  = f"SELECT '{idc}' as '{CACTUS_STRUCT_DATA.IDC.name_sql}', {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql += ', '.join(f"'{ids}'" for ids in idss)
+				select_sql += ")"
+
+				sql.append(select_sql)
+
+			sql    : str                  = " UNION ALL ".join(sql)
+
+			result_sql          = self.ExecSqlSelectMatrix(sql)
+
+			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+																	                                  subcodes = result_sql.subcodes)
+
+			for raw_line in result_sql.data:
+				try:
+					idc = raw_line[0]
+					ids = raw_line[1]
+					vlp = raw_line[2]
+					vlt = raw_line[3]
+
+					result_cell = T20_StructCell()
+					result_cell.idc = idc
+					result_cell.ido = IdoFromIds(ids)
+					result_cell.idp = IdpFromIds(ids)
+					result_cell.vlp = vlp
+					result_cell.vlt = int(vlt)
+
+					result.data.append(result_cell)
+				except:
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Запись пакета S-Ячеек """
+		result                              = T21_StructResult_StructCells()
+
+		cells_before : list[T20_StructCell] = []
+		cells_after  : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_before = self.ReadSCells(cells).data
+
+		filters      : dict[str, list[str]] = dict()
+
+		sqls: list[str] = []
+
+		for cell in cells:
+			result_check : bool = CheckIdo(cell.idc)
+			result_check       &= CheckIdp(cell.ido)
+			result_check       &= CheckIdp(cell.idp)
+
+			if not result_check:
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
+			sql      += f";"
+
+			sqls.append(sql)
+
+		if not sqls: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                             subcodes = {CODES_DATA.ERROR_CHECK})
+
+		sqls.insert(0, "BEGIN TRANSACTION;")
+		sqls.append("COMMIT;")
+
+		result_sql = self.ExecSql(sqls)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED:
+			self.ExecSql("ROLLBACK;")
+
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                    subcodes = result_sql.subcodes)
+
+		if flag_capture_delta:
+			cells_after = self.ReadSCells(cells).data
+
+			result.data = DifferenceLists(cells_before, cells_after)
+
+			match len(result.data):
+				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+				case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	def WriteSCells(self, cells: list[T20_StructCell], flag_skip: bool = False,  flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
+		""" Запись пакета S-Ячеек """
+		result                              = T21_StructResult_StructCells()
+
+		cells_before : list[T20_StructCell] = []
+		cells_after  : list[T20_StructCell] = []
+
+		if flag_capture_delta: cells_before = self.ReadSCells(cells).data
+
+		filters      : dict[str, list[str]] = dict()
+
+		sqls: list[str] = []
+
+		for cell in cells:
+			result_check: bool = CheckIdo(cell.idc)
+			result_check &= CheckIdp(cell.ido)
+			result_check &= CheckIdp(cell.idp)
+
+			if not result_check:
+				result.subcodes.add(CODES_DATA.ERROR_CHECK)
+				result.subcodes.add(CODES_PROCESSING.PARTIAL)
+				continue
+
+			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
+			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
+			sql               += ';'
+
+			sqls.append(sql)
+
+		if not sqls: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                             subcodes = {CODES_DATA.ERROR_CHECK})
+
+		sqls.insert(0, "BEGIN TRANSACTION;")
+		sqls.append("COMMIT;")
+
+		result_sql = self.ExecSql(sqls)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED:
+			self.ExecSql("ROLLBACK;")
+
+			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+			                                    subcodes = result_sql.subcodes)
+
+		if flag_capture_delta:
+			cells_after = self.ReadSCells(cells).data
+
+			result.data = DifferenceLists(cells_before, cells_after, True)
+
+			match len(result.data):
+				case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+				case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result
 
@@ -548,20 +892,20 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		""" Подключение к СУБД """
 		if self.StateConnected().data:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
-			                             subcodes = {CODES_PROCESSING.SKIP})
+										 subcodes = {CODES_PROCESSING.SKIP})
 
 		self.connection = None
 
 		try:
 			self.connection = psycopg2.connect(host            = self._options_server_ip,
-			                                   port            = self._options_server_tcp_port,
-			                                   dbname          = self._options_server_dbase,
-			                                   user            = self._options_server_login,
-			                                   password        = self._options_server_password,
-			                                   connect_timeout = 5)
+											   port            = self._options_server_tcp_port,
+											   dbname          = self._options_server_dbase,
+											   user            = self._options_server_login,
+											   password        = self._options_server_password,
+											   connect_timeout = 5)
 		except:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_CONNECTION})
+										 subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			cursor = self.connection.cursor()
@@ -572,14 +916,14 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		self.PrepareDisconnect()
 
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = True)
+									 data = True)
 
 	def Disconnect(self) -> T21_StructResult_Bool:
 		""" Отключение от СУБД """
 		if self.connection is None:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
-			                             subcodes = {CODES_PROCESSING.SKIP},
-			                             data     = True)
+										 subcodes = {CODES_PROCESSING.SKIP},
+										 data     = True)
 
 		try:
 			self.connection.close()
@@ -589,7 +933,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		self.connection = None
 
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = True)
+									 data = True)
 
 	# Механика управления: Выполнение SQL
 	def ExecSql(self, sql: str | list[str]) -> T31_StructResult_CursorS3m:
@@ -598,7 +942,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if self.connection is None:
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-		                                      subcodes = {CODES_DB.ERROR_CONNECTION})
+											  subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			sql_cursor      = self.connection.cursor()
@@ -609,27 +953,27 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.connection.commit()
 
 			return T31_StructResult_CursorS3m(code   = CODES_COMPLETION.COMPLETED,
-			                                  cursor = sql_cursor)
+											  cursor = sql_cursor)
 
 		except psycopg2.IntegrityError:
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_DB})
+											  subcodes = {CODES_DB.ERROR_DB})
 
 		except psycopg2.ProgrammingError:
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_SQL})
+											  subcodes = {CODES_DB.ERROR_SQL})
 
 		except psycopg2.OperationalError:  # Сюда попадают и ошибки SQL-синтаксиса
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_SQL})
+											  subcodes = {CODES_DB.ERROR_SQL})
 
 		except:
 			self.PrepareDisconnect()
 			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_DB})
+											  subcodes = {CODES_DB.ERROR_DB})
 
 	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_StructResult_Int:
 		"""Выполнение запроса с числом строк"""
@@ -638,7 +982,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.PrepareDisconnect()
 
 			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
-			                            subcodes = result_cursor.subcodes)
+										subcodes = result_cursor.subcodes)
 
 		try   :
 			cursor      = result_cursor.cursor
@@ -646,12 +990,12 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
-			                            subcodes = {CODES_DB.ERROR_DB})
+										subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
 		return T21_StructResult_Int(code = CODES_COMPLETION.COMPLETED,
-		                            data = count)
+									data = count)
 
 	def ExecSqlSelectSingle(self, sql: str) -> T21_StructResult_String:
 		"""Выполнение запроса с получением значения"""
@@ -660,7 +1004,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.PrepareDisconnect()
 
 			return T21_StructResult_String(code     = result_cursor.code,
-			                               subcodes = result_cursor.subcodes)
+										   subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -668,16 +1012,16 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-			                               subcodes = {CODES_DB.ERROR_DB})
+										   subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
 		if not data:
 			return T21_StructResult_String(code     = CODES_COMPLETION.COMPLETED,
-		                                   subcodes = {CODES_DATA.NO_DATA})
+										   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
-		                               data = data[0])
+									   data = data[0])
 
 	def ExecSqlSelectHList(self, sql: str) -> T21_StructResult_List:
 		"""Выполнение запроса с получением горизонтального списка значений"""
@@ -685,7 +1029,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 			return T21_StructResult_List(code     = result_cursor.code,
-			                             subcodes = result_cursor.subcodes)
+										 subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -693,7 +1037,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_DB})
+										 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -714,7 +1058,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 			return T21_StructResult_List(code     = result_cursor.code,
-			                             subcodes = result_cursor.subcodes)
+										 subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -722,7 +1066,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_DB})
+										 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -743,7 +1087,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 			return T21_StructResult_List(code     = result_cursor.code,
-			                             subcodes = result_cursor.subcodes)
+										 subcodes = result_cursor.subcodes)
 
 		try:
 			cursor           = result_cursor.cursor
@@ -751,7 +1095,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except:
 			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DB.ERROR_DB})
+										 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 

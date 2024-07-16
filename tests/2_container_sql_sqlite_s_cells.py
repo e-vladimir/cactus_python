@@ -1,21 +1,35 @@
-# ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
-# 14 июл 2024
+# ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.SQLite
+# 12 июл 2024
 
+import os
 import time
-from copy import deepcopy
+from   copy import deepcopy
 
 from G00_status_codes         import *
 
 from G20_cactus_struct        import T20_StructCell
 
-from G31_cactus_container_ram import C31_ContainerRAM
+from G32_cactus_container_sql import C32_ContainerSQLite
 
 print("")
-print("[== Тест Контейнера-RAM: Пакет S-Ячеек ==]")
+print("[== Тест Контейнера-SQL.SQLite: Пакет S-Ячеек ==]")
 
-container = C31_ContainerRAM()
+try   : os.remove("./data.sqlite")
+except: pass
 
-cell        =  T20_StructCell(idc="idc", ido="ido")
+container = C32_ContainerSQLite()
+container.OptionsFilename("./data.sqlite")
+container.Connect()
+
+cell       = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=0)
+
+time_0 = time.time()
+result = container.RegisterClass(cell.idc)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Регистрация класса")
+
+cell        =  T20_StructCell(idc="idc")
 cells       = [T20_StructCell(idc="idc", ido="ido", idp=f"idp_{index}", vlp=f"value_{index}", vlt=10) for index in range(10)]
 cells_new   = [T20_StructCell(idc="idc", ido="ido", idp=f"idp_{index}", vlp=f"value_{index + 10}", vlt=20) for index in range(10)]
 cells_old   = [T20_StructCell(idc="idc", ido="ido", idp=f"idp_{index}", vlp=f"value_{index + 10}", vlt=1) for index in range(10)]
@@ -123,7 +137,7 @@ time_0 = time.time()
 result = container.WriteSCells(cells, False, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cells
+check &= result.data == cells_new
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись пакета ячеек (с захватом изменений)")
 
 time_0 = time.time()
@@ -193,8 +207,6 @@ check &= len(result.data) == 9
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по списку с некорректными параметрами (с захватом изменений)")
 
 container.DeleteSCells(cell)
-
-# TODO: ПРОВЕРИТЬ СИНХРОНИЗАЦИЮ
 
 time_0 = time.time()
 result = container.SyncSCells(cells, False)
