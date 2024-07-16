@@ -1,5 +1,6 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
 # 16 июл 2024
+from copy import copy
 
 import psycopg2
 import sqlite3
@@ -985,9 +986,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 		
-		if not result_check:
-			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-											    subcodes = {CODES_DATA.ERROR_CHECK})
+		if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+											                                                      subcodes = {CODES_DATA.ERROR_CHECK})
 
 		filters      : list[str] = []
 		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
@@ -999,8 +999,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		result_sql = self.ExecSqlSelectMatrix(sql)
 
-		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED,
-		                                                                                          subcodes=result_sql.subcodes)
+		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                                          subcodes = result_sql.subcodes)
 
 		result                   = T21_StructResult_StructCells()
 		result.code              = CODES_COMPLETION.COMPLETED
@@ -1025,6 +1025,67 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		match len(result.data):
 			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
 			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	# Логика данных: Диапазон VLT
+	def ReadVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
+		""" Запрос границ cUT D-Ячейки """
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
+
+		if not result_check                                 : return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
+			                                                                                   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		result                   = T21_StructResult_VltRange()
+
+		filters      : list[str] = []
+		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
+		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
+		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
+
+		sql          : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE"
+		sql                     += ' AND '.join(filters)
+
+		result_sql = self.ExecSqlSelectHList(sql)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                                       subcodes = result_sql.subcodes)
+		try   :
+			result.data       = copy(cell)
+			result.data.vlt_l = result_sql.data[0]
+			result.data.vlt_r = result_sql.data[1]
+		except:			                                      return T21_StructResult_VltRange(code     =  CODES_COMPLETION.INTERRUPTED,
+			                                                                                   subcodes = {CODES_DATA.ERROR_CONVERT})
+
+		return result
+
+	def ReadVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
+		""" Запрос списка VLT """
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
+
+		if not result_check                                 : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+			                                                                               subcodes = {CODES_DATA.ERROR_CHECK})
+
+		result                   = T21_StructResult_List()
+
+		filters      : list[str] = []
+		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
+		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
+		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
+
+		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE"
+		sql                     += ' AND '.join(filters)
+
+		result_sql = self.ExecSqlSelectVList(sql)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                                   subcodes = result_sql.subcodes)
+
+		result.data = result_sql.data
 
 		return result
 
