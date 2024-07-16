@@ -820,6 +820,123 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		return result
 
+	# Логика данных: D-Ячейка
+	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+		""" Удаление D-Ячейки """
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
+		result_check            &= bool(cell.vlt)
+
+		if not result_check:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		cell_start  : T20_StructCell | None = None
+
+		if flag_capture_delta:
+			result_cell = self.ReadDCell(cell)
+			cell_start  = result_cell.data
+
+		sql         : str                   = f"DELETE FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
+		result_sql                          = self.ExecSqlSelectRowCount(sql)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED :
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = result_sql.subcodes)
+
+		elif   result_sql.data == 0                          :
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
+											   subcodes = {CODES_DATA.NO_DATA})
+
+		result                              = T21_StructResult_StructCell()
+		result.code                         = CODES_COMPLETION.COMPLETED
+
+		if flag_capture_delta:
+			result_cell = self.ReadDCell(cell)
+			cell_end    = result_cell.data
+			cells       = [cell_start, cell_end]
+			cells.remove(None)
+
+			result.data = cells[0]
+
+		return result
+
+	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
+		""" Запрос D-Ячейки """
+		result_check : bool      = CheckIdo(cell.idc)
+		result_check            &= CheckIdp(cell.ido)
+		result_check            &= CheckIdp(cell.idp)
+		result_check            &= bool(cell.vlt)
+
+		if not result_check:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
+		result_sql               = self.ExecSqlSelectHList(sql)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = result_sql.subcodes)
+
+		data         : list[str] = result_sql.data
+		if len(data) < 2 :
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.NO_DATA})
+
+		result                   = T21_StructResult_StructCell()
+
+		try                                 :
+			result_cell     = T20_StructCell()
+			result_cell.idc = cell.idc
+			result_cell.ido = cell.ido
+			result_cell.idp = cell.idp
+			result_cell.vlp = data[0]
+			result_cell.vlt = int(data[1])
+		except                              :
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CONVERT})
+
+		result.data = result_cell
+		return result
+
+	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
+		""" Запись D-Ячейки """
+		result_check : bool                  = CheckIdo(cell.idc)
+		result_check                        &= CheckIdp(cell.ido)
+		result_check                        &= CheckIdp(cell.idp)
+		result_check                        &= bool(cell.vlt)
+
+		if not result_check:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = {CODES_DATA.ERROR_CHECK})
+
+		cell_start   : T20_StructCell | None = None
+
+		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
+
+		sql          : str                   = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
+
+		result_sql                           = self.ExecSqlSelectRowCount(sql)
+
+		if not result_sql.code == CODES_COMPLETION.COMPLETED:
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+											   subcodes = result_sql.subcodes)
+
+		result                               = T21_StructResult_StructCell()
+		result.code                          = CODES_COMPLETION.COMPLETED
+
+		if flag_capture_delta:
+			cell_end    = self.ReadDCell(cell).data
+			result.data = None if cell_end == cell_start else cell_end
+
+			if result.data is None: result.subcodes.add(CODES_PROCESSING.SKIP)
+		elif not result_sql.data:
+			result.subcodes.add(CODES_PROCESSING.SKIP)
+
+		return result
+
 
 # КАКТУС: КОНТЕЙНЕР-PostgreSQL
 class C32_ContainerPostgreSQL(C31_ContainerSQL):
