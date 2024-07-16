@@ -34,6 +34,21 @@ check &= len(result.data) == len(cells)
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "Чтение пакета ячеек")
 
 time_0 = time.time()
+result = container.ReadVltRange(T21_VltRange(idc="idc", ido="ido", idp="idp"))
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data.vlt_l ==  1
+check &= result.data.vlt_r == 10
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "Чтение границ VLT")
+
+time_0 = time.time()
+result = container.ReadVlts(T21_VltRange(idc="idc", ido="ido", idp="idp"))
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 10
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "Чтение списка VLT")
+
+time_0 = time.time()
 result = container.DeleteDCells(cell_range, False)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
