@@ -17,24 +17,29 @@ result    = container.StateConnected()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после инициализации")
+if not check: print(f"                {result.code} {result.subcodes}\n")
 
 result    = container.Connect()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 print(f"{'[+]' if check else '[ ]'} Подключение к контейнеру SQLite (data.sqlite)")
+if not check: print(f"                {result.code} {result.subcodes}\n")
 
 result    = container.StateConnected()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == True
 print(f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после подключения")
+if not check: print(f"                {result.code} {result.subcodes}\n")
 
 result    = container.Disconnect()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 print(f"{'[+]' if check else '[ ]'} Отключение от контейнера SQLite")
+if not check: print(f"                {result.code} {result.subcodes}\n")
 
 result    = container.StateConnected()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после отключения")
+if not check: print(f"                {result.code} {result.subcodes}\n")
 
 container.DisconnectMode_Timeout(True)
 container.DisconnectTimeout(2)
@@ -49,3 +54,4 @@ result    = container.StateConnected()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после авто-отключения")
+if not check: print(f"                {result.code} {result.subcodes}\n")

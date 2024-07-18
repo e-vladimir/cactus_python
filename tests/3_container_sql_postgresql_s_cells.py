@@ -1,15 +1,17 @@
-# ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.SQLite
-# 17 июл 2024
+# ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
+# 18 июл 2024
 
 import time
-from   copy import deepcopy
 
-from G00_status_codes         import *
-from G10_list import DifferenceLists
+from   copy                     import deepcopy
 
-from G20_cactus_struct        import T20_StructCell
+from   G00_status_codes         import *
 
-from G32_cactus_container_sql import C32_ContainerPostgreSQL
+from   G10_list                 import DifferenceLists
+
+from   G20_cactus_struct        import T20_StructCell
+
+from   G32_cactus_container_sql import C32_ContainerPostgreSQL
 
 print("")
 print("[== Тест Контейнера-SQL.PostgreSQL: Пакет S-Ячеек ==]")
