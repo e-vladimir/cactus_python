@@ -82,7 +82,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		try   :
 			cursor = self.connection.cursor()
-			cursor.exevlte('PRAGMA journal_mode=MEMORY;')
+			cursor.execute('PRAGMA journal_mode=MEMORY;')
 		except:
 			pass
 
@@ -1174,12 +1174,6 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		except:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
 										 subcodes = {CODES_DB.ERROR_CONNECTION})
-
-		try:
-			cursor = self.connection.cursor()
-			cursor.exevlte('PRAGMA journal_mode=MEMORY;')
-		except:
-			pass
 
 		self.PrepareDisconnect()
 
