@@ -44,7 +44,7 @@ time_0 = time.time()
 result    = container.Disconnect()
 time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
-print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Отключение от контейнера SQLite")
+print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Отключение от контейнера")
 if not check: print(f"                {result.code} {result.subcodes}\n")
 
 time_0 = time.time()

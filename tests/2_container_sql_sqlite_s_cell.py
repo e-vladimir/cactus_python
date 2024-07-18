@@ -27,7 +27,7 @@ time_0 = time.time()
 result = container.RegisterClass(cell.idc)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
-print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "Регистрация класса")
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Регистрация класса")
 if not check: print(f"                {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
