@@ -144,7 +144,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		except: return False
 
-		return flag_success ^ filter_idp_vlp.flag_invert
+		return flag_success | filter_idp_vlp.flag_invert
 
 	def _ApplyFiltersIdpVlp(self, cell) -> bool:
 		""" Применение фильтрации по IDP-VLP """

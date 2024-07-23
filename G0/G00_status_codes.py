@@ -1,5 +1,5 @@
 # КАТАЛОГ: КОДЫ СОСТОЯНИЯ
-# 07 июл 2024
+# 22 июл 2024
 
 import enum
 
@@ -39,3 +39,9 @@ class CODES_DB(CODES):
 	ERROR_CONNECTION = (3001, "Ошибка подключения к БД")
 	ERROR_DB         = (3002, "Ошибка СУБД")
 	ERROR_SQL        = (3003, "Ошибка SQL")
+
+
+# 04 - КАКТУС
+class CODES_CACTUS(CODES):
+	NO_CONTAINER     = (4000, "Контейнер отсутствует")
+

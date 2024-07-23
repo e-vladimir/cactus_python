@@ -155,8 +155,8 @@ class C31_ContainerRAM(C30_Container):
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		result_check : bool                 = False
-		result_check                       ^= type(cell_cells) is T20_StructCell
-		result_check                       ^= type(cell_cells) is list
+		result_check                       |= type(cell_cells) is T20_StructCell
+		result_check                       |= type(cell_cells) is list
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -174,11 +174,11 @@ class C31_ContainerRAM(C30_Container):
 
 			for scell in self._s_cells.values():
 				result_skip: bool = False
-				result_skip      ^= bool(cell_cells.idc) and not (scell.idc == cell_cells.idc)
-				result_skip      ^= bool(cell_cells.ido) and not (scell.ido == cell_cells.ido)
-				result_skip      ^= bool(cell_cells.idp) and not (scell.idp == cell_cells.idp)
-				result_skip      ^= bool(cell_cells.vlp) and not (scell.vlp == cell_cells.vlp)
-				result_skip      ^= bool(cell_cells.vlt) and not (scell.vlt == cell_cells.vlt)
+				result_skip      |= bool(cell_cells.idc) and not (scell.idc == cell_cells.idc)
+				result_skip      |= bool(cell_cells.ido) and not (scell.ido == cell_cells.ido)
+				result_skip      |= bool(cell_cells.idp) and not (scell.idp == cell_cells.idp)
+				result_skip      |= bool(cell_cells.vlp) and not (scell.vlp == cell_cells.vlp)
+				result_skip      |= bool(cell_cells.vlt) and not (scell.vlt == cell_cells.vlt)
 
 				if result_skip: continue
 
@@ -215,8 +215,8 @@ class C31_ContainerRAM(C30_Container):
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
 		result_check : bool = False
-		result_check       ^= type(cell_cells) is T20_StructCell
-		result_check       ^= type(cell_cells) is list
+		result_check       |= type(cell_cells) is T20_StructCell
+		result_check       |= type(cell_cells) is list
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -227,11 +227,11 @@ class C31_ContainerRAM(C30_Container):
 		if   type(cell_cells) is T20_StructCell:
 			for scell in self._s_cells.values():
 				result_skip: bool = False
-				result_skip      ^= bool(cell_cells.idc) and not (scell.idc == cell_cells.idc)
-				result_skip      ^= bool(cell_cells.ido) and not (scell.ido == cell_cells.ido)
-				result_skip      ^= bool(cell_cells.idp) and not (scell.idp == cell_cells.idp)
-				result_skip      ^= bool(cell_cells.vlp) and not (scell.vlp == cell_cells.vlp)
-				result_skip      ^= bool(cell_cells.vlt) and not (scell.vlt == cell_cells.vlt)
+				result_skip      |= bool(cell_cells.idc) and not (scell.idc == cell_cells.idc)
+				result_skip      |= bool(cell_cells.ido) and not (scell.ido == cell_cells.ido)
+				result_skip      |= bool(cell_cells.idp) and not (scell.idp == cell_cells.idp)
+				result_skip      |= bool(cell_cells.vlp) and not (scell.vlp == cell_cells.vlp)
+				result_skip      |= bool(cell_cells.vlt) and not (scell.vlt == cell_cells.vlt)
 
 				if result_skip: continue
 
@@ -458,8 +458,8 @@ class C31_ContainerRAM(C30_Container):
 
 		for vlt in list(dcells.keys()):
 			result_skip  = False
-			result_skip ^= bool(cell.vlt_l) and vlt >= cell.vlt_l
-			result_skip ^= bool(cell.vlt_r) and vlt <= cell.vlt_r
+			result_skip |= bool(cell.vlt_l) and vlt >= cell.vlt_l
+			result_skip |= bool(cell.vlt_r) and vlt <= cell.vlt_r
 
 			if result_skip: continue
 
@@ -494,8 +494,8 @@ class C31_ContainerRAM(C30_Container):
 
 		for vlt in list(dcells.keys()):
 			result_skip  = False
-			result_skip ^= bool(cell.vlt_l) and vlt >= cell.vlt_l
-			result_skip ^= bool(cell.vlt_r) and vlt <= cell.vlt_r
+			result_skip |= bool(cell.vlt_l) and vlt >= cell.vlt_l
+			result_skip |= bool(cell.vlt_r) and vlt <= cell.vlt_r
 
 			if result_skip: continue
 

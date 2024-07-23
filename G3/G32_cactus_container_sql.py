@@ -107,13 +107,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 									 data = True)
 
 	# Механика управления: Выполнение SQL
-	def ExecSql(self, sql: str | list[str]) -> T31_StructResult_CursorS3m:
+	def ExecSql(self, sql: str | list[str]) -> T21_StructResult_CursorS3m:
 		""" Выполнение запроса с кодом """
 		self.PrepareConnect()
 
 		if self.connection is None:
-			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-											  subcodes = {CODES_DB.ERROR_CONNECTION})
+			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
+			                                  subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			sql_cursor      = self.connection.cursor()
@@ -123,28 +123,28 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			self.connection.commit()
 
-			return T31_StructResult_CursorS3m(code   = CODES_COMPLETION.COMPLETED,
-											  cursor = sql_cursor)
+			return T21_StructResult_CursorS3m(code   = CODES_COMPLETION.COMPLETED,
+			                                  cursor = sql_cursor)
 
 		except sqlite3.IntegrityError:
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-											  subcodes = {CODES_DB.ERROR_DB})
+			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
+			                                  subcodes = {CODES_DB.ERROR_DB})
 
 		except sqlite3.ProgrammingError:
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-											  subcodes = {CODES_DB.ERROR_SQL})
+			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
+			                                  subcodes = {CODES_DB.ERROR_SQL})
 
 		except sqlite3.OperationalError:  # Сюда попадают и ошибки SQL-синтаксиса
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-											  subcodes = {CODES_DB.ERROR_SQL})
+			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
+			                                  subcodes = {CODES_DB.ERROR_SQL})
 
 		except:
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-											  subcodes = {CODES_DB.ERROR_DB})
+			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
+			                                  subcodes = {CODES_DB.ERROR_DB})
 
 	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_StructResult_Int:
 		"""Выполнение запроса с числом строк"""
@@ -485,8 +485,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		result_check : bool = False
-		result_check       ^= type(cell_cells) is T20_StructCell
-		result_check       ^= type(cell_cells) is list
+		result_check       |= type(cell_cells) is T20_StructCell
+		result_check       |= type(cell_cells) is list
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -604,8 +604,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
 		result_check : bool = False
-		result_check       ^= type(cell_cells) is T20_StructCell
-		result_check       ^= type(cell_cells) is list
+		result_check       |= type(cell_cells) is T20_StructCell
+		result_check       |= type(cell_cells) is list
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -1198,13 +1198,13 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 									 data = True)
 
 	# Механика управления: Выполнение SQL
-	def ExecSql(self, sql: str | list[str]) -> T31_StructResult_CursorPostgresql:
+	def ExecSql(self, sql: str | list[str]) -> T21_StructResult_CursorPostgresql:
 		""" Выполнение запроса с кодом """
 		self.PrepareConnect()
 
 		if self.connection is None:
-			return T31_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-											         subcodes = {CODES_DB.ERROR_CONNECTION})
+			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
+			                                         subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			sql_cursor      = self.connection.cursor()
@@ -1214,28 +1214,28 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			self.connection.commit()
 
-			return T31_StructResult_CursorPostgresql(code   = CODES_COMPLETION.COMPLETED,
-											         cursor = sql_cursor)
+			return T21_StructResult_CursorPostgresql(code   = CODES_COMPLETION.COMPLETED,
+			                                         cursor = sql_cursor)
 
 		except psycopg2.IntegrityError:
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-											         subcodes = {CODES_DB.ERROR_DB})
+			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
+			                                         subcodes = {CODES_DB.ERROR_DB})
 
 		except psycopg2.ProgrammingError:
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-											         subcodes = {CODES_DB.ERROR_SQL})
+			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
+			                                         subcodes = {CODES_DB.ERROR_SQL})
 
 		except psycopg2.OperationalError:  # Сюда попадают и ошибки SQL-синтаксиса
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-											         subcodes = {CODES_DB.ERROR_SQL})
+			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
+			                                         subcodes = {CODES_DB.ERROR_SQL})
 
 		except:
 			self.PrepareDisconnect()
-			return T31_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-											         subcodes = {CODES_DB.ERROR_DB})
+			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
+			                                         subcodes = {CODES_DB.ERROR_DB})
 
 	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_StructResult_Int:
 		"""Выполнение запроса с числом строк"""
@@ -1582,8 +1582,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	def DeleteSCells(self, cell_cells: T20_StructCell | list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета S-Ячеек """
 		result_check : bool = False
-		result_check       ^= type(cell_cells) is T20_StructCell
-		result_check       ^= type(cell_cells) is list
+		result_check       |= type(cell_cells) is T20_StructCell
+		result_check       |= type(cell_cells) is list
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -1701,8 +1701,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	def ReadSCells(self, cell_cells: T20_StructCell | list[T20_StructCell]) -> T21_StructResult_StructCells:
 		""" Запрос пакета S-Ячеек """
 		result_check : bool = False
-		result_check       ^= type(cell_cells) is T20_StructCell
-		result_check       ^= type(cell_cells) is list
+		result_check       |= type(cell_cells) is T20_StructCell
+		result_check       |= type(cell_cells) is list
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,

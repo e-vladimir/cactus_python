@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 17 июл 2024
+# 23 июл 2024
 
 import s3m
 
@@ -40,12 +40,12 @@ class T21_StructResult_VltRange(T20_StructResult):
 
 # ТИПЫ ДАННЫХ SQL КОНТЕЙНЕРА
 @dataclass
-class T31_StructResult_CursorS3m(T20_StructResult):
+class T21_StructResult_CursorS3m(T20_StructResult):
 	""" Результат-Курсор """
 	cursor : s3m.Cursor | None = None
 
 
 @dataclass
-class T31_StructResult_CursorPostgresql(T20_StructResult):
+class T21_StructResult_CursorPostgresql(T20_StructResult):
 	""" Результат-Курсор """
 	cursor : extensions.cursor | None = None
