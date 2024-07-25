@@ -53,8 +53,6 @@ class C30_StructFrame(C20_MetaFrame):
 
 		self.Ido(ido)
 
-		self.InitFields()
-
 	# Модель данных
 	_idc : str = ""
 
@@ -62,10 +60,6 @@ class C30_StructFrame(C20_MetaFrame):
 		super().Init_00()
 
 		self._ido : str = ""
-
-	def InitFields(self):
-		""" Инициализация структурных параметров """
-		pass
 
 	# Модель событий
 	pass
