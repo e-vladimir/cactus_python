@@ -1,12 +1,18 @@
 # КАКТУС: МЕТА-КОНТЕЙНЕР
-# 08 июн 2024
+# 25 июн 2024
 
-from G00_cactus_codes      import  CONTAINERS
-from G00_status_codes      import *
+from G00_cactus_codes  import  CONTAINERS
+from G00_status_codes  import (CODES_COMPLETION,
+                               CODES_PROCESSING)
 
-from G20_meta_frame        import  C20_MetaFrame
-from G21_cactus_struct     import *
-from G21_struct_result     import *
+from G20_cactus_struct import  T20_StructCell
+from G20_meta_frame    import  C20_MetaFrame
+from G21_cactus_struct import (T21_StructResult_StructCell,
+                               T21_StructResult_StructCells,
+                               T21_StructResult_VltRange,
+                               T21_VltRange)
+from G21_struct_result import (T21_StructResult_Bool,
+                               T21_StructResult_List)
 
 
 class C30_Container(C20_MetaFrame):

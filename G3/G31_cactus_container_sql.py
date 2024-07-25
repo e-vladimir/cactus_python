@@ -1,15 +1,20 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 08 июл 2024
+# 25 июл 2024
 
 import threading
 import time
 
-from   G00_cactus_codes     import CONNECTION_MANAGEMENT
-from   G00_status_codes     import *
+from   G00_cactus_codes     import  CONNECTION_MANAGEMENT
+from   G00_status_codes     import (CODES_COMPLETION,
+                                    CODES_PROCESSING)
 
-from   G10_math_linear      import CalcBetween
+from   G10_math_linear      import  CalcBetween
 
-from   G21_struct_result    import *
+from   G20_struct_result    import  T20_StructResult
+from   G21_struct_result    import (T21_StructResult_Bool,
+                                    T21_StructResult_Int,
+                                    T21_StructResult_String,
+                                    T21_StructResult_List)
 
 from   G30_cactus_container import C30_Container
 
@@ -167,7 +172,6 @@ class C31_ContainerSQL(C30_Container):
 	pass
 
 
-# 2022-11-10
 class C30_ContainerSqlDisconnector(threading.Thread):
 	""" Обработчик автоотключения """
 

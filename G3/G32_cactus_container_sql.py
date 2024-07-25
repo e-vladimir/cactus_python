@@ -1,22 +1,39 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 18 июл 2024
+# 25 июл 2024
 
 import psycopg2
 import sqlite3
+import s3m
 
-from   copy                     import copy
+from   copy                     import  copy
 
-from   G00_cactus_codes         import *
-from   G00_status_codes         import *
+from   G00_cactus_codes         import (CONTAINERS,
+                                        CACTUS_STRUCT_DATA)
+from   G00_status_codes         import (CODES_COMPLETION,
+                                        CODES_PROCESSING,
+                                        CODES_DB,
+                                        CODES_DATA)
 
-from   G10_cactus_check         import *
-from   G10_cactus_convertors    import IdoFromIds, IdpFromIds
-from   G10_list                 import DifferenceLists
+from   G10_cactus_check         import (CheckIdc,
+                                        CheckIdo,
+                                        CheckIdp)
+from   G10_cactus_convertors    import (IdoFromIds,
+                                        IdpFromIds)
+from   G10_list                 import  DifferenceLists
 
-from   G21_cactus_struct        import *
-from   G21_struct_result        import *
+from   G20_cactus_struct        import  T20_StructCell
+from   G21_cactus_struct        import (T21_StructResult_CursorS3m,
+                                        T21_StructResult_StructCell,
+                                        T21_StructResult_StructCells,
+                                        T21_StructResult_VltRange,
+                                        T21_VltRange,
+                                        T21_StructResult_CursorPostgresql)
+from   G21_struct_result        import (T21_StructResult_String,
+                                        T21_StructResult_Bool,
+                                        T21_StructResult_Int,
+                                        T21_StructResult_List)
 
-from   G31_cactus_container_sql import C31_ContainerSQL
+from   G31_cactus_container_sql import  C31_ContainerSQL
 
 
 # КАКТУС: КОНТЕЙНЕР-SQLite

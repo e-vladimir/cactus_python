@@ -1,18 +1,25 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 14 июл 2024
+# 25 июл 2024
 
-from copy                  import copy
+from copy                 import  copy
 
-from G00_cactus_codes      import CONTAINERS
-from G00_status_codes      import *
+from G00_cactus_codes     import  CONTAINERS
+from G00_status_codes     import (CODES_COMPLETION,
+                                  CODES_DATA,
+                                  CODES_PROCESSING)
 
-from G10_cactus_check      import *
-from G10_list              import DifferenceLists
+from G10_cactus_check     import (CheckIdo,
+                                  CheckIdp)
+from G10_list             import  DifferenceLists
 
-from G21_cactus_struct     import *
-from G21_struct_result     import T21_StructResult_List
+from G20_cactus_struct    import  T20_StructCell
+from G21_cactus_struct    import (T21_StructResult_StructCell,
+                                  T21_StructResult_StructCells,
+                                  T21_StructResult_VltRange,
+                                  T21_VltRange)
+from G21_struct_result    import  T21_StructResult_List
 
-from G30_cactus_container  import C30_Container
+from G30_cactus_container import  C30_Container
 
 
 class C31_ContainerRAM(C30_Container):

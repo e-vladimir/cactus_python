@@ -1,13 +1,13 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 23 июл 2024
+# 25 июл 2024
 
 import datetime
 
-from G00_cactus_codes                   import  CACTUS_STRUCT_DATA
-from G00_status_codes                   import (CODES_COMPLETION,
+from   G00_cactus_codes                 import  CACTUS_STRUCT_DATA
+from   G00_status_codes                 import (CODES_COMPLETION,
 				                                CODES_DATA,
 				                                CODES_PROCESSING,
-				                                CODES_DB, CODES_CACTUS)
+				                                CODES_CACTUS)
 
 from   G10_cactus_convertors            import  UnificationIdc
 from   G10_convertor_format             import (BooleanToString,
