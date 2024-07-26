@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 25 июл 2024
+# 26 июл 2024
 
 import datetime
 
@@ -241,7 +241,6 @@ class C30_StructFrame(C20_MetaFrame):
 		                                 ido = self.Ido().data)
 
 		result_read     = container_src.ReadSCells(filter_cells)
-
 		if not result_read.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = result_read.code,
 		                                                                               subcodes = result_read.subcodes)
 
@@ -488,11 +487,11 @@ class C30_StructField(C20_MetaFrame):
 	def _ReadVlpSCell(self, container_name_src: str) -> T21_StructResult_String:
 		""" Системный метод чтения данных для конверторов """
 		container           = controller_containers.Container(container_name_src)
-		if container is None        : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                             subcodes = {CODES_CACTUS.NO_CONTAINER})
+		if container is None                       : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
+		                                                                            subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		if self.struct_frame is None: return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                             subcodes = {CODES_DATA.NOT_ENOUGH})
+		if self.struct_frame is None               : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
+		                                                                            subcodes = {CODES_DATA.NOT_ENOUGH})
 
 		idc                 = self.struct_frame._idc
 		ido                 = self.struct_frame._ido
@@ -500,6 +499,8 @@ class C30_StructField(C20_MetaFrame):
 
 		cell                = T20_StructCell(idc=idc, ido=ido, idp=idp)
 		result_read         = container.ReadSCell(cell)
+		if not result_read.code == CODES_COMPLETION: return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                            subcodes = result_read.subcodes)
 
 		result              = T21_StructResult_String()
 		result.code         = result_read.code
@@ -665,7 +666,6 @@ class C30_StructField(C20_MetaFrame):
 
 		cell         : T20_StructCell              = T20_StructCell(idc=idc, ido=ido, idp=idp)
 		result_read  : T21_StructResult_StructCell = container_src.ReadSCell(cell)
-
 		if not result_read.code == CODES_COMPLETION.COMPLETED : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
 		                                                                                subcodes = result_read.subcodes)
 
@@ -862,6 +862,8 @@ class C30_StructField(C20_MetaFrame):
 
 		cell                = T20_StructCell(idc=idc, ido=ido, idp=idp)
 		result_read         = container.ReadSCell(cell)
+		if not result_read.code == CODES_COMPLETION: return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                         subcodes = result_read.subcodes)
 
 		result              = T21_StructResult_Int()
 		result.code         = result_read.code
