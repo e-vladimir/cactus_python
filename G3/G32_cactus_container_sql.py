@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 25 июл 2024
+# 26 июл 2024
 
 import psycopg2
 import sqlite3
@@ -17,8 +17,8 @@ from   G00_status_codes         import (CODES_COMPLETION,
 from   G10_cactus_check         import (CheckIdc,
                                         CheckIdo,
                                         CheckIdp)
-from   G10_cactus_convertors    import (IdoFromIds,
-                                        IdpFromIds)
+from G10_cactus_convertors import (IdoFromIds,
+                                   IdpFromIds, UnificationIdc)
 from   G10_list                 import  DifferenceLists
 
 from   G20_cactus_struct        import  T20_StructCell
@@ -309,28 +309,28 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result.code    = CODES_COMPLETION.COMPLETED
 		result.data    = True
 
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql      : str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql      : str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{idc}_ids_ ON {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
+		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_ids_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{idc}_vlt_ ON {idc}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
+		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_vlt_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -575,7 +575,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql.append("BEGIN TRANSACTION;")
 
 			for idc, idss in filters.items():
-				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"DELETE FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ");"
 
@@ -690,7 +690,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql    : list[str]            = []
 
 			for idc, idss in filters.items():
-				select_sql  = f"SELECT '{idc}' as '{CACTUS_STRUCT_DATA.IDC.name_sql}', {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"SELECT '{UnificationIdc(idc)}' as '{CACTUS_STRUCT_DATA.IDC.name_sql}', {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ")"
 
@@ -1408,28 +1408,28 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result.code = CODES_COMPLETION.COMPLETED
 		result.data = True
 
-		sql: str = f"CREATE TABLE IF NOT EXISTS {idc} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql: str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql: str = f"CREATE TABLE IF NOT EXISTS {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql: str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql: str = f"CREATE INDEX IF NOT EXISTS index_{idc}_ids_ ON {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
+		sql: str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_ids_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql: str = f"CREATE INDEX IF NOT EXISTS index_{idc}_vlt_ ON {idc}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
+		sql: str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_vlt_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -1672,7 +1672,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql.append("BEGIN;")
 
 			for idc, idss in filters.items():
-				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"DELETE FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ");"
 
@@ -1787,7 +1787,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql    : list[str]            = []
 
 			for idc, idss in filters.items():
-				select_sql  = f"SELECT '{idc}' as {CACTUS_STRUCT_DATA.IDC.name_sql}, {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"SELECT '{UnificationIdc(idc)}' as {CACTUS_STRUCT_DATA.IDC.name_sql}, {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ")"
 
