@@ -499,7 +499,7 @@ class C30_StructField(C20_MetaFrame):
 
 		cell                = T20_StructCell(idc=idc, ido=ido, idp=idp)
 		result_read         = container.ReadSCell(cell)
-		if not result_read.code == CODES_COMPLETION: return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
+		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
 		                                                                            subcodes = result_read.subcodes)
 
 		result              = T21_StructResult_String()
