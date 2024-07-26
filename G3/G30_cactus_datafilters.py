@@ -384,9 +384,9 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		if container is None                  : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                                subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		if   container.Type_RAM().flag        : return self._CaptureFromRam(container)
-		elif container.Type_SQLite().flag     : return self._CaptureFromSqlite(container)
-		elif container.Type_PostgreSQL().flag : return self._CaptureFromPostgresql(container)
+		if   container.Type_RAM().data        : return self._CaptureFromRam(container)
+		elif container.Type_SQLite().data     : return self._CaptureFromSqlite(container)
+		elif container.Type_PostgreSQL().data : return self._CaptureFromPostgresql(container)
 		else                                  : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                                subcodes = {CODES_PROCESSING.SKIP})
 
