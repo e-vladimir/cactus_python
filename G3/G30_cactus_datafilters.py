@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 25 июн 2024
+# 31 июл 2024
 
 import datetime
 
@@ -45,7 +45,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def __init__(self, idc: str):
 		super().__init__()
 
-		self._idc = idc
+		self._idc = UnificationIdc(idc)
 
 	def Init_00(self):
 		super().Init_00()
@@ -145,7 +145,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 			                        subcodes = {CODES_PROCESSING.SKIP})
 
 	# ЗАХВАТ ДАННЫХ
-	def _ApplyIdc(self, cell: T20_StructCell) -> bool:
+	def _ApplyFilterIdc(self, cell: T20_StructCell) -> bool:
 		""" Применение фильтрации по Idc """
 		return cell.idc == self._idc
 
@@ -193,7 +193,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		idos : set[str] = set()
 
 		for cell in container._s_cells.values():
-			if not self._ApplyIdc(cell)          : continue
+			if not self._ApplyFilterIdc(cell)    : continue
 			if not self._ApplyFiltersIdpVlp(cell): continue
 
 			idos.add(cell.ido)
@@ -279,7 +279,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных из контейнера SQLite """
 		self._data.clear()
 
-		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.IDS.name_sql} FROM {UnificationIdc(self._idc)} "
+		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.IDS.name_sql} FROM {self._idc} "
 		result              = container.ExecSqlSelectVList(sql)
 		if not result.code == CODES_COMPLETION.COMPLETED : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
 		                                                                           subcodes = result.subcodes)
@@ -297,7 +297,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 			capture_idos = capture_idos & set(map(IdoFromIds, result.data))
 
 		idos                = list(map("'{}'".format, capture_idos))
-		sql                 = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} from {UnificationIdc(self._idc)} WHERE (substr({CACTUS_STRUCT_DATA.IDS.name_sql}, 1, instr({CACTUS_STRUCT_DATA.IDS.name_sql}, '.') - 1) IN ({', '.join(idos)}))"
+		sql                 = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} from {self._idc} WHERE (substr({CACTUS_STRUCT_DATA.IDS.name_sql}, 1, instr({CACTUS_STRUCT_DATA.IDS.name_sql}, '.') - 1) IN ({', '.join(idos)}))"
 
 		result_cells        = container.ExecSqlSelectMatrix(sql)
 		if not result_cells.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
@@ -328,7 +328,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных из контейнера PostgreSQL """
 		self._data.clear()
 
-		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.IDS.name_sql} FROM \"{UnificationIdc(self._idc)}\" "
+		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.IDS.name_sql} FROM \"{self._idc}\" "
 
 		result              = container.ExecSqlSelectVList(sql)
 		if not result.code == CODES_COMPLETION.COMPLETED      : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
@@ -348,7 +348,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 			capture_idos = capture_idos & set(map(IdoFromIds, result.data))
 
 		idos                = list(map("'{}'".format, capture_idos))
-		sql                 = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} from \"{UnificationIdc(self._idc)}\" WHERE (split_part({CACTUS_STRUCT_DATA.IDS.name_sql}, '.', 1) IN ({', '.join(idos)}))"
+		sql                 = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} from \"{self._idc}\" WHERE (split_part({CACTUS_STRUCT_DATA.IDS.name_sql}, '.', 1) IN ({', '.join(idos)}))"
 
 		result_cells        = container.ExecSqlSelectMatrix(sql)
 		if not result_cells.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,

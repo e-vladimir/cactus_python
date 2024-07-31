@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 26 июл 2024
+# 31 июл 2024
 
 import psycopg2
 import sqlite3
@@ -309,7 +309,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result.code    = CODES_COMPLETION.COMPLETED
 		result.data    = True
 
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
@@ -317,21 +317,21 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql      : str = f"CREATE TABLE IF NOT EXISTS {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_ids_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
+		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{idc}_ids_ ON {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_vlt_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
+		sql      : str = f"CREATE INDEX IF NOT EXISTS index_{idc}_vlt_ ON {idc}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -343,8 +343,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: S-Ячейка
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
@@ -357,7 +357,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_cell = self.ReadSCell(cell)
 			cell_start  = result_cell.data
 
-		sql         : str                   = f"DELETE FROM {UnificationIdc(cell.idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
+		sql         : str                   = f"DELETE FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql                          = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
@@ -383,15 +383,15 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 											   subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -421,8 +421,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
@@ -464,8 +464,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
@@ -476,7 +476,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
-		sql          : str  = f"INSERT INTO {UnificationIdc(cell.idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+		sql          : str  = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
 		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
 		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
@@ -518,7 +518,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result            = T21_StructResult_StructCells()
 
 		if   type(cell_cells) is T20_StructCell:
-			result_check : bool = CheckIdo(cell_cells.idc)
+			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
@@ -558,8 +558,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			filters : dict[str, list[str]] = dict()
 
 			for cell in cell_cells:
-				result_check: bool      = CheckIdo(cell.idc)
-				result_check           &= CheckIdp(cell.ido)
+				result_check: bool      = CheckIdc(cell.idc)
+				result_check           &= CheckIdo(cell.ido)
 				result_check           &= CheckIdp(cell.idp)
 
 				if not result_check:
@@ -576,7 +576,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql.append("BEGIN TRANSACTION;")
 
 			for idc, idss in filters.items():
-				select_sql  = f"DELETE FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ");"
 
@@ -632,7 +632,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result            = T21_StructResult_StructCells()
 
 		if   type(cell_cells) is T20_StructCell:
-			result_check : bool = CheckIdo(cell_cells.idc)
+			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
@@ -674,8 +674,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			filters : dict[str, list[str]] = dict()
 
 			for cell in cell_cells:
-				result_check: bool      = CheckIdo(cell.idc)
-				result_check           &= CheckIdp(cell.ido)
+				result_check: bool      = CheckIdc(cell.idc)
+				result_check           &= CheckIdo(cell.ido)
 				result_check           &= CheckIdp(cell.idp)
 
 				if not result_check:
@@ -691,7 +691,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql    : list[str]            = []
 
 			for idc, idss in filters.items():
-				select_sql  = f"SELECT '{UnificationIdc(idc)}' as '{CACTUS_STRUCT_DATA.IDC.name_sql}', {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"SELECT '{idc}' as '{CACTUS_STRUCT_DATA.IDC.name_sql}', {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ")"
 
@@ -743,8 +743,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		sqls: list[str] = []
 
 		for cell in cells:
-			result_check : bool = CheckIdo(cell.idc)
-			result_check       &= CheckIdp(cell.ido)
+			result_check : bool = CheckIdc(cell.idc)
+			result_check       &= CheckIdo(cell.ido)
 			result_check       &= CheckIdp(cell.idp)
 
 			if not result_check:
@@ -752,7 +752,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql : str = f"INSERT INTO {UnificationIdc(cell.idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
 			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
 			sql      += f";"
 
@@ -797,8 +797,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		sqls: list[str] = []
 
 		for cell in cells:
-			result_check: bool = CheckIdo(cell.idc)
-			result_check &= CheckIdp(cell.ido)
+			result_check: bool = CheckIdc(cell.idc)
+			result_check &= CheckIdo(cell.ido)
 			result_check &= CheckIdp(cell.idp)
 
 			if not result_check:
@@ -806,7 +806,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql         : str  = f"INSERT INTO {UnificationIdc(cell.idc)} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
 			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
 			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 			sql               += ';'
@@ -841,8 +841,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: D-Ячейка
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.vlt)
 
@@ -856,7 +856,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_cell = self.ReadDCell(cell)
 			cell_start  = result_cell.data
 
-		sql         : str                   = f"DELETE FROM {UnificationIdc(cell.idc)}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
+		sql         : str                   = f"DELETE FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 		result_sql                          = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
@@ -882,8 +882,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 		result_check            &= bool(cell.vlt)
 
@@ -891,7 +891,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 											   subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -921,8 +921,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		result_check : bool                  = CheckIdo(cell.idc)
-		result_check                        &= CheckIdp(cell.ido)
+		result_check : bool                  = CheckIdc(cell.idc)
+		result_check                        &= CheckIdo(cell.ido)
 		result_check                        &= CheckIdp(cell.idp)
 		result_check                        &= bool(cell.vlt)
 
@@ -934,7 +934,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
 
-		sql          : str                   = f"INSERT INTO {UnificationIdc(cell.idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {UnificationIdc(cell.idc)}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
+		sql          : str                   = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
@@ -958,8 +958,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Пакет D-Ячеек
 	def DeleteDCells(self, cell: T21_VltRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
-		result_check : bool                 = CheckIdo(cell.idc)
-		result_check                       &= CheckIdp(cell.ido)
+		result_check : bool                 = CheckIdc(cell.idc)
+		result_check                       &= CheckIdo(cell.ido)
 		result_check                       &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -972,7 +972,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		result                              = T21_StructResult_StructCells()
 
-		sql          : str                  = f"DELETE FROM {UnificationIdc(cell.idc)}_"
+		sql          : str                  = f"DELETE FROM {cell.idc}_"
 
 		filters : list[str] = []
 		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
@@ -999,8 +999,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadDCells(self, cell: T21_VltRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
@@ -1011,7 +1011,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)}_ WHERE "
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE "
 		sql                     += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectMatrix(sql)
@@ -1048,8 +1048,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	# Логика данных: Диапазон VLT
 	def ReadVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
 		""" Запрос границ cUT D-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
@@ -1062,7 +1062,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql          : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {UnificationIdc(cell.idc)}_ WHERE"
+		sql          : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE"
 		sql                     += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectHList(sql)
@@ -1080,8 +1080,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def ReadVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
 		""" Запрос списка VLT """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
@@ -1094,7 +1094,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)}_ WHERE"
+		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE"
 		sql                     += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectVList(sql)
@@ -1409,28 +1409,28 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result.code = CODES_COMPLETION.COMPLETED
 		result.data = True
 
-		sql: str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql: str = f"CREATE TABLE IF NOT EXISTS {idc} ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT PRIMARY KEY, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql: str = f"CREATE TABLE IF NOT EXISTS {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
+		sql: str = f"CREATE TABLE IF NOT EXISTS {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql} TEXT, {CACTUS_STRUCT_DATA.VLP.name_sql} TEXT NOT NULL, {CACTUS_STRUCT_DATA.VLT.name_sql} INT NOT NULL)"
 		result_s_table = self.ExecSql(sql)
 		if not result_s_table.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql: str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_ids_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
+		sql: str = f"CREATE INDEX IF NOT EXISTS index_{idc}_ids_ ON {idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_PROCESSING.PARTIAL)
 			result.subcodes.add(CODES_DB.ERROR_SQL)
 
-		sql: str = f"CREATE INDEX IF NOT EXISTS index_{UnificationIdc(idc)}_vlt_ ON {UnificationIdc(idc)}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
+		sql: str = f"CREATE INDEX IF NOT EXISTS index_{idc}_vlt_ ON {idc}_ ({CACTUS_STRUCT_DATA.VLT.name_sql})"
 		result_s_index = self.ExecSql(sql)
 		if not result_s_index.code == CODES_COMPLETION.COMPLETED:
 			result.code = CODES_COMPLETION.INTERRUPTED
@@ -1442,8 +1442,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	# Логика данных: S-Ячейка
 	def DeleteSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
@@ -1456,7 +1456,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_cell = self.ReadSCell(cell)
 			cell_start  = result_cell.data
 
-		sql         : str                   = f"DELETE FROM {UnificationIdc(cell.idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
+		sql         : str                   = f"DELETE FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql                          = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED :
@@ -1482,15 +1482,15 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 											   subcodes = {CODES_DATA.ERROR_CHECK})
 
-		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
+		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}'"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -1520,8 +1520,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                  : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -1561,8 +1561,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def WriteSCell(self, cell: T20_StructCell, flag_skip: bool = False, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись S-Ячейки """
-		result_check : bool      = CheckIdo(cell.idc)
-		result_check            &= CheckIdp(cell.ido)
+		result_check : bool      = CheckIdc(cell.idc)
+		result_check            &= CheckIdo(cell.ido)
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check:
@@ -1573,7 +1573,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
-		sql          : str  = f"INSERT INTO {UnificationIdc(cell.idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+		sql          : str  = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
 		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
 		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
@@ -1615,7 +1615,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result            = T21_StructResult_StructCells()
 
 		if   type(cell_cells) is T20_StructCell:
-			result_check : bool = CheckIdo(cell_cells.idc)
+			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
@@ -1655,8 +1655,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			filters : dict[str, list[str]] = dict()
 
 			for cell in cell_cells:
-				result_check: bool      = CheckIdo(cell.idc)
-				result_check           &= CheckIdp(cell.ido)
+				result_check: bool      = CheckIdc(cell.idc)
+				result_check           &= CheckIdo(cell.ido)
 				result_check           &= CheckIdp(cell.idp)
 
 				if not result_check:
@@ -1673,7 +1673,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql.append("BEGIN;")
 
 			for idc, idss in filters.items():
-				select_sql  = f"DELETE FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ");"
 
@@ -1771,8 +1771,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			filters : dict[str, list[str]] = dict()
 
 			for cell in cell_cells:
-				result_check: bool      = CheckIdo(cell.idc)
-				result_check           &= CheckIdp(cell.ido)
+				result_check: bool      = CheckIdc(cell.idc)
+				result_check           &= CheckIdo(cell.ido)
 				result_check           &= CheckIdp(cell.idp)
 
 				if not result_check:
@@ -1788,7 +1788,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql    : list[str]            = []
 
 			for idc, idss in filters.items():
-				select_sql  = f"SELECT '{UnificationIdc(idc)}' as {CACTUS_STRUCT_DATA.IDC.name_sql}, {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(idc)} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
+				select_sql  = f"SELECT '{idc}' as {CACTUS_STRUCT_DATA.IDC.name_sql}, {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
 				select_sql += ', '.join(f"'{ids}'" for ids in idss)
 				select_sql += ")"
 
@@ -1840,8 +1840,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		sqls: list[str] = []
 
 		for cell in cells:
-			result_check : bool = CheckIdo(cell.idc)
-			result_check       &= CheckIdp(cell.ido)
+			result_check : bool = CheckIdc(cell.idc)
+			result_check       &= CheckIdo(cell.ido)
 			result_check       &= CheckIdp(cell.idp)
 
 			if not result_check:
@@ -1849,8 +1849,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql : str = f"INSERT INTO {UnificationIdc(cell.idc)} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
-			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {UnificationIdc(cell.idc)}.{CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
+			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {cell.idc}.{CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
 			sql      += f";"
 
 			sqls.append(sql)
@@ -1894,8 +1894,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		sqls: list[str] = []
 
 		for cell in cells:
-			result_check: bool = CheckIdo(cell.idc)
-			result_check &= CheckIdp(cell.ido)
+			result_check: bool = CheckIdc(cell.idc)
+			result_check &= CheckIdo(cell.ido)
 			result_check &= CheckIdp(cell.idp)
 
 			if not result_check:
@@ -1903,7 +1903,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql         : str  = f"INSERT INTO {UnificationIdc(cell.idc)} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
 			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
 			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 			sql               += ';'
@@ -1938,8 +1938,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	# Логика данных: D-Ячейка
 	def DeleteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Удаление D-Ячейки """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 		result_check &= bool(cell.vlt)
 
@@ -1953,7 +1953,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_cell = self.ReadDCell(cell)
 			cell_start = result_cell.data
 
-		sql: str = f"DELETE FROM {UnificationIdc(cell.idc)}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
+		sql: str = f"DELETE FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 		result_sql = self.ExecSqlSelectRowCount(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -1979,8 +1979,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def ReadDCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
 		""" Запрос D-Ячейки """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 		result_check &= bool(cell.vlt)
 
@@ -1988,7 +1988,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
 			                                   subcodes={CODES_DATA.ERROR_CHECK})
 
-		sql: str = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
+		sql: str = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 		result_sql = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
@@ -2018,8 +2018,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 		result_check &= bool(cell.vlt)
 
@@ -2031,7 +2031,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
 
-		sql: str = f"INSERT INTO {UnificationIdc(cell.idc)}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {UnificationIdc(cell.idc)}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
+		sql: str = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
 
 		result_sql = self.ExecSqlSelectRowCount(sql)
 
@@ -2055,8 +2055,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	# Логика данных: Пакет D-Ячеек
 	def DeleteDCells(self, cell: T21_VltRange, flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Удаление пакета D-Ячеек """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED,
@@ -2069,7 +2069,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		result = T21_StructResult_StructCells()
 
-		sql: str = f"DELETE FROM {UnificationIdc(cell.idc)}_"
+		sql: str = f"DELETE FROM {cell.idc}_"
 
 		filters: list[str] = []
 		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
@@ -2098,8 +2098,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def ReadDCells(self, cell: T21_VltRange) -> T21_StructResult_StructCells:
 		""" Запрос пакета D-Ячеек """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED,
@@ -2110,7 +2110,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql: str = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)}_ WHERE "
+		sql: str = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE "
 		sql += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectMatrix(sql)
@@ -2149,8 +2149,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	# Логика данных: Диапазон VLT
 	def ReadVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
 		""" Запрос границ cUT D-Ячейки """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_VltRange(code=CODES_COMPLETION.INTERRUPTED,
@@ -2163,7 +2163,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql: str = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {UnificationIdc(cell.idc)}_ WHERE"
+		sql: str = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE"
 		sql += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectHList(sql)
@@ -2182,8 +2182,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def ReadVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
 		""" Запрос списка VLT """
-		result_check: bool = CheckIdo(cell.idc)
-		result_check &= CheckIdp(cell.ido)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_List(code=CODES_COMPLETION.INTERRUPTED,
@@ -2196,7 +2196,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql: str = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {UnificationIdc(cell.idc)}_ WHERE"
+		sql: str = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE"
 		sql += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectVList(sql)

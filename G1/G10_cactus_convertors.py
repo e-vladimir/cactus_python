@@ -1,5 +1,5 @@
 # КАКТУС: КОНВЕРТОРЫ ДАННЫХ
-# 08 июн 2024
+# 31 июл 2024
 
 
 # КОНВЕРТОР ИДЕНТИФИКАТОРОВ
@@ -7,6 +7,8 @@ def UnificationIdc(idc: str) -> str:
 	""" Конвертация IDC в унифицированный вид """
 	idc = idc.replace(' ', '_', -1)
 	idc = idc.replace('-', '_', -1)
+	idc = idc.replace(':', '_', -1)
+	idc = idc.replace('.', '_', -1)
 	idc = idc.lower()
 
 	return idc

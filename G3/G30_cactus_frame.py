@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 28 июл 2024
+# 31 июл 2024
 
 import datetime
 
@@ -102,7 +102,7 @@ class C30_StructFrame(C20_MetaFrame):
 		if container is None                                 : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                                                    subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		filter_cells                               = T20_StructCell(idc = self._idc)
+		filter_cells                               = T20_StructCell(idc = UnificationIdc(self._idc))
 		result_read : T21_StructResult_StructCells = container.ReadSCells(filter_cells)
 
 		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
@@ -135,7 +135,7 @@ class C30_StructFrame(C20_MetaFrame):
 		if container is None                                  : return T21_StructResult_List(code     =  CODES_COMPLETION.COMPLETED,
 		                                                                                     subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		filter_cells                               = T20_StructCell(idc = self._idc,
+		filter_cells                               = T20_StructCell(idc = UnificationIdc(self._idc),
 		                                                            ido = self._ido)
 
 		result_read : T21_StructResult_StructCells = container.ReadSCells(filter_cells)
@@ -161,10 +161,10 @@ class C30_StructFrame(C20_MetaFrame):
 		if not CheckIdo(self._ido) : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                     subcodes = {CODES_DATA.ERROR_CHECK})
 		cell      = T20_StructCell()
-		cell.idc  = self._idc
+		cell.idc  = UnificationIdc(self._idc)
 		cell.ido  = self._ido
 		cell.idp  = CACTUS_STRUCT_DATA.IDC.name_base
-		cell.vlp  = self._idc
+		cell.vlp  = UnificationIdc(self._idc)
 		cell.vlt  = CurrentUTime()
 
 		container = controller_containers.Container(container_name)
@@ -180,8 +180,8 @@ class C30_StructFrame(C20_MetaFrame):
 		if not CheckIdo(self._ido) : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                     subcodes = {CODES_DATA.ERROR_CHECK})
 
-		filter_cells = T20_StructCell(idc = self._idc,
-		                                   ido = self._ido)
+		filter_cells = T20_StructCell(idc = UnificationIdc(self._idc),
+		                              ido = self._ido)
 
 		container    = controller_containers.Container(container_name)
 
@@ -208,18 +208,18 @@ class C30_StructFrame(C20_MetaFrame):
 		elif container.Type_RAM().data       :
 			result.subcodes.add(CODES_PROCESSING.SKIP)
 
-		elif not CheckIdc(cls._idc):
+		elif not CheckIdc(UnificationIdc(cls._idc)):
 			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
 		elif container.Type_SQLite().data    :
-			result_register = container.RegisterClass(cls._idc)
+			result_register = container.RegisterClass(UnificationIdc(cls._idc))
 
 			result.code     = result_register.code
 			result.subcodes = result_register.subcodes
 
 		elif container.Type_PostgreSQL().data:
-			result_register = container.RegisterClass(cls._idc)
+			result_register = container.RegisterClass(UnificationIdc(cls._idc))
 
 			result.code     = result_register.code
 			result.subcodes = result_register.subcodes
@@ -345,7 +345,7 @@ class C30_StructField(C20_MetaFrame):
 		if self.struct_frame is None: return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                             subcodes = {CODES_DATA.NOT_ENOUGH})
 
-		idc          : str = self.struct_frame._idc
+		idc          : str = UnificationIdc(self.struct_frame._idc)
 		ido          : str = self.struct_frame._ido
 		idp          : str = self._idp
 		ids          : str = f"{idc}.{ido}.{idp}"
@@ -391,7 +391,7 @@ class C30_StructField(C20_MetaFrame):
 		if self.struct_frame is None: return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                      subcodes = {CODES_DATA.NOT_ENOUGH})
 
-		idc                 = self.struct_frame._idc
+		idc                 = UnificationIdc(self.struct_frame._idc)
 		ido                 = self.struct_frame._ido
 		idp                 = self._idp
 
@@ -493,7 +493,7 @@ class C30_StructField(C20_MetaFrame):
 		if self.struct_frame is None               : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                                            subcodes = {CODES_DATA.NOT_ENOUGH})
 
-		idc                 = self.struct_frame._idc
+		idc                 = UnificationIdc(self.struct_frame._idc)
 		ido                 = self.struct_frame._ido
 		idp                 = self._idp
 
@@ -660,7 +660,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_dst is None                              : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                                                subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc                                        = self.struct_frame._idc
+		idc                                        = UnificationIdc(self.struct_frame._idc)
 		ido                                        = self.struct_frame._ido
 		idp                                        = self._idp
 
@@ -687,7 +687,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_2 is None                                  : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                                                  subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc                                        = self.struct_frame._idc
+		idc                                        = UnificationIdc(self.struct_frame._idc)
 		ido                                        = self.struct_frame._ido
 		idp                                        = self._idp
 
@@ -723,7 +723,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_src is None : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                   subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc                                         = self.struct_frame._idc
+		idc                                         = UnificationIdc(self.struct_frame._idc)
 		ido                                         = self.struct_frame._ido
 		idp                                         = self._idp
 
@@ -743,7 +743,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_src is None : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                   subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc                                        = self.struct_frame._idc
+		idc                                        = UnificationIdc(self.struct_frame._idc)
 		ido                                        = self.struct_frame._ido
 		idp                                        = self._idp
 		if vlt == 0: vlt = CurrentUTime()
@@ -764,7 +764,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_src is None : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                          subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc                                       = self.struct_frame._idc
+		idc                                       = UnificationIdc(self.struct_frame._idc)
 		ido                                       = self.struct_frame._ido
 		idp                                       = self._idp
 
@@ -797,7 +797,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_src is None : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                        subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc                                        = self.struct_frame._idc
+		idc                                        = UnificationIdc(self.struct_frame._idc)
 		ido                                        = self.struct_frame._ido
 		idp                                        = self._idp
 
@@ -826,7 +826,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_src is None : return T21_StructResult_VltRange(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                            subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc           = self.struct_frame._idc
+		idc           = UnificationIdc(self.struct_frame._idc)
 		ido           = self.struct_frame._ido
 		idp           = self._idp
 
@@ -839,7 +839,7 @@ class C30_StructField(C20_MetaFrame):
 		if container_src is None : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                        subcodes = {CODES_CACTUS.NO_CONTAINER})
 
-		idc           = self.struct_frame._idc
+		idc           = UnificationIdc(self.struct_frame._idc)
 		ido           = self.struct_frame._ido
 		idp           = self._idp
 
@@ -856,7 +856,7 @@ class C30_StructField(C20_MetaFrame):
 		if self.struct_frame is None: return T21_StructResult_Int(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                          subcodes = {CODES_DATA.NOT_ENOUGH})
 
-		idc                 = self.struct_frame._idc
+		idc                 = UnificationIdc(self.struct_frame._idc)
 		ido                 = self.struct_frame._ido
 		idp                 = self._idp
 
