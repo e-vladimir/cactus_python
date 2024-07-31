@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 26 июл 2024
+# 28 июл 2024
 
 import datetime
 
@@ -542,7 +542,7 @@ class C30_StructField(C20_MetaFrame):
 		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
 
 		try   :
-			return T21_StructResult_Int(code     = result_read.code,
+			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
 			                            subcodes = result_read.subcodes,
 		                                data     = StringToInteger(vlp))
 
