@@ -1,5 +1,5 @@
-# КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО ПАРАМЕТРА
-# 31 июл 2024
+# КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО КАРКАСА
+# 03 авг 2024
 
 from G00_cactus_codes  import (CS_POSTFIX,
                                RS_POSTFIX,
@@ -15,8 +15,48 @@ from G30_cactus_frame  import (C30_StructField,
                                C30_StructFrame)
 
 
+class C31_StructFrameWithEvents(C30_StructFrame):
+	""" КАКТУС: Структурный объект - Модель событий """
+
+	# Модель событий: Объект - Инициализация
+	def on_ObjectInitiated(self): pass
+
+	# Модель событий: Объект - Регистрация
+	def on_RequestRegisterObject(self): pass
+	def on_ObjectRegistered(self): pass
+
+	# Модель событий: Объект - Удаление
+	def on_RequestDeleteObject(self): pass
+	def on_ObjectDeleted(self): pass
+
+	# Служебные методы: Инициализация объекта
+	def __init__(self, ido: str = ""):
+		super().__init__(ido)
+
+		self.on_ObjectInitiated()
+
+	# Механика управления: Объект
+	def RegisterObject(self, container_name: str) -> T20_StructResult:
+		""" Регистрация объекта в контейнере """
+		self.on_RequestRegisterObject()
+
+		result_register = super().RegisterObject(container_name)
+		if result_register.code == CODES_COMPLETION: self.on_ObjectRegistered()
+
+		return result_register
+
+	def DeleteObject(self, container_name: str) -> T20_StructResult:
+		""" Удаление объекта из контейнера """
+		self.on_RequestDeleteObject()
+
+		result_delete = super().DeleteObject(container_name)
+		if result_delete.code == CODES_COMPLETION: self.on_ObjectDeleted()
+
+		return result_delete
+
+
 class C31_StructFieldCsRs(C30_StructField):
-	""" Структурный параметр CS-RS """
+	""" КАКТУС: Структурный параметр CS-RS """
 
 	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__(struct_frame, idp, default_vlp)
@@ -80,7 +120,7 @@ class C31_StructFieldCsRs(C30_StructField):
 
 
 class C31_StructFieldSrcDst(C20_MetaFrame):
-	""" Структурный параметр SRC-DST """
+	""" КАКТУС: Структурный параметр SRC-DST """
 
 	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__()
