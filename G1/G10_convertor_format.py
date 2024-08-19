@@ -1,7 +1,9 @@
 # КОНВЕРТОР: ФОРМАТЫ
-# 08 июн 2024
+# 18 авг 2024
 
 import datetime
+import pytz
+
 from   typing   import Optional
 
 
@@ -88,9 +90,27 @@ def AnyToStrings(values: list[str] | list[int] | list[float] | list[bool]) -> li
 	return list(map(AnyToString, values))
 
 
-def StringToIntegerExt(text: str) -> int | None:
+def StringToIntegerOrNone(text: str) -> int | None:
 	"""  Расширенная конвертация строки в число """
 	try   : return int(text)
 	except: pass
 
 	return None
+
+
+def UTimeToDTime(in_utime: int, utc_shift : int | str = None) -> datetime.datetime:
+	""" Конвертация UTime в DTime """
+	if        utc_shift  is None:
+		return datetime.datetime.fromtimestamp(in_utime)
+
+	elif type(utc_shift) is int :
+		return datetime.datetime.fromtimestamp(in_utime, datetime.timezone(datetime.timedelta(minutes=utc_shift)))
+
+	elif type(utc_shift) is str :
+		try   : return datetime.datetime.fromtimestamp(in_utime, pytz.timezone(utc_shift))
+		except: return datetime.datetime.fromtimestamp(in_utime)
+
+
+def DTimeToUTime(in_dtime: datetime.datetime) -> int:
+	""" Конвертация DTime в UTime """
+	return int(in_dtime.timestamp())
