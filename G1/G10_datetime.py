@@ -1,5 +1,5 @@
 # ПАЛИТРА ИНСТРУМЕТОВ ДЛЯ РАБОТЫ С ДАТОЙ-ВРЕМЕНЕМ
-# 18 авг 2024
+# 20 авг 2024
 
 import datetime
 import pytz
@@ -47,7 +47,7 @@ def CurrentDayOfWeek(utc_shift: int | str = 0):
 
 def CurrentDy(utc_shift : int | str = None):
 	""" Текущий час """
-	return CurrentDTime(utc_shift).day
+	return CurrentDTime(utc_shift).year
 
 
 def CurrentDm(utc_shift : int | str = None):
@@ -77,14 +77,15 @@ def CurrentTs(utc_shift : int | str = None):
 
 # СМЕЩЕНИЕ ДАТ
 def CalcDyDmByShiftDm(dy: int, dm: int, shift: int) -> tuple[int, int]:
-	""" Вычисление года и месяца при смещении по месяцу """
+	""" Вычисление года и месяца (1..12) при смещении по месяцу """
 	_year  : int = dy
-	_month : int = dm - 1
+	_month : int = dm
+	_month      -= 1
 	_month      += shift
 
-	if _month < 0: _month -= 12
+	if _month < 1: _month -= 12
 
-	_year  += (_month//abs(_month)) * (abs(_month) // 12)
+	_year  += (_month//abs(_month)) * (abs(_month) // (13 if shift < 0 else 12))
 	_month  = _month  % 12
 	_month += 1
 

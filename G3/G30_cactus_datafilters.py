@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 31 июл 2024
+# 08 сен 2024
 
 import datetime
 
@@ -394,8 +394,8 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def Idos(self, sort_by_idp: str = None) -> T21_StructResult_List:
 		""" Запрос IDO """
 		idos   : set[str]             = set(map(lambda cell: cell.ido, self._data))
-		if not idos           : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                     subcodes = {CODES_DATA.NOT_ENOUGH})
+		if not idos           : return T21_StructResult_List(code     =  CODES_COMPLETION.COMPLETED,
+		                                                     subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		if sort_by_idp is None: return T21_StructResult_List(code = CODES_COMPLETION.COMPLETED,
 		                                                     data = list(idos))

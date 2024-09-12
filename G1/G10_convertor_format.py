@@ -1,5 +1,5 @@
 # КОНВЕРТОР: ФОРМАТЫ
-# 18 авг 2024
+# 08 авг 2024
 
 import datetime
 import pytz
@@ -77,12 +77,12 @@ def FloatToString(value: float) -> str:
 
 def AnyToString(value: str | int | float | bool) -> str:
 	""" Преобразование любого типа данных в строковый тип с заданных форматом """
-	if type(value) is str  : return value
-	if type(value) is int  : return f"{value}"
-	if type(value) is float: return FloatToString(value)
-	if type(value) is bool : return '1' if value else '0'
+	if   type(value) is str  : return value
+	elif type(value) is int  : return f"{value}"
+	elif type(value) is float: return FloatToString(value)
+	elif type(value) is bool : return '1' if value else '0'
 
-	return ""
+	return str(value)
 
 
 def AnyToStrings(values: list[str] | list[int] | list[float] | list[bool]) -> list[str]:
