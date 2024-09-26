@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 08 сен 2024
+# 26 сен 2024
 
 import datetime
 
@@ -22,8 +22,8 @@ from   G10_convertor_format             import (AnyToStrings,
                                                 StringToInteger,
                                                 StringToBoolean,
                                                 StringToDateTime)
-from   G10_list                         import (DistinctAndSortList2D,
-                                                DistinctAndSortList1D)
+from   G10_list_extended                import (DistinctAndNatSortList2D,
+                                                DistinctAndNatSortList1D)
 from   G10_math_linear                  import  CheckBetween
 
 from   G20_cactus_struct                import (T20_StructCell,
@@ -402,7 +402,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == sort_by_idp, self._data))
 		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
-		values                        = DistinctAndSortList2D(values                = values,
+		values                        = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = True,
 		                                                      flag_sort             = True)
@@ -422,7 +422,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Запрос VLP для IDP списком строк """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[str]            = list(map(lambda cell: cell.vlp, data))
-		values                        = DistinctAndSortList1D(values        = values,
+		values                        = DistinctAndNatSortList1D(values        = values,
 		                                                      flag_distinct = flag_distinct,
 		                                                      flag_sort     = flag_sort)
 
@@ -445,7 +445,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
-		values                        = DistinctAndSortList1D(values        = values,
+		values                        = DistinctAndNatSortList1D(values        = values,
 		                                                      flag_distinct = flag_distinct,
 		                                                      flag_sort     = flag_sort)
 
@@ -468,7 +468,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
-		values                        = DistinctAndSortList1D(values        = values,
+		values                        = DistinctAndNatSortList1D(values        = values,
 		                                                      flag_distinct = flag_distinct,
 		                                                      flag_sort     = flag_sort)
 
@@ -491,7 +491,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
-		values                        = DistinctAndSortList1D(values        = values,
+		values                        = DistinctAndNatSortList1D(values        = values,
 		                                                      flag_distinct = flag_distinct,
 		                                                      flag_sort     = flag_sort)
 
@@ -514,7 +514,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
-		values                        = DistinctAndSortList1D(values        = values,
+		values                        = DistinctAndNatSortList1D(values        = values,
 		                                                      flag_distinct = flag_distinct,
 		                                                      flag_sort     = flag_sort)
 
@@ -537,7 +537,7 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		""" Запрос IDO-CLV для IDP со списком строк """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
-		values                        = DistinctAndSortList2D(values                = values,
+		values                        = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = flag_distinct,
 		                                                      flag_sort             = flag_sort)
@@ -556,7 +556,7 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		""" Запрос IDO-CLV для IDP со списком целых чисел """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str, int]] = list(map(lambda cell: [cell.ido, StringToInteger(cell.vlp)], data))
-		values                        = DistinctAndSortList2D(values                = values,
+		values                        = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = flag_distinct,
 		                                                      flag_sort             = flag_sort)
@@ -575,7 +575,7 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		""" Запрос IDO-CLV для IDP со списком дробных чисел """
 		data   : list[T20_StructCell]   = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str, float]] = list(map(lambda cell: [cell.ido, StringToFloat(cell.vlp)], data))
-		values                          = DistinctAndSortList2D(values                = values,
+		values                          = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = flag_distinct,
 		                                                      flag_sort             = flag_sort)
@@ -594,7 +594,7 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		""" Запрос IDO-CLV для IDP со списком логических значений """
 		data   : list[T20_StructCell]  = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str, bool]] = list(map(lambda cell: [cell.ido, StringToBoolean(cell.vlp)], data))
-		values                         = DistinctAndSortList2D(values                = values,
+		values                         = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = flag_distinct,
 		                                                      flag_sort             = flag_sort)
@@ -613,7 +613,7 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		""" Запрос IDO-CLV для IDP со списком DateTime """
 		data   : list[T20_StructCell]      = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str, datetime.datetime | None]] = list(map(lambda cell: [cell.ido, StringToDateTime(cell.vlp)], data))
-		values                             = DistinctAndSortList2D(values                = values,
+		values                             = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = flag_distinct,
 		                                                      flag_sort             = flag_sort)

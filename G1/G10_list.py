@@ -1,18 +1,15 @@
 # ОБРАБОТЧИКИ СПИСКОВ
-# 18 авг 2024
-
-import natsort
+# 26 сен 2024
 
 
 def DistinctAndSortList1D(values: list, flag_distinct: bool = False, flag_sort: bool = False) -> list:
 	""" Обработка списка на предмет уникальности и сортировки 1D-Списка """
-	keys : list = values[:]
-	if     flag_distinct: keys : list = list(set(values))
+	result : list = values[:]
+	if     flag_distinct: result : list = list(set(values))
 
-	if not flag_sort: return keys
+	if not flag_sort: return result
 
-	sorting_key = natsort.natsort_keygen(alg=natsort.ns.REAL)
-	return sorted(keys, key=sorting_key)
+	return list(sorted(result))
 
 
 def DistinctAndSortList2D(values: list, index_processing_item: int, flag_distinct: bool = False, flag_sort: bool = False) -> list:
@@ -25,9 +22,7 @@ def DistinctAndSortList2D(values: list, index_processing_item: int, flag_distinc
 			result                     = list(filter(lambda item: item[index_processing_item] in filter_distinct, result))
 
 		if flag_sort    :
-			key_values      : list     = list(map(lambda item: item[index_processing_item], result))
-			index_values               = natsort.index_natsorted(key_values, alg=natsort.ns.REAL)
-			result                     = list(natsort.order_by_index(result, index_values))
+			result                     = list(sorted(result, key=lambda item: item[index_processing_item]))
 
 		return result
 	except: return []
