@@ -1,16 +1,16 @@
 # КАТАЛОГ: КАКТУС
-# 08 июл 2024
+# 13 окт 2024
 
 import enum
 
 
 # ВИДЫ КОНТЕЙНЕРОВ
 class CONTAINERS(enum.Enum):
-	CONTAINER_NONE       = ( 0, "Нет контейнера")
-	CONTAINER_RAM        = ( 1, "RAM-Контейнер")
-	CONTAINER_SQL        = (10, "SQL-Контейнер")
-	CONTAINER_SQLITE     = (11, "SQL.SQLite-Контейнер")
-	CONTAINER_POSTGRESQL = (12, "SQL.Postgresql-Контейнер")
+	NONE       = (0, "Нет контейнера")
+	RAM        = (1, "RAM-Контейнер")
+	SQL        = (10, "SQL-Контейнер")
+	SQLITE     = (11, "SQL.SQLite-Контейнер")
+	POSTGRESQL = (12, "SQL.Postgresql-Контейнер")
 
 	def __init__(self, code: int, description: str):
 		self.code         = code

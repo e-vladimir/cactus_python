@@ -1,5 +1,5 @@
 # КАКТУС: МЕТА-КОНТЕЙНЕР
-# 25 июн 2024
+# 13 окт 2024
 
 from G00_cactus_codes  import  CONTAINERS
 from G00_status_codes  import (CODES_COMPLETION,
@@ -22,23 +22,23 @@ class C30_Container(C20_MetaFrame):
 	def Init_00(self):
 		super().Init_00()
 
-		self._container_type : CONTAINERS = CONTAINERS.CONTAINER_NONE
+		self._container_type : CONTAINERS = CONTAINERS.NONE
 
 	# Механика данных: Тип контейнера
 	def Type_RAM(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: RAM """
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = self._container_type == CONTAINERS.CONTAINER_RAM)
+		                             data = self._container_type == CONTAINERS.RAM)
 
 	def Type_SQLite(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: SQLite """
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = self._container_type == CONTAINERS.CONTAINER_SQLITE)
+		                             data = self._container_type == CONTAINERS.SQLITE)
 
 	def Type_PostgreSQL(self) -> T21_StructResult_Bool:
 		""" Проверка вида контейнера: PostgreSQL """
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
-		                             data = self._container_type == CONTAINERS.CONTAINER_POSTGRESQL)
+		                             data = self._container_type == CONTAINERS.POSTGRESQL)
 
 	# Механика управления
 	pass

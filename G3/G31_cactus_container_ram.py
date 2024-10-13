@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 25 июл 2024
+# 13 окт 2024
 
 from copy                 import  copy
 
@@ -35,7 +35,7 @@ class C31_ContainerRAM(C30_Container):
 	def Init_01(self):
 		super().Init_01()
 
-		self._container_type = CONTAINERS.CONTAINER_RAM
+		self._container_type = CONTAINERS.RAM
 
 	# Механика данных
 	def Clear(self):

@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 31 июл 2024
+# 13 окт 2024
 
 import psycopg2
 import sqlite3
@@ -49,7 +49,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def Init_01(self):
 		super().Init_01()
 
-		self._container_type = CONTAINERS.CONTAINER_SQLITE
+		self._container_type = CONTAINERS.SQLITE
 
 	def Init_10(self):
 		super().Init_10()
@@ -1124,7 +1124,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	def Init_01(self):
 		super().Init_01()
 
-		self._container_type = CONTAINERS.CONTAINER_POSTGRESQL
+		self._container_type = CONTAINERS.POSTGRESQL
 
 	def Init_10(self):
 		super().Init_10()
