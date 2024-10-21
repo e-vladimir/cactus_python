@@ -52,6 +52,6 @@ class POSTFIX(enum.Enum):
 	SRC = (2, "src")
 	DST = (3, "dst")
 
-	def __init__(self, code: int, name: str):
-		self.code = code
-		self.name = name
+	def __init__(self, code: int, postfix: str):
+		self.code    = code
+		self.postfix = postfix

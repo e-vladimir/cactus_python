@@ -58,8 +58,8 @@ class C31_StructFieldCsRs(C30_StructField):
 	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__(struct_frame, idp, default_vlp)
 
-		self.cs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.CS.name}", default_vlp)
-		self.rs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.RS.name}", default_vlp)
+		self.cs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.CS.postfix}", default_vlp)
+		self.rs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.RS.postfix}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
@@ -122,8 +122,8 @@ class C31_StructFieldSrcDst(C20_MetaFrame):
 	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__()
 
-		self.src = C30_StructField(struct_frame, f"{idp}_{POSTFIX.SRC.name}", default_vlp)
-		self.dst = C30_StructField(struct_frame, f"{idp}_{POSTFIX.DST.name}", default_vlp)
+		self.src = C30_StructField(struct_frame, f"{idp}_{POSTFIX.SRC.postfix}", default_vlp)
+		self.dst = C30_StructField(struct_frame, f"{idp}_{POSTFIX.DST.postfix}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
