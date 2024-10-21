@@ -1,5 +1,5 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО КАРКАСА
-# 21 авг 2024
+# 21 окт 2024
 
 from G00_cactus_codes  import  POSTFIX
 from G00_status_codes  import  CODES_COMPLETION
