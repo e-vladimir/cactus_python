@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 13 окт 2024
+# 21 окт 2024
 
 import psycopg2
 import sqlite3
@@ -17,8 +17,8 @@ from   G00_status_codes         import (CODES_COMPLETION,
 from   G10_cactus_check         import (CheckIdc,
                                         CheckIdo,
                                         CheckIdp)
-from G10_cactus_convertors import (IdoFromIds,
-                                   IdpFromIds, UnificationIdc)
+from   G10_cactus_convertors    import (IdoFromIds,
+                                        IdpFromIds)
 from   G10_list                 import  DifferenceLists
 
 from   G20_cactus_struct        import  T20_StructCell
@@ -90,7 +90,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		self.connection = None
 		
 		try   :
-			self.connection = s3m.Connection(path              = self.OptionsFilename().data,
+			self.connection = s3m.Connection(path              = f"{self.OptionsFilename().data}.sqlite",
 											 isolation_level   = None,
 											 check_same_thread = False)
 		except:

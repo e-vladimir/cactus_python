@@ -1,13 +1,13 @@
 # КАТАЛОГ: КАКТУС
-# 13 окт 2024
+# 21 окт 2024
 
 import enum
 
 
 # ВИДЫ КОНТЕЙНЕРОВ
 class CONTAINERS(enum.Enum):
-	NONE       = (0, "Нет контейнера")
-	RAM        = (1, "RAM-Контейнер")
+	NONE       = ( 0, "Нет контейнера")
+	RAM        = ( 1, "RAM-Контейнер")
 	SQL        = (10, "SQL-Контейнер")
 	SQLITE     = (11, "SQL.SQLite-Контейнер")
 	POSTGRESQL = (12, "SQL.Postgresql-Контейнер")
@@ -46,7 +46,12 @@ class CONNECTION_MANAGEMENT(enum.Enum):
 
 
 # РАСШИРЕНИЕ СТРУКТУРНЫХ ПАРАМЕТРОВ
-CS_POSTFIX  = "cs"
-RS_POSTFIX  = "cs"
-SRC_POSTFIX = "src"
-DST_POSTFIX = "dst"
+class POSTFIX(enum.Enum):
+	CS  = (0,  "cs")
+	RS  = (1,  "cs")
+	SRC = (2, "src")
+	DST = (3, "dst")
+
+	def __init__(self, code: int, name: str):
+		self.code = code
+		self.name = name

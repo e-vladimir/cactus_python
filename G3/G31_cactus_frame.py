@@ -1,10 +1,7 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО КАРКАСА
-# 03 авг 2024
+# 21 авг 2024
 
-from G00_cactus_codes  import (CS_POSTFIX,
-                               RS_POSTFIX,
-                               SRC_POSTFIX,
-                               DST_POSTFIX)
+from G00_cactus_codes  import  POSTFIX
 from G00_status_codes  import  CODES_COMPLETION
 
 from G20_meta_frame    import  C20_MetaFrame
@@ -61,8 +58,8 @@ class C31_StructFieldCsRs(C30_StructField):
 	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__(struct_frame, idp, default_vlp)
 
-		self.cs = C30_StructField(self.struct_frame, f"{idp}_{CS_POSTFIX}", default_vlp)
-		self.rs = C30_StructField(self.struct_frame, f"{idp}_{RS_POSTFIX}", default_vlp)
+		self.cs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.CS.name}", default_vlp)
+		self.rs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.RS.name}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
@@ -125,8 +122,8 @@ class C31_StructFieldSrcDst(C20_MetaFrame):
 	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
 		super().__init__()
 
-		self.src = C30_StructField(struct_frame, f"{idp}_{SRC_POSTFIX}", default_vlp)
-		self.dst = C30_StructField(struct_frame, f"{idp}_{DST_POSTFIX}", default_vlp)
+		self.src = C30_StructField(struct_frame, f"{idp}_{POSTFIX.SRC.name}", default_vlp)
+		self.dst = C30_StructField(struct_frame, f"{idp}_{POSTFIX.DST.name}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
