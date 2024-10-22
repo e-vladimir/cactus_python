@@ -53,7 +53,7 @@ class CMsg(C30_StructFrame):
 
 
 container_local = controller_containers.RegisterContainerSQLite(CONTAINER_NAME)
-container_local.OptionsFilename("./test.sqlite")
+container_local.OptionsFilename("test")
 container_local.Connect()
 
 CMsg.RegisterClass(CONTAINER_NAME)
