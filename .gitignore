@@ -1,3 +1,5 @@
 /.idea
 /test.py
 /tests/data.sqlite
+/examples/db1.sqlite
+/examples/db2.sqlite
