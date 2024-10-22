@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 21 окт 2024
+# 22 окт 2024
 
 import psycopg2
 import sqlite3
@@ -169,7 +169,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 
-			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
+			return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
 										subcodes = result_cursor.subcodes)
 
 		try   :
@@ -177,7 +177,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			count : int = cursor.rowcount
 			cursor.close()
 		except:
-			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
+			return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
 										subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
