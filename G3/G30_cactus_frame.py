@@ -194,9 +194,14 @@ class C30_StructFrame(C20_MetaFrame):
 
 		result    = container.ReadSCell(cell)
 
-		return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
-		                             subcodes = result.subcodes,
-					                 data     = result.data is not None)
+		result_error : bool = not result.code == CODES_COMPLETION.COMPLETED
+		result_error       &=     CODES_DATA.NO_DATA not in result.subcodes
+
+		if     result_error                     : return T21_StructResult_Bool(code     = result.code,
+												                               subcodes = result.subcodes,
+															                   data     = False)
+		return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED,
+		                             data=result.data is not None)
 
 	def DeleteObject(self, container_name: str) -> T20_StructResult:
 		""" Удаление объекта из контейнера """
