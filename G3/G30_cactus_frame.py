@@ -180,19 +180,19 @@ class C30_StructFrame(C20_MetaFrame):
 		if not CheckIdo(self._ido)              : return T21_StructResult_Bool(code     =  CODES_COMPLETION.INTERRUPTED,
 					                                                           subcodes = {CODES_DATA.ERROR_CHECK},
 					                                                           data     = False)
-		cell      = T20_StructCell()
-		cell.idc  = UnificationIdc(self._idc)
-		cell.ido  = self._ido
-		cell.idp  = CACTUS_STRUCT_DATA.IDC.name_base
-		cell.vlp  = UnificationIdc(self._idc)
-		cell.vlt  = CurrentUTime()
+		cell                = T20_StructCell()
+		cell.idc            = UnificationIdc(self._idc)
+		cell.ido            = self._ido
+		cell.idp            = CACTUS_STRUCT_DATA.IDC.name_base
+		cell.vlp            = UnificationIdc(self._idc)
+		cell.vlt            = CurrentUTime()
 
-		container = controller_containers.Container(container_name)
+		container           = controller_containers.Container(container_name)
 		if     container is None                : return T21_StructResult_Bool(code     =  CODES_COMPLETION.INTERRUPTED,
 					                                                           subcodes = {CODES_CACTUS.NO_CONTAINER},
 					                                                           data     =  False)
 
-		result    = container.ReadSCell(cell)
+		result              = container.ReadSCell(cell)
 
 		result_error : bool = not result.code == CODES_COMPLETION.COMPLETED
 		result_error       &=     CODES_DATA.NO_DATA not in result.subcodes
