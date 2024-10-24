@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 31 июл 2024
+# 24 окт 2024
 
 import datetime
 
@@ -174,6 +174,29 @@ class C30_StructFrame(C20_MetaFrame):
 		result    = container.WriteSCell(cell, True)
 		return T20_StructResult(code     = result.code,
 		                        subcodes = result.subcodes)
+
+	def CheckRegisterObject(self, container_name: str ) -> T21_StructResult_Bool:
+		""" Проверка регистрации объекта в контейнере """
+		if not CheckIdo(self._ido)              : return T21_StructResult_Bool(code     =  CODES_COMPLETION.INTERRUPTED,
+					                                                           subcodes = {CODES_DATA.ERROR_CHECK},
+					                                                           data     = False)
+		cell      = T20_StructCell()
+		cell.idc  = UnificationIdc(self._idc)
+		cell.ido  = self._ido
+		cell.idp  = CACTUS_STRUCT_DATA.IDC.name_base
+		cell.vlp  = UnificationIdc(self._idc)
+		cell.vlt  = CurrentUTime()
+
+		container = controller_containers.Container(container_name)
+		if     container is None                : return T21_StructResult_Bool(code     =  CODES_COMPLETION.INTERRUPTED,
+					                                                           subcodes = {CODES_CACTUS.NO_CONTAINER},
+					                                                           data     =  False)
+
+		result    = container.ReadSCell(cell)
+
+		return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
+		                             subcodes = result.subcodes,
+					                 data     = result.data is not None)
 
 	def DeleteObject(self, container_name: str) -> T20_StructResult:
 		""" Удаление объекта из контейнера """
@@ -500,7 +523,10 @@ class C30_StructField(C20_MetaFrame):
 		cell                = T20_StructCell(idc=idc, ido=ido, idp=idp)
 		result_read         = container.ReadSCell(cell)
 		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                            subcodes = result_read.subcodes)
+		                                                                                      subcodes = result_read.subcodes)
+
+		if     result_read.data is None                      : return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                                      subcodes = result_read.subcodes)
 
 		result              = T21_StructResult_String()
 		result.code         = result_read.code
@@ -529,6 +555,9 @@ class C30_StructField(C20_MetaFrame):
 		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
 		result_vlp  = StringToDateTime(vlp)
 
+		if not vlp: return T21_StructResult_DTime(code     = CODES_COMPLETION.INTERRUPTED,
+			                                      subcodes = {CODES_DATA.NO_DATA})
+
 		if result_vlp is None: return T21_StructResult_DTime(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
@@ -540,6 +569,9 @@ class C30_StructField(C20_MetaFrame):
 		""" В целое число """
 		result_read = self._ReadVlpSCell(container_name_src)
 		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
+
+		if not vlp: return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
+			                                    subcodes = {CODES_DATA.NO_DATA})
 
 		try   :
 			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
@@ -554,6 +586,9 @@ class C30_StructField(C20_MetaFrame):
 		""" В дробное число """
 		result_read = self._ReadVlpSCell(container_name_src)
 		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
+
+		if not vlp: return T21_StructResult_Float(code     = CODES_COMPLETION.INTERRUPTED,
+			                                      subcodes = {CODES_DATA.NO_DATA})
 
 		try   :
 			return T21_StructResult_Float(code     = result_read.code,

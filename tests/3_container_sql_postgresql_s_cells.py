@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 18 июл 2024
+# 24 окт 2024
 
 import time
 
@@ -8,9 +8,7 @@ from   copy                     import deepcopy
 from   G00_status_codes         import *
 
 from   G10_list                 import DifferenceLists
-
 from   G20_cactus_struct        import T20_StructCell
-
 from   G32_cactus_container_sql import C32_ContainerPostgreSQL
 
 print("")
@@ -30,7 +28,7 @@ time_0 = time.time()
 result = container.RegisterClass(cell.idc)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Регистрация класса")
 
 cell        =  T20_StructCell(idc="idc")
@@ -44,7 +42,7 @@ time_0 = time.time()
 result = container.DeleteSCells(cell)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Очистка контейнера")
 
 time_0 = time.time()
@@ -52,7 +50,7 @@ result = container.ReadSCells(cell)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение пакета ячеек по маске из пустого контейнера")
 
 time_0 = time.time()
@@ -60,7 +58,7 @@ result = container.ReadSCells(cells)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение пакета ячеек по списку из пустого контейнера")
 
 time_0 = time.time()
@@ -70,7 +68,7 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA       in result.subcodes
 check &= CODES_DATA.ERROR_CHECK   in result.subcodes
 check &= CODES_PROCESSING.PARTIAL in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение пакета ячеек по списку с некорректными параметрами из пустого контейнера")
 
 time_0 = time.time()
@@ -79,7 +77,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по маске из пустого контейнера (без захвата изменений)")
 
 time_0 = time.time()
@@ -87,7 +85,7 @@ result = container.DeleteSCells(cell, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по маске из пустого контейнера (с захватом изменений)")
 
 time_0 = time.time()
@@ -96,7 +94,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по списку из пустого контейнера (без захвата изменений)")
 
 time_0 = time.time()
@@ -107,7 +105,7 @@ check &= CODES_DATA.ERROR_CHECK in result.subcodes
 check &= CODES_PROCESSING.PARTIAL in result.subcodes
 result = container.ReadSCells(cell)
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по списку с некорректными параметрами из пустого контейнера (без захвата изменений)")
 
 time_0 = time.time()
@@ -115,7 +113,7 @@ result = container.DeleteSCells(cells, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по списку из пустого контейнера (с захватом изменений)")
 
 time_0 = time.time()
@@ -125,7 +123,7 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.ERROR_CHECK in result.subcodes
 check &= CODES_PROCESSING.PARTIAL in result.subcodes
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по списку с некорректными параметрами из пустого контейнера (с захватом изменений)")
 
 time_0 = time.time()
@@ -134,7 +132,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cells)
 check &= result.data == cells
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Запись пакета ячеек (без захвата изменений)")
 
 time_0 = time.time()
@@ -143,7 +141,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= result.data == cells_new
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись пакета ячеек (без захвата изменений)")
 
 time_0 = time.time()
@@ -152,7 +150,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= result.data == cells_new
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Пропуск перезаписи пакета ячеек (без захвата изменений)")
 
 time_0 = time.time()
@@ -160,7 +158,7 @@ result = container.WriteSCells(cells, False, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= result.data == cells_new
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись пакета ячеек (с захватом изменений)")
 
 time_0 = time.time()
@@ -168,7 +166,7 @@ result = container.WriteSCells(cells_new, True, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Пропуск перезаписи пакета ячеек (с захватом изменений)")
 
 time_0 = time.time()
@@ -177,7 +175,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= CODES_DATA.NO_DATA in result.subcodes
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по маске (без захвата изменений)")
 
 container.WriteSCells(cells)
@@ -187,7 +185,7 @@ result = container.DeleteSCells(cell, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= not DifferenceLists(cells, result.data)
-if not result.code == CODES_COMPLETION.COMPLETED: print(f"                  {result.code} {result.subcodes}")
+if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Удаление пакета ячеек по маске (с захватом изменений)")
 
 container.WriteSCells(cells)

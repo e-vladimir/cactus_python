@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 18 июл 2024
+# 24 окт 2024
 
 import time
 
@@ -23,14 +23,14 @@ time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после инициализации")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result    = container.Connect()
 time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Подключение к контейнеру")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result    = container.StateConnected()
@@ -38,14 +38,14 @@ time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == True
 print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после подключения")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result    = container.Disconnect()
 time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Отключение от контейнера")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result    = container.StateConnected()
@@ -53,7 +53,7 @@ time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после отключения")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 container.DisconnectMode_Timeout(True)
 container.DisconnectTimeout(2)
@@ -70,4 +70,4 @@ time_1 = time.time()
 check     = (result.code        == CODES_COMPLETION.COMPLETED)
 check    &= result.data == False
 print(f"{(time_1 - time_0):0.3f} сек  ", f"{'[+]' if check else '[ ]'} Проверка состояния контейнера после авто-отключения")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")

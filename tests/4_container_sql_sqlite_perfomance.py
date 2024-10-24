@@ -1,59 +1,153 @@
-# ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.SQLite
-# 18 июл 2024
+# ТЕСТИРОВАНИЕ ПРОИЗВОДИТЕЛЬНОСТИ КОНТЕЙНЕРА SQLite
+# 24 окт 2024
 
-import os
+import random
 import time
 
-from G00_status_codes         import *
+from G20_cactus_struct                import T20_StructCell
+from G30_cactus_controller_containers import controller_containers
 
-from G20_cactus_struct        import T20_StructCell
+count = 1000
 
-from G32_cactus_container_sql import C32_ContainerSQLite
-
+print("Тест SQLite-Контейнера: Замер производительности")
 print("")
-print("[== Тест Контейнера-SQL.SQLite: Производительность Кактус 21 ==]")
 
 try   : os.remove("./data.sqlite")
 except: pass
 
-container = C32_ContainerSQLite()
-container.OptionsFilename("./data.sqlite")
+container  = controller_containers.RegisterContainerSQLite("SQL")
+container.OptionsFilename("./data")
 container.Connect()
 
-cell       = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=0)
+oci    = "class_01"
+container.RegisterClass(oci)
 
-time_0 = time.time()
-result = container.RegisterClass(cell.idc)
-time_1 = time.time()
-check  = result.code == CODES_COMPLETION.COMPLETED
-print(f"{(time_1 - time_0):0.3f} сек   Подготовка контейнера")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+print(f"Запись {count} S-Ячеек")
 
-size   = 100
+oci        = "class_01"
+oid        = "object-01"
 
-cell   =  T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="val", vlt=0)
-cells  = [T20_StructCell(idc="idc", ido="ido", idp=f"idp_{index}", vlp="val", vlt=0) for index in range(size)]
+time_0     = time.time()
+for index in range(count):
+	pid    = f"field-{index}"
+	cvl    = f"value-{index}"
+	cut    = 1
+	cell   = T20_StructCell(oci, oid, pid, cvl, cut)
+	container.WriteSCell(cell)
 
-time_0 = time.time()
-for index in range(size): container.WriteSCell(cell, False, False)
-time_1 = time.time()
+time_1     = time.time()
 time_delta = time_1 - time_0
-print(f"{time_delta/size:0.3f} сек   Перезапись 1 S-Ячейки")
+print(f"{count:6d} ячеек записано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
 
-time_0 = time.time()
-for cell in cells: container.WriteSCell(cell, False, False)
-time_1 = time.time()
-time_delta = time_1 - time_0
-print(f"{time_delta/size:0.3f} сек   Запись 1 S-Ячейки")
+print("")
+print(f"Перезапись {count} S-Ячеек с режимом пропуска")
 
-time_0 = time.time()
-for cell in cells: container.DeleteSCell(cell, False)
-time_1 = time.time()
-time_delta = time_1 - time_0
-print(f"{time_delta/size:0.3f} сек   Удаление 1 S-Ячейки")
+oci        = "class_01"
+oid        = "object-01"
 
-time_0 = time.time()
-container.WriteSCells(cells, False, False)
-time_1 = time.time()
+time_0     = time.time()
+for index in range(count):
+	pid    = f"field-{random.randint(0, count)}"
+	cvl    = f"value-{random.randint(0, count)}"
+	cut    = random.randint(0, 100000)
+	cell   = T20_StructCell(oci, oid, pid, cvl, cut)
+	container.WriteSCell(cell, False)
+
+time_1     = time.time()
 time_delta = time_1 - time_0
-print(f"{time_delta:0.3f} сек   Запись пакета S-Ячеек ({size})")
+print(f"{count:6d} ячеек перезаписано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
+
+print("")
+print(f"Перезапись {count} S-Ячеек с режимом перезаписи")
+
+oci        = "class_01"
+oid        = "object-01"
+
+time_0     = time.time()
+for index in range(count):
+	pid    = f"field-{random.randint(0, count)}"
+	cvl    = f"value-{random.randint(0, count)}"
+	cut    = random.randint(0, 100000)
+	cell   = T20_StructCell(oci, oid, pid, cvl, cut)
+	container.WriteSCell(cell)
+
+time_1     = time.time()
+time_delta = time_1 - time_0
+print(f"{count:6d} ячеек перезаписано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
+
+print("")
+print(f"Синхронизация {count} S-Ячеек")
+
+oci        = "class_01"
+oid        = "object-01"
+
+time_0     = time.time()
+for index in range(count):
+	pid    = f"field-{random.randint(0, count)}"
+	cvl    = f"value-{random.randint(0, count)}"
+	cut    = random.randint(0, 100000)
+	cell   = T20_StructCell(oci, oid, pid, cvl, cut)
+	container.SyncSCell(cell)
+
+time_1     = time.time()
+time_delta = time_1 - time_0
+print(f"{count:6d} ячеек синхронизировано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
+
+print("")
+print(f"Запись {count} D-Ячеек")
+
+oci        = "class_01"
+oid        = "object-01"
+
+time_0     = time.time()
+for index in range(count):
+	pid    = f"field-{random.randint(0, count)}"
+	cvl    = f"value-{random.randint(0, count)}"
+	cut    = random.randint(0, 100000)
+	cell   = T20_StructCell(oci, oid, pid, cvl, cut)
+	container.WriteDCell(cell)
+
+time_1     = time.time()
+time_delta = time_1 - time_0
+print(f"{count:6d} ячеек записано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
+
+print("")
+print("===============")
+print("Замер производительности пакетного режима")
+cells = []
+
+oci        = "class_01"
+oid        = "object-01"
+
+for index in range(count):
+	pid    = f"field-{random.randint(0, count)}"
+	cvl    = f"value-{random.randint(0, count)}"
+	cut    = random.randint(0, 100000)
+	cell   = T20_StructCell(oci, oid, pid, cvl, cut)
+	cells.append(cell)
+
+print(f"Запись {count} S-Ячеек")
+
+time_0     = time.time()
+container.WriteSCells(cells)
+time_1     = time.time()
+time_delta = time_1 - time_0
+print(f"{count:6d} ячеек записано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
+
+print("")
+print(f"Перезапись {count} S-Ячеек с режимом перезаписи")
+
+time_0     = time.time()
+container.WriteSCells(cells)
+time_1     = time.time()
+time_delta = time_1 - time_0
+print(f"{count:6d} ячеек перезаписано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")
+
+
+print("")
+print(f"Синхронизация {count} S-Ячеек")
+time_0     = time.time()
+container.SyncSCells(cells)
+time_1     = time.time()
+time_delta = time_1 - time_0
+print(f"{count:6d} ячеек синхронизировано за {time_delta:0.5f} сек = {(time_delta / count):0.10f} сек на операцию")

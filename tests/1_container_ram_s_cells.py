@@ -1,13 +1,13 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
-# 14 июл 2024
+# 24 окт 2024
 
 import time
+
 from copy import deepcopy
 
 from G00_status_codes         import *
 
 from G20_cactus_struct        import T20_StructCell
-
 from G31_cactus_container_ram import C31_ContainerRAM
 
 print("")
@@ -203,7 +203,7 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= result.data == cells
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация пакета ячеек (без захвата изменений)")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = container.SyncSCells(cells, False)
@@ -212,7 +212,7 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
 check &= result.data == cells
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация пакета ячеек с пропуском (без захвата изменений)")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = container.SyncSCells(cells_new, False)
@@ -221,7 +221,7 @@ check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cells)
 check &= result.data == cells_new
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация пакета ячеек с обновлением (без захвата изменений)")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 container.DeleteSCells(cell)
 
@@ -231,7 +231,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= result.data == cells
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация пакета ячеек (с захватом изменений)")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = container.SyncSCells(cells, True)
@@ -239,7 +239,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация пакета ячеек с пропуском (с захватом изменений)")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = container.SyncSCells(cells_new, True)
@@ -247,4 +247,4 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= result.data == cells_new
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Синхронизация пакета ячеек с обновлением (с захватом изменений)")
-if not check: print(f"                {result.code} {result.subcodes}\n")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
