@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 24 окт 2024
+# 31 окт 2024
 
 import datetime
 
@@ -12,8 +12,6 @@ from   G00_status_codes                 import (CODES_COMPLETION,
 from   G10_cactus_convertors            import  UnificationIdc
 from   G10_convertor_format             import (BooleanToString,
 										 	    DatetimeToString,
-											    StringsToFloats,
-											    StringsToIntegers,
 											    StringToBoolean,
 											    StringToDateTime,
 											    StringToFloat,
@@ -73,6 +71,7 @@ class C30_StructFrame(C20_MetaFrame):
 		result.data = UnificationIdc(cls._idc)
 
 		if not CheckIdc(result.data): result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		if not cls._idc             : result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -100,13 +99,14 @@ class C30_StructFrame(C20_MetaFrame):
 		""" Запрос списка IDO объектов класса из контейнера """
 		container                                  = controller_containers.Container(container_name)
 		if container is None                                 : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                                                    subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                                                    subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                                                CODES_DATA.NO_DATA})
 
 		filter_cells                               = T20_StructCell(idc = UnificationIdc(self._idc))
 		result_read : T21_StructResult_StructCells = container.ReadSCells(filter_cells)
 
 		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                    subcodes = result_read.subcodes)
+		                                                                                    subcodes = result_read.subcodes.union({CODES_DATA.NO_DATA}))
 
 		idos        : list[str]                    = [cell.ido for cell in result_read.data]
 		idos                                       = list(set(idos))
@@ -129,18 +129,20 @@ class C30_StructFrame(C20_MetaFrame):
 	def Idps(self, container_name: str) -> T21_StructResult_List:
 		""" Запрос списка IDP S-Ячеек из контейнера """
 		if not CheckIdo(self._ido)                            : return T21_StructResult_List(code     =  CODES_COMPLETION.COMPLETED,
-		                                                                                     subcodes = {CODES_DATA.ERROR_CHECK})
+		                                                                                     subcodes = {CODES_DATA.ERROR_CHECK,
+		                                                                                                 CODES_DATA.NO_DATA})
 
 		container                                  = controller_containers.Container(container_name)
 		if container is None                                  : return T21_StructResult_List(code     =  CODES_COMPLETION.COMPLETED,
-		                                                                                     subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                                                     subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                                                 CODES_DATA.NO_DATA})
 
 		filter_cells                               = T20_StructCell(idc = UnificationIdc(self._idc),
 		                                                            ido = self._ido)
 
 		result_read : T21_StructResult_StructCells = container.ReadSCells(filter_cells)
 		if not result_read.code == CODES_COMPLETION.COMPLETED : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                     subcodes = result_read.subcodes)
+		                                                                                     subcodes = result_read.subcodes.union({CODES_DATA.NO_DATA}))
 
 		idps        : list[str]                    = [cell.idp for cell in result_read.data]
 		idps                                       = list(set(idps))
@@ -178,7 +180,8 @@ class C30_StructFrame(C20_MetaFrame):
 	def CheckRegisterObject(self, container_name: str ) -> T21_StructResult_Bool:
 		""" Проверка регистрации объекта в контейнере """
 		if not CheckIdo(self._ido)              : return T21_StructResult_Bool(code     =  CODES_COMPLETION.INTERRUPTED,
-					                                                           subcodes = {CODES_DATA.ERROR_CHECK},
+					                                                           subcodes = {CODES_DATA.ERROR_CHECK,
+					                                                                       CODES_DATA.NO_DATA},
 					                                                           data     = False)
 		cell                = T20_StructCell()
 		cell.idc            = UnificationIdc(self._idc)
@@ -189,7 +192,8 @@ class C30_StructFrame(C20_MetaFrame):
 
 		container           = controller_containers.Container(container_name)
 		if     container is None                : return T21_StructResult_Bool(code     =  CODES_COMPLETION.INTERRUPTED,
-					                                                           subcodes = {CODES_CACTUS.NO_CONTAINER},
+					                                                           subcodes = {CODES_CACTUS.NO_CONTAINER,
+					                                                                       CODES_DATA.NO_DATA},
 					                                                           data     =  False)
 
 		result              = container.ReadSCell(cell)
@@ -198,7 +202,7 @@ class C30_StructFrame(C20_MetaFrame):
 		result_error       &=     CODES_DATA.NO_DATA not in result.subcodes
 
 		if     result_error                     : return T21_StructResult_Bool(code     = result.code,
-												                               subcodes = result.subcodes,
+												                               subcodes = result.subcodes.union({CODES_DATA.NO_DATA}),
 															                   data     = False)
 		return T21_StructResult_Bool(code=CODES_COMPLETION.COMPLETED,
 		                             data=result.data is not None)
@@ -342,8 +346,8 @@ class C30_StructField(C20_MetaFrame):
 	def Init_00(self):
 		super().Init_00()
 
-		self._default_vlp: str = ""
-		self._idp        : str = ""
+		self._default_vlp: str | None = None
+		self._idp        : str        = ""
 
 	def Init_10(self):
 		super().Init_10()
@@ -353,40 +357,50 @@ class C30_StructField(C20_MetaFrame):
 	def Ids(self) -> T21_StructResult_String:
 		""" Запрос IDS """
 		if self.struct_frame is None: return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                             subcodes = {CODES_DATA.NOT_ENOUGH})
+		                                                             subcodes = {CODES_DATA.NOT_ENOUGH,
+		                                                                         CODES_DATA.NO_DATA})
 
-		ido          : str = self.struct_frame._ido
-		idp          : str = self._idp
-		ids          : str = f"{ido}.{idp}"
+		ido          : str  = self.struct_frame._ido
+		idp          : str  = self._idp
+		ids          : str  = f"{ido}.{idp}"
 
 		result_check : bool = CheckIdo(ido)
 		result_check       &= CheckIdp(idp)
 
-		if not result_check         : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                             subcodes = {CODES_DATA.ERROR_CHECK})
+		result              = T21_StructResult_String()
+		result.code         = CODES_COMPLETION.COMPLETED
+		result.data         = ids
 
-		return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
-		                               data = ids)
+		if not result_check:
+			result.code     =  CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+		return result
 
 	def Idf(self) -> T21_StructResult_String:
 		""" Запрос IDF """
 		if self.struct_frame is None: return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                             subcodes = {CODES_DATA.NOT_ENOUGH})
+		                                                             subcodes = {CODES_DATA.NOT_ENOUGH,
+		                                                                         CODES_DATA.NO_DATA})
 
 		idc          : str = UnificationIdc(self.struct_frame._idc)
 		ido          : str = self.struct_frame._ido
 		idp          : str = self._idp
-		ids          : str = f"{idc}.{ido}.{idp}"
+		idf          : str = f"{idc}.{ido}.{idp}"
 
 		result_check : bool = CheckIdc(idc)
 		result_check       &= CheckIdo(ido)
 		result_check       &= CheckIdp(idp)
 
-		if not result_check         : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                             subcodes = {CODES_DATA.ERROR_CHECK})
+		result              = T21_StructResult_String()
+		result.code         = CODES_COMPLETION.COMPLETED
+		result.data         = idf
 
-		return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
-		                               data = ids)
+		if not result_check:
+			result.code     =  CODES_COMPLETION.INTERRUPTED
+			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+
+		return result
 
 	def Idp(self) -> T21_StructResult_String:
 		""" Запрос IDP """
@@ -400,8 +414,14 @@ class C30_StructField(C20_MetaFrame):
 	# Механика данных: Параметр по-умолчанию
 	def DefaultVlp(self, vlp: any = None) -> T21_StructResult_String:
 		""" Запрос/Установка значения параметра по умолчанию """
-		if        vlp  is None : return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
-		                                                        data = self._default_vlp)
+		if        vlp  is None :
+			result      = T21_StructResult_String()
+			result.code = CODES_COMPLETION.COMPLETED
+
+			if self._default_vlp is None: result.subcodes.add(CODES_DATA.NO_DATA)
+			else                        : result.data = self._default_vlp
+
+			return result
 
 		elif type(vlp) is int  : self._default_vlp = f"{vlp}"
 		elif type(vlp) is float: self._default_vlp = f"{vlp:0.5f}"
@@ -516,10 +536,12 @@ class C30_StructField(C20_MetaFrame):
 		""" Системный метод чтения данных для конверторов """
 		container           = controller_containers.Container(container_name_src)
 		if container is None                       : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                                            subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                                            subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                                        CODES_DATA.NO_DATA})
 
 		if self.struct_frame is None               : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                                            subcodes = {CODES_DATA.NOT_ENOUGH})
+		                                                                            subcodes = {CODES_DATA.NOT_ENOUGH,
+		                                                                                        CODES_DATA.NO_DATA})
 
 		idc                 = UnificationIdc(self.struct_frame._idc)
 		ido                 = self.struct_frame._ido
@@ -528,10 +550,10 @@ class C30_StructField(C20_MetaFrame):
 		cell                = T20_StructCell(idc=idc, ido=ido, idp=idp)
 		result_read         = container.ReadSCell(cell)
 		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                      subcodes = result_read.subcodes)
+		                                                                                      subcodes = result_read.subcodes.union({CODES_DATA.NO_DATA}))
 
 		if     result_read.data is None                      : return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                      subcodes = result_read.subcodes)
+		                                                                                      subcodes = result_read.subcodes.union({CODES_DATA.NO_DATA}))
 
 		result              = T21_StructResult_String()
 		result.code         = result_read.code
@@ -542,152 +564,226 @@ class C30_StructField(C20_MetaFrame):
 
 	def ToBoolean(self, container_name_src: str) -> T21_StructResult_Bool:
 		""" В логическое значение """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data
+
+		flag_no_default = self._default_vlp is None
+
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+
+		result          = T21_StructResult_Bool()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_Bool(code     = result_read.code,
-			                             subcodes = result_read.subcodes,
-		                                 data     = StringToBoolean(vlp))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = StringToBoolean(self._default_vlp)
+			else                                 : result.data = StringToBoolean(vlp)
 		except:
-			return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToDatetime(self, container_name_src: str) -> T21_StructResult_DTime:
 		""" В Datetime """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
-		result_vlp  = StringToDateTime(vlp)
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
 
-		if not vlp: return T21_StructResult_DTime(code     = CODES_COMPLETION.INTERRUPTED,
-			                                      subcodes = {CODES_DATA.NO_DATA})
+		if   flag_no_data and flag_no_default: return T21_StructResult_DTime(code     = CODES_COMPLETION.COMPLETED,
+			                                                                 subcodes = result_read.subcodes)
 
-		if result_vlp is None: return T21_StructResult_DTime(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                     subcodes = {CODES_DATA.ERROR_CONVERT})
+		if   flag_no_data                    : vlp = StringToDateTime(self._default_vlp)
+		else                                 : vlp = StringToDateTime(vlp)
 
-		return T21_StructResult_DTime(code     = result_read.code,
+		if vlp is None                       : return T21_StructResult_DTime(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                     subcodes = result_read.subcodes.union({CODES_DATA.ERROR_CONVERT}))
+
+		return T21_StructResult_DTime(code     = CODES_COMPLETION.COMPLETED,
 		                              subcodes = result_read.subcodes,
-		                              data     = result_vlp)
+		                              data     = vlp)
 
 	def ToInteger(self, container_name_src: str) -> T21_StructResult_Int:
 		""" В целое число """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
 
-		if not vlp: return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.NO_DATA})
+		result          = T21_StructResult_Int()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
-			                            subcodes = result_read.subcodes,
-		                                data     = StringToInteger(vlp))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = StringToInteger(self._default_vlp)
+			else                                 : result.data = StringToInteger(vlp)
 		except:
-			return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
-			                            subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToFloat(self, container_name_src: str) -> T21_StructResult_Float:
 		""" В дробное число """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
 
-		if not vlp: return T21_StructResult_Float(code     = CODES_COMPLETION.INTERRUPTED,
-			                                      subcodes = {CODES_DATA.NO_DATA})
+		result          = T21_StructResult_Float()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_Float(code     = result_read.code,
-			                              subcodes = result_read.subcodes,
-		                                  data     = StringToFloat(vlp))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = StringToFloat(self._default_vlp)
+			else                                 : result.data = StringToFloat(vlp)
 		except:
-			return T21_StructResult_Float(code     = CODES_COMPLETION.INTERRUPTED,
-			                              subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToString(self, container_name_src: str) -> T21_StructResult_String:
 		""" В строку """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
 
-		return T21_StructResult_String(code     = result_read.code,
-		                               subcodes = result_read.subcodes,
-		                               data     = vlp)
+		result          = T21_StructResult_String()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
+
+		try   :
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = self._default_vlp
+			else                                 : result.data = vlp
+
+		except:
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	# Логика данных: Конвертация в список формата
 	def ToBooleans(self, container_name_src : str) -> T21_StructResult_List:
 		""" В список логических значений """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
-		vlp         = vlp.strip()
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data.strip()
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
+
+		result          = T21_StructResult_List()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_List(code     = result_read.code,
-			                             subcodes = result_read.subcodes,
-			                             data     = list(map(StringToBoolean, vlp.split(SEPARATOR_LIST))))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = list(map(StringToBoolean, self._default_vlp.split(SEPARATOR_LIST)))
+			else                                 : result.data = list(map(StringToBoolean, vlp.split(SEPARATOR_LIST)))
 		except:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToDatetimes(self, container_name_src : str) -> T21_StructResult_List:
 		""" В список Datetime """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
-		vlp         = vlp.strip()
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data.strip()
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
+
+		result          = T21_StructResult_List()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_List(code     = result_read.code,
-			                             subcodes = result_read.subcodes,
-			                             data     = list(map(StringToDateTime, vlp.split(SEPARATOR_LIST))))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = [item for item in map(StringToDateTime, self._default_vlp.split(SEPARATOR_LIST)) if item is not None]
+			else                                 : result.data = list(map(StringToDateTime, vlp.split(SEPARATOR_LIST)))
 		except:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToIntegers(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список целых чисел """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
-		vlp         = vlp.strip()
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data.strip()
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
+
+		result          = T21_StructResult_List()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_List(code     = result_read.code,
-			                             subcodes = result_read.subcodes,
-			                             data     = StringsToIntegers(vlp.split(SEPARATOR_LIST)))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = list(map(StringToInteger, self._default_vlp.split(SEPARATOR_LIST)))
+			else                                 : result.data = list(map(StringToInteger, vlp.split(SEPARATOR_LIST)))
 		except:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToFloats(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список дробных чисел """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
-		vlp         = vlp.strip()
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data.strip()
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
+
+		result          = T21_StructResult_List()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_List(code     = result_read.code,
-			                             subcodes = result_read.subcodes,
-			                             data     = StringsToFloats(vlp.split(SEPARATOR_LIST)))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = list(map(StringToFloat, self._default_vlp.split(SEPARATOR_LIST)))
+			else                                 : result.data = list(map(StringToFloat, vlp.split(SEPARATOR_LIST)))
 		except:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	def ToStrings(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список строк """
-		result_read = self._ReadVlpSCell(container_name_src)
-		vlp         = result_read.data if (result_read.code == CODES_COMPLETION.COMPLETED) else self._default_vlp
-		vlp         = vlp.strip()
+		result_read     = self._ReadVlpSCell(container_name_src)
+		vlp             = result_read.data.strip()
+		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
+		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_default = self._default_vlp is None
+
+		result          = T21_StructResult_List()
+		result.code     = CODES_COMPLETION.COMPLETED
+		result.subcodes = result_read.subcodes
 
 		try   :
-			return T21_StructResult_List(code     = result_read.code,
-			                             subcodes = result_read.subcodes,
-			                             data     = vlp.split(SEPARATOR_LIST))
-
+			if   flag_no_data and flag_no_default: pass
+			elif flag_no_data                    : result.data = list(self._default_vlp.split(SEPARATOR_LIST))
+			else                                 : result.data = list(vlp.split(SEPARATOR_LIST))
 		except:
-			return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                             subcodes = {CODES_DATA.ERROR_CONVERT})
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+			result.subcodes.add(CODES_DATA.NO_DATA)
+
+		return result
 
 	# Механика управления: Данные в контейнере
 	def CopyToContainer(self, container_name_src: str, container_name_dst: str) -> T20_StructResult:
@@ -802,7 +898,8 @@ class C30_StructField(C20_MetaFrame):
 		""" Запрос записи D-Данных """
 		container_src                             = controller_containers.Container(container_name_src)
 		if container_src is None : return T21_StructResult_String(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                          subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                          subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                      CODES_DATA.NO_DATA})
 
 		idc                                       = UnificationIdc(self.struct_frame._idc)
 		ido                                       = self.struct_frame._ido
@@ -835,7 +932,8 @@ class C30_StructField(C20_MetaFrame):
 		""" Запрос vlp/vlt в диапазоне vlt D-Данных """
 		container_src                              = controller_containers.Container(container_name_src)
 		if container_src is None : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                        subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                        subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                    CODES_DATA.NO_DATA})
 
 		idc                                        = UnificationIdc(self.struct_frame._idc)
 		ido                                        = self.struct_frame._ido
@@ -864,7 +962,8 @@ class C30_StructField(C20_MetaFrame):
 		""" Запрос границ vlt D-Данных """
 		container_src = controller_containers.Container(container_name_src)
 		if container_src is None : return T21_StructResult_VltRange(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                            subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                            subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                        CODES_DATA.NO_DATA})
 
 		idc           = UnificationIdc(self.struct_frame._idc)
 		ido           = self.struct_frame._ido
@@ -877,7 +976,8 @@ class C30_StructField(C20_MetaFrame):
 		""" Запрос списка vlt в диапазоне vlt D-Данных """
 		container_src = controller_containers.Container(container_name_src)
 		if container_src is None : return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                        subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                        subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                    CODES_DATA.NO_DATA})
 
 		idc           = UnificationIdc(self.struct_frame._idc)
 		ido           = self.struct_frame._ido
@@ -891,10 +991,12 @@ class C30_StructField(C20_MetaFrame):
 		""" Запрос vlt """
 		container           = controller_containers.Container(container_name_src)
 		if container is None        : return T21_StructResult_Int(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                          subcodes = {CODES_CACTUS.NO_CONTAINER})
+		                                                          subcodes = {CODES_CACTUS.NO_CONTAINER,
+		                                                                      CODES_DATA.NO_DATA})
 
 		if self.struct_frame is None: return T21_StructResult_Int(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                          subcodes = {CODES_DATA.NOT_ENOUGH})
+		                                                          subcodes = {CODES_DATA.NOT_ENOUGH,
+		                                                                      CODES_DATA.NO_DATA})
 
 		idc                 = UnificationIdc(self.struct_frame._idc)
 		ido                 = self.struct_frame._ido

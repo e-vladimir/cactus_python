@@ -1,10 +1,8 @@
 # КОНВЕРТОР: ФОРМАТЫ
-# 08 авг 2024
+# 31 окт 2024
 
 import datetime
 import pytz
-
-from   typing   import Optional
 
 
 def BooleanToString(flag: bool) -> str:
@@ -14,10 +12,15 @@ def BooleanToString(flag: bool) -> str:
 
 def StringToBoolean(text: str) -> bool:
 	""" Преобразование строки в логическое значение """
-	if   text == '1'   : return True
-	elif text == '+'   : return True
-	elif text == "True": return True
-	elif text == "Yes" : return True
+	flag : str = text.lower()
+
+	if   flag == '1'      : return True
+	elif flag == '+'      : return True
+	elif flag == '01'     : return True
+	elif flag == "true"   : return True
+	elif flag == "yes"    : return True
+	elif flag == "да"     : return True
+	elif flag == "истина" : return True
 
 	return False
 
@@ -27,7 +30,7 @@ def DatetimeToString(dtime: datetime.datetime) -> str:
 	return f"{int(dtime.timestamp())}"
 
 
-def StringToDateTime(text: str) -> Optional[datetime.datetime]:
+def StringToDateTime(text: str) -> datetime.datetime | None:
 	""" Преобразование строки в Datetime по нескольким шаблонам """
 	# Подбор преобразования из UNIX формата
 	try   : return datetime.datetime.fromtimestamp(int(text))

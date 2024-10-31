@@ -38,70 +38,70 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_number.ToBoolean(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате Boolean")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToDatetime(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате DateTime")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToInteger(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате Integer")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToFloat(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате Float")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToString(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате String")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToBooleans(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате [Boolean]")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToDatetimes(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате [DateTime]")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToIntegers(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате [Integer]")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToFloats(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате [Float]")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
 time_0 = time.time()
 result = message.f_number.ToStrings(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующих данных в формате [String]")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
