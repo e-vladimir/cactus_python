@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 13 окт 2024
+# 01 ноя 2024
 
 from copy                 import  copy
 
@@ -93,7 +93,7 @@ class C31_ContainerRAM(C30_Container):
 		result_exist : bool = cell.ids in self._s_cells
 
 		if not result_exist:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 			                                   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
@@ -170,6 +170,7 @@ class C31_ContainerRAM(C30_Container):
 			                                    subcodes = {CODES_DATA.ERROR_TYPE})
 
 		result                              = T21_StructResult_StructCells()
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
 		cells_after  : list[T20_StructCell] = []
@@ -230,6 +231,7 @@ class C31_ContainerRAM(C30_Container):
 			                                    subcodes = {CODES_DATA.ERROR_TYPE})
 
 		result            = T21_StructResult_StructCells()
+		result.code       = CODES_COMPLETION.COMPLETED
 
 		if   type(cell_cells) is T20_StructCell:
 			for scell in self._s_cells.values():
@@ -267,6 +269,7 @@ class C31_ContainerRAM(C30_Container):
 	def SyncSCells(self, cells: list[T20_StructCell], flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		result                              = T21_StructResult_StructCells()
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
 		cells_after  : list[T20_StructCell] = []
@@ -311,6 +314,7 @@ class C31_ContainerRAM(C30_Container):
 	def WriteSCells(self, cells: list[T20_StructCell], flag_skip: bool = False,  flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		result                              = T21_StructResult_StructCells()
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
 		cells_after  : list[T20_StructCell] = []
@@ -401,7 +405,7 @@ class C31_ContainerRAM(C30_Container):
 		result_exist : bool                      = cell.vlt in dcells
 
 		if not result_exist:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
@@ -455,6 +459,7 @@ class C31_ContainerRAM(C30_Container):
 			                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                                   = T21_StructResult_StructCells()
+		result.code                              = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell]      = []
 		cells_after  : list[T20_StructCell]      = []
@@ -493,6 +498,7 @@ class C31_ContainerRAM(C30_Container):
 			                                    subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                                   = T21_StructResult_StructCells()
+		result.code                              = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell]      = []
 		cells_after  : list[T20_StructCell]      = []
@@ -517,9 +523,6 @@ class C31_ContainerRAM(C30_Container):
 	# Логика данных: Диапазон VLT
 	def ReadVltRange(self, cell: T21_VltRange) -> T21_StructResult_VltRange:
 		""" Запрос границ cUT D-Ячейки """
-		result                                   = T21_StructResult_VltRange()
-		result.data                              = T21_VltRange()
-
 		result_check : bool                      = CheckIdo(cell.ido)
 		result_check                            &= CheckIdp(cell.idp)
 
@@ -528,6 +531,10 @@ class C31_ContainerRAM(C30_Container):
 										     subcodes = {CODES_DATA.ERROR_CHECK})
 
 		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		result                                   = T21_StructResult_VltRange()
+		result.code                              = CODES_COMPLETION.COMPLETED
+		result.data                              = T21_VltRange()
 
 		if not dcells: result.subcodes.add(CODES_DATA.NO_DATA)
 
@@ -551,8 +558,6 @@ class C31_ContainerRAM(C30_Container):
 
 	def ReadVlts(self, cell: T21_VltRange) -> T21_StructResult_List:
 		""" Запрос списка VLT """
-		result                                   = T21_StructResult_List()
-
 		result_check : bool                      = CheckIdo(cell.ido)
 		result_check                            &= CheckIdp(cell.idp)
 
@@ -561,6 +566,9 @@ class C31_ContainerRAM(C30_Container):
 										 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
+
+		result                                   = T21_StructResult_List()
+		result.code                              = CODES_COMPLETION.COMPLETED
 
 		for dcell in dcells.values():
 			if bool(cell.vlt_l) and (dcell.vlt < cell.vlt_l): continue

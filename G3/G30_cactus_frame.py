@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 31 окт 2024
+# 01 ноя 2024
 
 import datetime
 
@@ -371,9 +371,7 @@ class C30_StructField(C20_MetaFrame):
 		result.code         = CODES_COMPLETION.COMPLETED
 		result.data         = ids
 
-		if not result_check:
-			result.code     =  CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		if not result_check: result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
 		return result
 
@@ -396,15 +394,14 @@ class C30_StructField(C20_MetaFrame):
 		result.code         = CODES_COMPLETION.COMPLETED
 		result.data         = idf
 
-		if not result_check:
-			result.code     =  CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CHECK)
+		if not result_check: result.subcodes.add(CODES_DATA.ERROR_CHECK)
 
 		return result
 
 	def Idp(self) -> T21_StructResult_String:
 		""" Запрос IDP """
 		result      = T21_StructResult_String()
+		result.code = CODES_COMPLETION.COMPLETED
 		result.data = self._idp
 
 		if not CheckIdp(self._idp): result.subcodes.add(CODES_DATA.ERROR_CHECK)

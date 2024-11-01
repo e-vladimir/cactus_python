@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.SQLite
-# 24 окт 2024
+# 01 ноя 2024
 
 import os
 import time
@@ -43,7 +43,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = container.ReadDCell(cell)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение из пустого контейнера")
 if not check: print(f"                  {result.code} {result.subcodes}\n")

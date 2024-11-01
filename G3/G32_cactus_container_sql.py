@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 22 окт 2024
+# 01 ноя 2024
 
 import psycopg2
 import sqlite3
@@ -400,10 +400,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2 :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
+		result.data              = CODES_COMPLETION.COMPLETED
 
 		try                                 :
 			result_cell     = T20_StructCell()
@@ -430,7 +431,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_cell         = self.ReadSCell(cell)
-		check_error  : bool = not result_cell.code == CODES_COMPLETION.INTERRUPTED
+		check_error  : bool = not result_cell.code == CODES_COMPLETION.COMPLETED
 		check_error        &= CODES_DATA.NO_DATA in result_cell.subcodes
 		if check_error:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -786,6 +787,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def WriteSCells(self, cells: list[T20_StructCell], flag_skip: bool = False,  flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		result                              = T21_StructResult_StructCells()
+		result.data              = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
 		cells_after  : list[T20_StructCell] = []
@@ -900,10 +902,11 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2 :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
+		result.data              = CODES_COMPLETION.COMPLETED
 
 		try                                 :
 			result_cell     = T20_StructCell()
@@ -1499,10 +1502,11 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2 :
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
+		result.data              = CODES_COMPLETION.COMPLETED
 
 		try                                 :
 			result_cell     = T20_StructCell()
@@ -1528,7 +1532,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 											                                                      subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_cell              = self.ReadSCell(cell)
-		check_error  : bool      = not result_cell.code == CODES_COMPLETION.INTERRUPTED
+		check_error  : bool      = not result_cell.code == CODES_COMPLETION.COMPLETED
 		check_error             &= CODES_DATA.NO_DATA in result_cell.subcodes
 		if check_error:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
@@ -2102,8 +2106,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_check &= CheckIdo(cell.ido)
 		result_check &= CheckIdp(cell.idp)
 
-		if not result_check: return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED,
-		                                                         subcodes={CODES_DATA.ERROR_CHECK})
+		if not result_check: return T21_StructResult_StructCells(code     =  CODES_COMPLETION.INTERRUPTED,
+		                                                         subcodes = {CODES_DATA.ERROR_CHECK})
 
 		filters: list[str] = []
 		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
@@ -2111,14 +2115,14 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
 		sql: str = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE "
-		sql += ' AND '.join(filters)
+		sql     += ' AND '.join(filters)
 
 		result_sql = self.ExecSqlSelectMatrix(sql)
 
-		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code=CODES_COMPLETION.INTERRUPTED,
-		                                                                                          subcodes=result_sql.subcodes)
+		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                                          subcodes = result_sql.subcodes)
 
-		result = T21_StructResult_StructCells()
+		result      = T21_StructResult_StructCells()
 		result.code = CODES_COMPLETION.COMPLETED
 
 		for raw_line in result_sql.data:
