@@ -579,7 +579,6 @@ class C30_StructField(C20_MetaFrame):
 			else                                 : result.data = StringToBoolean(vlp)
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -621,8 +620,8 @@ class C30_StructField(C20_MetaFrame):
 			elif flag_no_data                    : result.data = StringToInteger(self._default_vlp)
 			else                                 : result.data = StringToInteger(vlp)
 		except:
+			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -643,8 +642,8 @@ class C30_StructField(C20_MetaFrame):
 			elif flag_no_data                    : result.data = StringToFloat(self._default_vlp)
 			else                                 : result.data = StringToFloat(vlp)
 		except:
+			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -667,7 +666,6 @@ class C30_StructField(C20_MetaFrame):
 
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -678,6 +676,7 @@ class C30_StructField(C20_MetaFrame):
 		vlp             = result_read.data.strip()
 		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
 		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
@@ -690,7 +689,6 @@ class C30_StructField(C20_MetaFrame):
 			else                                 : result.data = list(map(StringToBoolean, vlp.split(SEPARATOR_LIST)))
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -700,6 +698,7 @@ class C30_StructField(C20_MetaFrame):
 		vlp             = result_read.data.strip()
 		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
 		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
@@ -711,8 +710,8 @@ class C30_StructField(C20_MetaFrame):
 			elif flag_no_data                    : result.data = [item for item in map(StringToDateTime, self._default_vlp.split(SEPARATOR_LIST)) if item is not None]
 			else                                 : result.data = list(map(StringToDateTime, vlp.split(SEPARATOR_LIST)))
 		except:
+			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -722,6 +721,7 @@ class C30_StructField(C20_MetaFrame):
 		vlp             = result_read.data.strip()
 		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
 		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
@@ -733,8 +733,8 @@ class C30_StructField(C20_MetaFrame):
 			elif flag_no_data                    : result.data = list(map(StringToInteger, self._default_vlp.split(SEPARATOR_LIST)))
 			else                                 : result.data = list(map(StringToInteger, vlp.split(SEPARATOR_LIST)))
 		except:
+			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -744,6 +744,7 @@ class C30_StructField(C20_MetaFrame):
 		vlp             = result_read.data.strip()
 		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
 		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
@@ -756,7 +757,6 @@ class C30_StructField(C20_MetaFrame):
 			else                                 : result.data = list(map(StringToFloat, vlp.split(SEPARATOR_LIST)))
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 
@@ -766,6 +766,7 @@ class C30_StructField(C20_MetaFrame):
 		vlp             = result_read.data.strip()
 		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
 		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
@@ -778,7 +779,6 @@ class C30_StructField(C20_MetaFrame):
 			else                                 : result.data = list(vlp.split(SEPARATOR_LIST))
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-			result.subcodes.add(CODES_DATA.NO_DATA)
 
 		return result
 

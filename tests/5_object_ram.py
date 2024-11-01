@@ -205,4 +205,100 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 check &= len(result.data) == 1
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате [String]")
+
+print("\nПроверка работы с пустым значением")
+result = message.f_number.FromString(CONTAINER_RAM, "")
+print(message.f_number.ToString(CONTAINER_RAM))
+print("")
+
+time_0 = time.time()
+result = message.f_number.ToBoolean(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == False
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате Boolean")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToDatetime(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате DateTime")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToInteger(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате Integer")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToFloat(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.INTERRUPTED
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате Float")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToString(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == ""
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате String")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToBooleans(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате [Boolean]")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToDatetimes(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате [DateTime]")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToIntegers(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате [Integer]")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToFloats(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате [Float]")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToStrings(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= len(result.data) == 0
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение данных в формате [String]")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.FromIntegers(CONTAINER_RAM, [1, 2, 3])
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Запись данных в формате [Integer]")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_number.ToIntegers(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= result.data == [1, 2, 3]
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка данных в формате [Integer]")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
