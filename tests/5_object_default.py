@@ -22,9 +22,21 @@ class CObj(C30_StructFrame):
 		self.f_list   = C30_StructField(self, "Список", [1, 2, 3])
 		self.f_empty  = C30_StructField(self, "Пусто")
 
+	def NumberOrDefault(self, real_default = None) -> any:
+		result_read = self.f_number.ToString(CODES_DATA)
+
+		if CODES_DATA.NO_DATA in result_read.subcodes: return real_default
+		else                                         : return result_read.data
+
 
 message = CObj()
 message.GenerateIdo()
+
+print(message.NumberOrDefault())
+print(message.NumberOrDefault("2"))
+print(message.NumberOrDefault(message))
+
+print("")
 
 time_0 = time.time()
 result = message.f_number.ToBoolean(CONTAINER_RAM)

@@ -1,5 +1,5 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО КАРКАСА
-# 21 окт 2024
+# 01 ноя 2024
 
 from G00_cactus_codes  import  POSTFIX
 from G00_status_codes  import  CODES_COMPLETION
@@ -19,12 +19,12 @@ class C31_StructFrameWithEvents(C30_StructFrame):
 	def on_ObjectInitiated(self): pass
 
 	# Модель событий: Объект - Регистрация
-	def on_RequestRegisterObject(self): pass
-	def on_ObjectRegistered(self): pass
+	def on_RequestRegisterObject(self, container_name: str): pass
+	def on_ObjectRegistered(self, container_name: str): pass
 
 	# Модель событий: Объект - Удаление
-	def on_RequestDeleteObject(self): pass
-	def on_ObjectDeleted(self): pass
+	def on_RequestDeleteObject(self, container_name: str): pass
+	def on_ObjectDeleted(self, container_name: str): pass
 
 	# Служебные методы: Инициализация объекта
 	def __init__(self, ido: str = ""):
@@ -35,19 +35,19 @@ class C31_StructFrameWithEvents(C30_StructFrame):
 	# Механика управления: Объект
 	def RegisterObject(self, container_name: str) -> T20_StructResult:
 		""" Регистрация объекта в контейнере """
-		self.on_RequestRegisterObject()
+		self.on_RequestRegisterObject(container_name)
 
 		result_register = super().RegisterObject(container_name)
-		if result_register.code == CODES_COMPLETION: self.on_ObjectRegistered()
+		if result_register.code == CODES_COMPLETION: self.on_ObjectRegistered(container_name)
 
 		return result_register
 
 	def DeleteObject(self, container_name: str) -> T20_StructResult:
 		""" Удаление объекта из контейнера """
-		self.on_RequestDeleteObject()
+		self.on_RequestDeleteObject(container_name)
 
 		result_delete = super().DeleteObject(container_name)
-		if result_delete.code == CODES_COMPLETION: self.on_ObjectDeleted()
+		if result_delete.code == CODES_COMPLETION: self.on_ObjectDeleted(container_name)
 
 		return result_delete
 
