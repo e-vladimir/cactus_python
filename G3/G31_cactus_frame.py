@@ -1,5 +1,5 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО КАРКАСА
-# 01 ноя 2024
+# 24 ноя 2024
 
 from G00_cactus_codes  import  POSTFIX
 from G00_status_codes  import  CODES_COMPLETION
@@ -38,7 +38,7 @@ class C31_StructFrameWithEvents(C30_StructFrame):
 		self.on_RequestRegisterObject(container_name)
 
 		result_register = super().RegisterObject(container_name)
-		if result_register.code == CODES_COMPLETION: self.on_ObjectRegistered(container_name)
+		if result_register.code == CODES_COMPLETION.COMPLETED: self.on_ObjectRegistered(container_name)
 
 		return result_register
 
@@ -47,7 +47,7 @@ class C31_StructFrameWithEvents(C30_StructFrame):
 		self.on_RequestDeleteObject(container_name)
 
 		result_delete = super().DeleteObject(container_name)
-		if result_delete.code == CODES_COMPLETION: self.on_ObjectDeleted(container_name)
+		if result_delete.code == CODES_COMPLETION.COMPLETED: self.on_ObjectDeleted(container_name)
 
 		return result_delete
 

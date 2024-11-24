@@ -1,5 +1,4 @@
-fastnumbers==5.1.0
-psycopg2==2.9.9
-PyICU==2.12
-pytz==2024.1
-s3m==1.1.0
+fastnumbers
+psycopg2
+pytz
+s3m
