@@ -1,6 +1,7 @@
 # ТЕСТИРОВАНИЕ ПРОИЗВОДИТЕЛЬНОСТИ КОНТЕЙНЕРА SQLite
-# 24 окт 2024
+# 06 дек 2024
 
+import os
 import random
 import time
 

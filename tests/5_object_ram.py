@@ -11,6 +11,8 @@ from   G30_cactus_frame                 import C30_StructFrame, C30_StructField
 
 CONTAINER_RAM = "RAM"
 
+print("Тест Структурного объекта: Базовый тест")
+print("")
 
 class CMessage(C30_StructFrame):
 	_idc = "Сообщение"
