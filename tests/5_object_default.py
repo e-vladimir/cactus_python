@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ СТРУКТУРНОГО ОБЪЕКТА СО ЗНАЧЕНИЕМ ПО УМОЛЧАНИЮ
-# 31 окт 2024
+# 06 дек 2024
 
 import time
 
@@ -142,7 +142,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_text.ToInteger(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.COMPLETED
+check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.NO_DATA in result.subcodes
 check &= CODES_DATA.ERROR_CONVERT in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка 2 значения по-умолчанию для типа Integer")
@@ -151,7 +151,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_text.ToFloat(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.COMPLETED
+check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.NO_DATA in result.subcodes
 check &= CODES_DATA.ERROR_CONVERT in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка 2 значения по-умолчанию для типа Float")
@@ -178,7 +178,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_text.ToIntegers(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.COMPLETED
+check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.NO_DATA in result.subcodes
 check &= result.data == []
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка 2 значения по-умолчанию для типа [Integer]")
@@ -225,7 +225,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_list.ToInteger(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.COMPLETED
+check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.NO_DATA in result.subcodes
 check &= CODES_DATA.ERROR_CONVERT in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка 3 значения по-умолчанию для типа Integer")
@@ -234,7 +234,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_list.ToFloat(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.COMPLETED
+check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.NO_DATA in result.subcodes
 check &= CODES_DATA.ERROR_CONVERT in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка 3 значения по-умолчанию для типа Float")

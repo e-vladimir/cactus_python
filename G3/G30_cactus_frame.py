@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 01 ноя 2024
+# 06 дек 2024
 
 import datetime
 
@@ -763,7 +763,7 @@ class C30_StructField(C20_MetaFrame):
 	def ToStrings(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список строк """
 		result_read     = self._ReadVlpSCell(container_name_src)
-		vlp             = result_read.data.strip()
+		vlp             = result_read.data
 		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
 		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_data   |= vlp == ''
