@@ -178,7 +178,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = message.f_text.ToIntegers(CONTAINER_RAM)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
 check &= result.data == []
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка 2 значения по-умолчанию для типа [Integer]")

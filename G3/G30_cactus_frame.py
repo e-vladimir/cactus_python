@@ -705,13 +705,24 @@ class C30_StructField(C20_MetaFrame):
 		result.code     = CODES_COMPLETION.COMPLETED
 		result.subcodes = result_read.subcodes
 
-		try   :
-			if   flag_no_data and flag_no_default: pass
-			elif flag_no_data                    : result.data = [item for item in map(StringToDateTime, self._default_vlp.split(SEPARATOR_LIST)) if item is not None]
-			else                                 : result.data = list(map(StringToDateTime, vlp.split(SEPARATOR_LIST)))
-		except:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+		if flag_no_data and flag_no_default: pass
+		else                               :
+			items = vlp.split() if flag_no_default else self._default_vlp.split()
+
+			for item in items:
+				result_item: datetime.datetime | None = StringToDateTime(item)
+
+				if result_item is None:
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+
+					continue
+
+				result.data.append(result_item)
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result
 
@@ -728,13 +739,22 @@ class C30_StructField(C20_MetaFrame):
 		result.code     = CODES_COMPLETION.COMPLETED
 		result.subcodes = result_read.subcodes
 
-		try   :
-			if   flag_no_data and flag_no_default: pass
-			elif flag_no_data                    : result.data = list(map(StringToInteger, self._default_vlp.split(SEPARATOR_LIST)))
-			else                                 : result.data = list(map(StringToInteger, vlp.split(SEPARATOR_LIST)))
-		except:
-			result.code = CODES_COMPLETION.INTERRUPTED
-			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+		if flag_no_data and flag_no_default: pass
+		else                               :
+			items = vlp.split() if flag_no_default else self._default_vlp.split()
+
+			for item in items:
+				try   :
+					result.data.append(StringToInteger(item))
+				except:
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+
+					continue
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result
 
@@ -751,12 +771,22 @@ class C30_StructField(C20_MetaFrame):
 		result.code     = CODES_COMPLETION.COMPLETED
 		result.subcodes = result_read.subcodes
 
-		try   :
-			if   flag_no_data and flag_no_default: pass
-			elif flag_no_data                    : result.data = list(map(StringToFloat, self._default_vlp.split(SEPARATOR_LIST)))
-			else                                 : result.data = list(map(StringToFloat, vlp.split(SEPARATOR_LIST)))
-		except:
-			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+		if flag_no_data and flag_no_default: pass
+		else                               :
+			items = vlp.split() if flag_no_default else self._default_vlp.split()
+
+			for item in items:
+				try   :
+					result.data.append(StringToFloat(item))
+				except:
+					result.subcodes.add(CODES_PROCESSING.PARTIAL)
+					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+
+					continue
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result
 
