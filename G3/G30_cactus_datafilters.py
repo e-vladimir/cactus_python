@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 26 сен 2024
+# 08 дек 2024
 
 import datetime
 
@@ -57,6 +57,9 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	# УПРАВЛЕНИЕ ФИЛЬТРАЦИЕЙ
 	def _AppendFilterIdpVlp(self, filter_type: FILTERS, idp: str, data: any, flag_invert: bool, flag_include: bool) -> T20_StructResult:
 		""" Добавление фильтра IDP-VLP """
+		if data is None: return T20_StructResult(code     =  CODES_COMPLETION.COMPLETED,
+		                                         subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
+
 		try   :
 			value  : str       = ""
 			values : list[str] = []
