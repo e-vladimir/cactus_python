@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 05 фев 2025
+# 08 дек 2024
 
 import datetime
 
@@ -404,7 +404,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		                                                     data = list(idos))
 
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == sort_by_idp, self._data))
-		values : list[list[str]]      = list([cell.ido, cell.vlp] for cell in data)
+		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
 		values                        = DistinctAndNatSortList2D(values                = values,
 		                                                      index_processing_item = 1,
 		                                                      flag_distinct         = True,

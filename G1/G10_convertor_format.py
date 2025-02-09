@@ -1,5 +1,5 @@
 # КОНВЕРТОР: ФОРМАТЫ
-# 31 окт 2024
+# 02 янв 2025
 
 import datetime
 import pytz
@@ -32,12 +32,35 @@ def DatetimeToString(dtime: datetime.datetime) -> str:
 
 def StringToDateTime(text: str) -> datetime.datetime | None:
 	""" Преобразование строки в Datetime по нескольким шаблонам """
+	raw : str = text
+	raw       = raw.replace( '/', '-')
+	raw       = raw.replace('\\', '-')
+	raw       = raw.replace( '.', '-')
+	raw       = raw.replace( ',',  '')
+	raw       = raw.replace('  ', ' ')
+
 	# Подбор преобразования из UNIX формата
 	try   : return datetime.datetime.fromtimestamp(int(text))
 	except: pass
 
-	# Подбор преобразования из формата YYYY-MM-DD HH:MM:SS
-	try   : return datetime.datetime.strptime(text.replace('/', '-'), "%Y-%m-%d, %H:%M:%S")
+	# Подбор преобразования из формата дата-время
+	try   : return datetime.datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+	except: pass
+
+	try   : return datetime.datetime.strptime(raw, "%Y-%m-%d %H:%M")
+	except: pass
+
+	try   : return datetime.datetime.strptime(raw, "%d-%m-%Y %H:%M:%S")
+	except: pass
+
+	try   : return datetime.datetime.strptime(raw, "%d-%m-%Y %H:%M")
+	except: pass
+
+	# Подбор преобразования из формата дата
+	try   : return datetime.datetime.strptime(raw, "%Y-%m-%d")
+	except: pass
+
+	try   : return datetime.datetime.strptime(raw, "%d-%m-%Y")
 	except: pass
 
 	return None

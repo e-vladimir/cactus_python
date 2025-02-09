@@ -32,6 +32,8 @@ def DifferenceLists(list_1: list, list_2: list, flag_cmp_1_to_2: bool = False) -
 	""" Разница между списками """
 	result = []
 
+	# TODO: Переписать на множествах
+
 	if flag_cmp_1_to_2:
 		for item in list_1:
 			if item in list_2: continue
