@@ -1,5 +1,5 @@
 # ОБРАБОТЧИКИ СПИСКОВ
-# 26 сен 2024
+# 29 мар 2025
 
 
 def DistinctAndSortList1D(values: list, flag_distinct: bool = False, flag_sort: bool = False) -> list:
@@ -47,3 +47,8 @@ def DifferenceLists(list_1: list, list_2: list, flag_cmp_1_to_2: bool = False) -
 			result.append(item)
 
 	return result
+
+
+def CLeanList(items: list[str]) -> list[str]:
+	""" Чистый список от пустых строк и пробелов """
+	return sorted(filter(lambda item: len(item) > 0, [item.strip() for item in items]))
