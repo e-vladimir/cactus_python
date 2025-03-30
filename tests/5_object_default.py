@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ СТРУКТУРНОГО ОБЪЕКТА СО ЗНАЧЕНИЕМ ПО УМОЛЧАНИЮ
-# 06 дек 2024
+# 30 мар 2025
 
 import time
 
@@ -25,9 +25,10 @@ class CObj(C30_StructFrame):
 		self.f_text   = C30_StructField(self, "Текст", "2w")
 		self.f_list   = C30_StructField(self, "Список", [1, 2, 3])
 		self.f_empty  = C30_StructField(self, "Пусто")
+		self.f_empty_10 = C30_StructField(self, "Пусто", 10)
 
 	def NumberOrDefault(self, real_default = None) -> any:
-		result_read = self.f_number.ToString(CODES_DATA)
+		result_read = self.f_number.ToString(CONTAINER_RAM)
 
 		if CODES_DATA.NO_DATA in result_read.subcodes: return real_default
 		else                                         : return result_read.data
@@ -36,11 +37,30 @@ class CObj(C30_StructFrame):
 message = CObj()
 message.GenerateIdo()
 
-print(message.NumberOrDefault())
-print(message.NumberOrDefault("2"))
-print(message.NumberOrDefault(message))
+print("Базовая проверка")
+
+time_0 = time.time()
+result = message.f_empty.ToInteger(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= CODES_DATA.NO_DATA in result.subcodes
+check &= result.data == 0
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка ситуации Данных нет без установки значения по-умолчанию")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+time_0 = time.time()
+result = message.f_empty_10.ToInteger(CONTAINER_RAM)
+time_1 = time.time()
+check  = result.code == CODES_COMPLETION.COMPLETED
+check &= CODES_DATA.NO_DATA in result.subcodes
+check &= result.data == 10
+print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка установки значения по-умолчанию равным 10")
+if not check: print(f"                  {result.code} {result.subcodes}\n")
+
+exit(0)
 
 print("")
+print("Расширенная проверка")
 
 time_0 = time.time()
 result = message.f_number.ToBoolean(CONTAINER_RAM)
