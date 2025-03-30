@@ -57,8 +57,6 @@ check &= result.data == 10
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Проверка установки значения по-умолчанию равным 10")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
 
-exit(0)
-
 print("")
 print("Расширенная проверка")
 
