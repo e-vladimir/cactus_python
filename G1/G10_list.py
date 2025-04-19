@@ -1,6 +1,8 @@
 # ОБРАБОТЧИКИ СПИСКОВ
 # 19 апр 2025
 
+import re
+
 
 def DistinctAndSortList1D(values: list, flag_distinct: bool = False, flag_sort: bool = False) -> list:
 	""" Обработка списка на предмет уникальности и сортировки 1D-Списка """
@@ -33,6 +35,14 @@ def DifferenceLists(list_1: list, list_2: list, flag_cmp_1_to_2: bool = False) -
 	return list(set(list_1 if flag_cmp_1_to_2 else list_2).difference(list_2 if flag_cmp_1_to_2 else list_1))
 
 
-def CLeanList(items: list[str]) -> list[str]:
-	""" Чистый список от пустых строк и пробелов """
-	return sorted(filter(lambda item: len(item) > 0, [item.strip() for item in items]))
+def ClearList(items: list[str], clear_short: bool = True, clear_empty: bool = True, clear_spaces: bool = True, clear_numbers: bool = True, clear_simbols: bool = True, flag_sort: bool = True) -> list[str]:
+	""" Очистка списка от пустых строк, пробелов, чисел, спецсимволов """
+	result = items[:]
+
+	if clear_numbers: result = [re.sub(r'[0-9]',                   '', item) for item in result]
+	if clear_simbols: result = [re.sub(r'[^a-zA-Zа-яА-Я0-9ёЁ\s.]', '', item) for item in result]
+	if clear_spaces : result = [item.strip().replace('  ', ' ')            for item in result]
+	if clear_empty  : result = filter(lambda item: len(item) > 0, result)
+	if clear_short  : result = filter(lambda item: len(item) > 2, result)
+
+	return sorted(result) if flag_sort else result
