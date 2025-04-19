@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 24 окт 2024
+# 19 апр 2025
 
 import time
 
@@ -131,7 +131,7 @@ result = container.WriteSCells(cells, False, False)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cells)
-check &= result.data == cells
+check &= set(result.data) == set(cells)
 if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Запись пакета ячеек (без захвата изменений)")
 
@@ -140,7 +140,7 @@ result = container.WriteSCells(cells_new, False, False)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
-check &= result.data == cells_new
+check &= set(result.data) == set(cells_new)
 if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись пакета ячеек (без захвата изменений)")
 
@@ -149,7 +149,7 @@ result = container.WriteSCells(cells, True, False)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
 result = container.ReadSCells(cell)
-check &= result.data == cells_new
+check &= set(result.data) == set(cells_new)
 if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Пропуск перезаписи пакета ячеек (без захвата изменений)")
 
@@ -157,7 +157,7 @@ time_0 = time.time()
 result = container.WriteSCells(cells, False, True)
 time_1 = time.time()
 check  = result.code == CODES_COMPLETION.COMPLETED
-check &= result.data == cells_new
+check &= set(result.data) == set(cells_new)
 if not result.code == CODES_COMPLETION.COMPLETED: print(f"                    {result.code} {result.subcodes}")
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Перезапись пакета ячеек (с захватом изменений)")
 

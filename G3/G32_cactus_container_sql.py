@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 01 ноя 2024
+# 19 апр 2025
 
 import psycopg2
 import sqlite3
@@ -404,7 +404,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
-		result.data              = CODES_COMPLETION.COMPLETED
+		result.code              = CODES_COMPLETION.COMPLETED
 
 		try                                 :
 			result_cell     = T20_StructCell()
@@ -545,7 +545,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 					vlp = raw_line[1]
 					vlt = raw_line[2]
 
-					result_cell = T20_StructCell()
+					result_cell     = T20_StructCell()
 					result_cell.idc = cell_cells.idc
 					result_cell.ido = IdoFromIds(ids)
 					result_cell.idp = IdpFromIds(ids)
@@ -599,7 +599,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 					vlp = raw_line[1]
 					vlt = raw_line[2]
 
-					result_cell = T20_StructCell()
+					result_cell     = T20_StructCell()
 					result_cell.idc = cell_cells.idc
 					result_cell.ido = IdoFromIds(ids)
 					result_cell.idp = IdpFromIds(ids)
@@ -659,7 +659,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 					vlp = raw_line[1]
 					vlt = raw_line[2]
 
-					result_cell = T20_StructCell()
+					result_cell     = T20_StructCell()
 					result_cell.idc = cell_cells.idc
 					result_cell.ido = IdoFromIds(ids)
 					result_cell.idp = IdpFromIds(ids)
@@ -712,7 +712,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 					vlp = raw_line[2]
 					vlt = raw_line[3]
 
-					result_cell = T20_StructCell()
+					result_cell     = T20_StructCell()
 					result_cell.idc = idc
 					result_cell.ido = IdoFromIds(ids)
 					result_cell.idp = IdpFromIds(ids)
@@ -787,7 +787,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def WriteSCells(self, cells: list[T20_StructCell], flag_skip: bool = False,  flag_capture_delta: bool = False) -> T21_StructResult_StructCells:
 		""" Запись пакета S-Ячеек """
 		result                              = T21_StructResult_StructCells()
-		result.data              = CODES_COMPLETION.COMPLETED
+		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
 		cells_after  : list[T20_StructCell] = []
@@ -796,12 +796,12 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		filters      : dict[str, list[str]] = dict()
 
-		sqls: list[str] = []
+		sqls         : list[str]            = []
 
 		for cell in cells:
 			result_check: bool = CheckIdc(cell.idc)
-			result_check &= CheckIdo(cell.ido)
-			result_check &= CheckIdp(cell.idp)
+			result_check      &= CheckIdo(cell.ido)
+			result_check      &= CheckIdp(cell.idp)
 
 			if not result_check:
 				result.subcodes.add(CODES_DATA.ERROR_CHECK)
@@ -906,7 +906,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
-		result.data              = CODES_COMPLETION.COMPLETED
+		result.code              = CODES_COMPLETION.COMPLETED
 
 		try                                 :
 			result_cell     = T20_StructCell()
@@ -1506,7 +1506,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
-		result.data              = CODES_COMPLETION.COMPLETED
+		result.code              = CODES_COMPLETION.COMPLETED
 
 		try                                 :
 			result_cell     = T20_StructCell()
@@ -2175,7 +2175,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_VltRange(code=CODES_COMPLETION.INTERRUPTED,
 		                                                                                       subcodes=result_sql.subcodes)
 		try:
-			result.data = copy(cell)
+			result.data       = copy(cell)
 			result.data.vlt_l = result_sql.data[0]
 			result.data.vlt_r = result_sql.data[1]
 		except:

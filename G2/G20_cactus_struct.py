@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 08 июл 2024
+# 19 апр 2025
 
 from dataclasses      import (dataclass,
                               field)
@@ -33,6 +33,9 @@ class T20_StructCell:
 		elif key == "vlt": return
 
 		self.__regenerate_ids_idf__()
+
+	def __hash__(self):
+		return hash(self.idf)
 
 
 # ФИЛЬТРЫ
