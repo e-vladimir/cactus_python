@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 08 дек 2024
+# 20 апр 2025
 
 import datetime
 
@@ -182,7 +182,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		if not self._filters_idp_vlp                                : return True
 
 		filters_idp_vlp = self._filters_idp_vlp.get(cell.idp, [])
-		if not filters_idp_vlp                                      : return False
+		if not filters_idp_vlp                                      : return True
 
 		for filter_idp_vlp in filters_idp_vlp:
 			if not self._ApplyFilterIdpVlp(cell.vlp, filter_idp_vlp): return False
@@ -193,13 +193,15 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		""" Захват данных из контейнера RAM """
 		self._data.clear()
 
-		idos : set[str] = set()
+		idos : dict[str, bool] = dict()
 
 		for cell in container._s_cells.values():
-			if not self._ApplyFilterIdc(cell)    : continue
-			if not self._ApplyFiltersIdpVlp(cell): continue
+			if cell.ido not in idos: idos[cell.ido] = True
 
-			idos.add(cell.ido)
+			idos[cell.ido] &= self._ApplyFilterIdc(cell)
+			idos[cell.ido] &= self._ApplyFiltersIdpVlp(cell)
+
+		idos : set[str]        = {ido for ido, result in idos.items() if result}
 
 		if not idos: return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
 		                                     subcodes = {CODES_DATA.NO_DATA})
