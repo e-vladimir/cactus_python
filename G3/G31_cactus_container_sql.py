@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 25 июл 2024
+# 04 мая 2025
 
 import threading
 import time
@@ -43,48 +43,54 @@ class C31_ContainerSQL(C30_Container):
 		                             data     = True)
 
 	# Механика данных: Параметры Автоподключения
-	def ConnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool:
+	def ConnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool | None:
 		""" Режим подключения: Ручной """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 		                                                data = self._connect_mode == CONNECTION_MANAGEMENT.MANUAL)
 
 		elif flag        :                                     self._connect_mode  = CONNECTION_MANAGEMENT.MANUAL
+		return None
 
-	def ConnectMode_Auto(self, flag: bool = None) -> T21_StructResult_Bool:
+	def ConnectMode_Auto(self, flag: bool = None) -> T21_StructResult_Bool | None:
 		""" Режим подключения: Автоматически """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 		                                                data = self._connect_mode == CONNECTION_MANAGEMENT.AUTO)
 
 		elif flag        :                                     self._connect_mode  = CONNECTION_MANAGEMENT.AUTO
+		return None
 
 	# Механика данных: Параметры Автоотключения
-	def DisconnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool:
+	def DisconnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool | None:
 		""" Режим отключения: Отключено """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 		                                                data = self._disconnect_mode == CONNECTION_MANAGEMENT.MANUAL)
 
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.MANUAL
+		return None
 
-	def DisconnectMode_Auto(self, flag: bool = None) -> T21_StructResult_Bool:
+	def DisconnectMode_Auto(self, flag: bool = None) -> T21_StructResult_Bool | None:
 		""" Режим отключения: Автоматически """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 		                                                data = self._disconnect_mode == CONNECTION_MANAGEMENT.AUTO)
 
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.AUTO
+		return None
 
-	def DisconnectMode_Timeout(self, flag: bool = None) -> T21_StructResult_Bool:
+	def DisconnectMode_Timeout(self, flag: bool = None) -> T21_StructResult_Bool | None:
 		""" Режим отключения: Ожидание """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 		                                                data = self._disconnect_mode == CONNECTION_MANAGEMENT.TIMEOUT)
 
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.TIMEOUT
+		return None
 
-	def DisconnectTimeout(self, value: int = None) -> T21_StructResult_Int:
+	def DisconnectTimeout(self, value: int = None) -> T21_StructResult_Int | None:
 		""" Задержка отключения """
 		if value is None: return T21_StructResult_Int(code = CODES_COMPLETION.COMPLETED,
 		                                              data = self._disconnect_timeout)
 
-		else            :	                                 self._disconnect_timeout = CalcBetween(3, value, 600)
+		self._disconnect_timeout = CalcBetween(3, value, 600)
+		return None
 
 	# Механика управления: Управление подключением
 	def Connect(self) -> T20_StructResult:

@@ -1,5 +1,5 @@
 # ПАЛИТРА ИНСТРУМЕТОВ ДЛЯ РАБОТЫ С ДАТОЙ-ВРЕМЕНЕМ
-# 20 мар 2025
+# 04 мая 2025
 
 import datetime
 import pytz
@@ -7,30 +7,30 @@ import time
 
 
 # ДАТА-ВРЕМЯ
-def DTime(dy, dm, dd, th, tm, ts, utc_shift: int | str = None):
+def DTime(dy, dm, dd, th, tm, ts, utc_shift: int | str = None) -> datetime.datetime:
 	""" Создание datetime с указанным часовым поясом """
-	if        utc_shift  is None:
-		return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts)
-
-	elif type(utc_shift) is int :
+	if   type(utc_shift) is int :
 		return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts, tzinfo=datetime.timezone(datetime.timedelta(minutes=utc_shift)))
 
 	elif type(utc_shift) is str :
-		try   : return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts, tzinfo=pytz.timezone(utc_shift))
+		try: return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts, tzinfo=pytz.timezone(utc_shift))
 		except: return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts)
 
+	else:
+		return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts)
 
-def CurrentDTime(utc_shift: int | str = None):
+
+def CurrentDTime(utc_shift: int | str = None) -> datetime.datetime:
 	""" Текущее значение DTime """
-	if        utc_shift  is None:
-		return datetime.datetime.now()
-
-	elif type(utc_shift) is int :
+	if   type(utc_shift) is int :
 		return datetime.datetime.now(datetime.timezone(datetime.timedelta(minutes=utc_shift)))
 
 	elif type(utc_shift) is str :
-		try   : return datetime.datetime.now(pytz.timezone(utc_shift))
+		try: return datetime.datetime.now(pytz.timezone(utc_shift))
 		except: return datetime.datetime.now()
+
+	else:
+		return datetime.datetime.now()
 
 
 # UNIX-ВРЕМЯ
@@ -40,37 +40,37 @@ def CurrentUTime() -> int:
 
 
 # ТЕКУЩИЕ ДАННЫЕ
-def CurrentDayOfWeek(utc_shift: int | str = 0):
+def CurrentDayOfWeek(utc_shift: int | str = 0) -> int:
 	""" Текущий день недели [1..7] """
 	return CurrentDTime(utc_shift).weekday() + 1
 
 
-def CurrentDy(utc_shift : int | str = None):
+def CurrentDy(utc_shift : int | str = None) -> int:
 	""" Текущий час """
 	return CurrentDTime(utc_shift).year
 
 
-def CurrentDm(utc_shift : int | str = None):
+def CurrentDm(utc_shift : int | str = None) -> int:
 	""" Текущая минута """
 	return CurrentDTime(utc_shift).month
 
 
-def CurrentDd(utc_shift : int | str = None):
+def CurrentDd(utc_shift : int | str = None) -> int:
 	""" Текущая секунда """
 	return CurrentDTime(utc_shift).day
 
 
-def CurrentTh(utc_shift : int | str = None):
+def CurrentTh(utc_shift : int | str = None) -> int:
 	""" Текущий час """
 	return CurrentDTime(utc_shift).hour
 
 
-def CurrentTm(utc_shift : int | str = None):
+def CurrentTm(utc_shift : int | str = None) -> int:
 	""" Текущая минута """
 	return CurrentDTime(utc_shift).minute
 
 
-def CurrentTs(utc_shift : int | str = None):
+def CurrentTs(utc_shift : int | str = None) -> int:
 	""" Текущая секунда """
 	return CurrentDTime(utc_shift).second
 
@@ -104,8 +104,8 @@ def CalcDyDmByShiftDm(dy: int, dm: int, shift: int) -> tuple[int, int]:
 
 	if _month < 1: _month -= 12
 
-	_year  += (_month//abs(_month)) * (abs(_month) // (13 if shift < 0 else 12))
-	_month  = _month  % 12
-	_month += 1
+	_year       += (_month//abs(_month)) * (abs(_month) // (13 if shift < 0 else 12))
+	_month       = _month  % 12
+	_month      += 1
 
 	return _year, _month

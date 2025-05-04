@@ -1,5 +1,5 @@
 # КАКТУС: КОНТРОЛЛЕР КОНТЕЙНЕРОВ
-# 31 окт 2024
+# 04 мая 2025
 
 from G00_status_codes         import (CODES_DATA,
                                       CODES_PROCESSING,
@@ -20,7 +20,7 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 	# Модель данных
 	def Init_00(self):
-		self._containers : dict[str, any] = dict()
+		self._containers : dict[str, C31_ContainerRAM | C32_ContainerSQLite | C32_ContainerPostgreSQL] = dict()
 
 	# Механика данных
 	def ContainerNames(self) -> T21_StructResult_List:

@@ -1,5 +1,5 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 20 апр 2025
+# 04 мая 2025
 
 import datetime
 
@@ -60,7 +60,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		if data is None: return T20_StructResult(code     =  CODES_COMPLETION.COMPLETED,
 		                                         subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
-		try   :
+		try:
 			value  : str       = ""
 			values : list[str] = []
 
@@ -206,7 +206,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		if not idos: return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
 		                                     subcodes = {CODES_DATA.NO_DATA})
 
-		self._data = list(filter(lambda cell: cell.ido in idos, container._s_cells.values()))
+		self._data = list(filter(lambda s_cell: s_cell.ido in idos, container._s_cells.values()))
 
 		return T20_StructResult(code = CODES_COMPLETION.COMPLETED)
 
@@ -252,12 +252,12 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		if   filter_idp_vlp.filter_type == FILTERS.EQUAL   : sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} = '{filter_idp_vlp.filter_value}')"
 
 		elif filter_idp_vlp.filter_type == FILTERS.MORE    :
-			if filter_idp_vlp.flag_include:                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} >= '{filter_idp_vlp.filter_value}')"
-			else                          :                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} >  '{filter_idp_vlp.filter_value}')"
+			if filter_idp_vlp.flag_include:                  sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} >= '{filter_idp_vlp.filter_value}')"
+			else                          :                  sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} >  '{filter_idp_vlp.filter_value}')"
 
 		elif filter_idp_vlp.filter_type == FILTERS.LESS    :
-			if filter_idp_vlp.flag_include:                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} <= '{filter_idp_vlp.filter_value}')"
-			else                          :                 sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} <  '{filter_idp_vlp.filter_value}')"
+			if filter_idp_vlp.flag_include:                  sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} <= '{filter_idp_vlp.filter_value}')"
+			else                          :                  sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} <  '{filter_idp_vlp.filter_value}')"
 
 		elif filter_idp_vlp.filter_type == FILTERS.INCLUDE : sql += f"({'NOT ' if filter_idp_vlp.flag_invert else ''}{CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '%{filter_idp_vlp.filter_value}%')"
 
@@ -286,8 +286,8 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.IDS.name_sql} FROM {self._idc} "
 		result              = container.ExecSqlSelectVList(sql)
-		if not result.code == CODES_COMPLETION.COMPLETED : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                           subcodes = result.subcodes)
+		if not result.code == CODES_COMPLETION.COMPLETED      : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
+		                                                                                subcodes = result.subcodes)
 		capture_idos        = set(map(IdoFromIds, result.data))
 
 		filters : list[str] = []
@@ -398,7 +398,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	# ЗАПРОС IDO
 	def Idos(self, sort_by_idp: str = None) -> T21_StructResult_List:
 		""" Запрос IDO """
-		idos   : set[str]             = set(map(lambda cell: cell.ido, self._data))
+		idos   : set[str]             = {cell.ido for cell in self._data}
 		if not idos           : return T21_StructResult_List(code     =  CODES_COMPLETION.COMPLETED,
 		                                                     subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
@@ -406,15 +406,15 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		                                                     data = list(idos))
 
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == sort_by_idp, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
+		values : list[list[str]]      = [[cell.ido, cell.vlp] for cell in data]
 		values                        = DistinctAndNatSortList2D(values                = values,
-		                                                      index_processing_item = 1,
-		                                                      flag_distinct         = True,
-		                                                      flag_sort             = True)
+		                                                         index_processing_item = 1,
+		                                                         flag_distinct         = True,
+		                                                         flag_sort             = True)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
-		result.data                   = list(map(lambda item: item[0], values))
+		result.data                   = [item[0] for item in values]
 
 		match len(result.data):
 			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
@@ -426,10 +426,10 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def ToStrings(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос VLP для IDP списком строк """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list[str]            = list(map(lambda cell: cell.vlp, data))
+		values : list[str]            = [cell.vlp for cell in data]
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                      flag_distinct = flag_distinct,
-		                                                      flag_sort     = flag_sort)
+		                                                         flag_distinct = flag_distinct,
+		                                                         flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -444,15 +444,15 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def ToIntegers(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос VLP для IDP списком целых чисел """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list                 = list(map(lambda cell: cell.vlp, data))
+		values : list                 = [cell.vlp for cell in data]
 
-		try   : values = StringsToIntegers(values)
+		try: values = StringsToIntegers(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                      flag_distinct = flag_distinct,
-		                                                      flag_sort     = flag_sort)
+		                                                         flag_distinct = flag_distinct,
+		                                                         flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -467,15 +467,15 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def ToFloats(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос VLP для IDP списком дробных чисел """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list                 = list(map(lambda cell: cell.vlp, data))
+		values : list                 = [cell.vlp for cell in data]
 
-		try   : values = StringsToFloats(values)
+		try: values = StringsToFloats(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                      flag_distinct = flag_distinct,
-		                                                      flag_sort     = flag_sort)
+		                                                         flag_distinct = flag_distinct,
+		                                                         flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -490,15 +490,15 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def ToBooleans(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос VLP для IDP списком логических значений """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list                 = list(map(lambda cell: cell.vlp, data))
+		values : list                 = [cell.vlp for cell in data]
 
-		try   : values = StringsToBooleans(values)
+		try: values = StringsToBooleans(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                      flag_distinct = flag_distinct,
-		                                                      flag_sort     = flag_sort)
+		                                                         flag_distinct = flag_distinct,
+		                                                         flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -513,15 +513,15 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def ToDateTimes(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос VLP для IDP списком отметок даты-времени """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list                 = list(map(lambda cell: cell.vlp, data))
+		values : list                 = [cell.vlp for cell in data]
 
-		try   : values = StringsToDatetimes(values)
+		try: values = StringsToDatetimes(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
 		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                      flag_distinct = flag_distinct,
-		                                                      flag_sort     = flag_sort)
+		                                                         flag_distinct = flag_distinct,
+		                                                         flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -541,11 +541,11 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 	def ToStringsWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос IDO-CLV для IDP со списком строк """
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list[list[str, str]] = list(map(lambda cell: [cell.ido, cell.vlp], data))
+		values : list[list[str]]      = [[cell.ido, cell.vlp] for cell in data]
 		values                        = DistinctAndNatSortList2D(values                = values,
-		                                                      index_processing_item = 1,
-		                                                      flag_distinct         = flag_distinct,
-		                                                      flag_sort             = flag_sort)
+		                                                         index_processing_item = 1,
+		                                                         flag_distinct         = flag_distinct,
+		                                                         flag_sort             = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -559,50 +559,12 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 
 	def ToIntegersWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос IDO-CLV для IDP со списком целых чисел """
-		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list[list[str, int]] = list(map(lambda cell: [cell.ido, StringToInteger(cell.vlp)], data))
-		values                        = DistinctAndNatSortList2D(values                = values,
-		                                                      index_processing_item = 1,
-		                                                      flag_distinct         = flag_distinct,
-		                                                      flag_sort             = flag_sort)
-
-		result                        = T21_StructResult_List()
-		result.code                   = CODES_COMPLETION.COMPLETED
-		result.data                   = values
-
-		match len(result.data):
-			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
-			case 1: result.subcodes.add(CODES_DATA.SINGLE)
-
-		return result
-
-	def ToFloatsWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос IDO-CLV для IDP со списком дробных чисел """
-		data   : list[T20_StructCell]   = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list[list[str, float]] = list(map(lambda cell: [cell.ido, StringToFloat(cell.vlp)], data))
-		values                          = DistinctAndNatSortList2D(values                = values,
-		                                                      index_processing_item = 1,
-		                                                      flag_distinct         = flag_distinct,
-		                                                      flag_sort             = flag_sort)
-
-		result                          = T21_StructResult_List()
-		result.code                     = CODES_COMPLETION.COMPLETED
-		result.data                     = values
-
-		match len(result.data):
-			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
-			case 1: result.subcodes.add(CODES_DATA.SINGLE)
-
-		return result
-
-	def ToBooleansWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
-		""" Запрос IDO-CLV для IDP со списком логических значений """
 		data   : list[T20_StructCell]  = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list[list[str, bool]] = list(map(lambda cell: [cell.ido, StringToBoolean(cell.vlp)], data))
+		values : list[list[str | int]] = [[cell.ido, StringToInteger(cell.vlp)] for cell in data]
 		values                         = DistinctAndNatSortList2D(values                = values,
-		                                                      index_processing_item = 1,
-		                                                      flag_distinct         = flag_distinct,
-		                                                      flag_sort             = flag_sort)
+		                                                          index_processing_item = 1,
+		                                                          flag_distinct         = flag_distinct,
+		                                                          flag_sort             = flag_sort)
 
 		result                         = T21_StructResult_List()
 		result.code                    = CODES_COMPLETION.COMPLETED
@@ -614,18 +576,56 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 
 		return result
 
+	def ToFloatsWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком дробных чисел """
+		data   : list[T20_StructCell]    = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str | float]] = [[cell.ido, StringToFloat(cell.vlp)] for cell in data]
+		values                           = DistinctAndNatSortList2D(values                = values,
+		                                                            index_processing_item = 1,
+		                                                            flag_distinct         = flag_distinct,
+		                                                            flag_sort             = flag_sort)
+
+		result                           = T21_StructResult_List()
+		result.code                      = CODES_COMPLETION.COMPLETED
+		result.data                      = values
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
+	def ToBooleansWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
+		""" Запрос IDO-CLV для IDP со списком логических значений """
+		data   : list[T20_StructCell]   = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str | bool]] = [[cell.ido, StringToBoolean(cell.vlp)] for cell in data]
+		values                          = DistinctAndNatSortList2D(values                = values,
+		                                                           index_processing_item = 1,
+		                                                           flag_distinct         = flag_distinct,
+		                                                           flag_sort             = flag_sort)
+
+		result                          = T21_StructResult_List()
+		result.code                     = CODES_COMPLETION.COMPLETED
+		result.data                     = values
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
+		return result
+
 	def ToDateTimesWithIdos(self, idp: str, flag_distinct: bool = False, flag_sort: bool = False) -> T21_StructResult_List:
 		""" Запрос IDO-CLV для IDP со списком DateTime """
-		data   : list[T20_StructCell]      = list(filter(lambda cell: cell.idp == idp, self._data))
-		values : list[list[str, datetime.datetime | None]] = list(map(lambda cell: [cell.ido, StringToDateTime(cell.vlp)], data))
-		values                             = DistinctAndNatSortList2D(values                = values,
-		                                                      index_processing_item = 1,
-		                                                      flag_distinct         = flag_distinct,
-		                                                      flag_sort             = flag_sort)
+		data   : list[T20_StructCell]                       = list(filter(lambda cell: cell.idp == idp, self._data))
+		values : list[list[str | datetime.datetime | None]] = [[cell.ido, StringToDateTime(cell.vlp)] for cell in data]
+		values                                              = DistinctAndNatSortList2D(values                = values,
+		                                                                               index_processing_item = 1,
+								                                                       flag_distinct         = flag_distinct,
+								                                                       flag_sort             = flag_sort)
 
-		result                             = T21_StructResult_List()
-		result.code                        = CODES_COMPLETION.COMPLETED
-		result.data                        = values
+		result                                              = T21_StructResult_List()
+		result.code                                         = CODES_COMPLETION.COMPLETED
+		result.data                                         = values
 
 		match len(result.data):
 			case 0: result.subcodes.add(CODES_DATA.NO_DATA)

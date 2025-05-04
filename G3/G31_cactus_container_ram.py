@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 01 ноя 2024
+# 04 мая 2025
 
 from copy                 import  copy
 
@@ -63,7 +63,6 @@ class C31_ContainerRAM(C30_Container):
 											   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		cell_start  : T20_StructCell | None = None
-		cell_end    : T20_StructCell | None = None
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
@@ -143,7 +142,6 @@ class C31_ContainerRAM(C30_Container):
 											   subcodes = {CODES_PROCESSING.SKIP})
 
 		cell_start   : T20_StructCell | None = None
-		cell_end     : T20_StructCell | None = None
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
@@ -173,7 +171,6 @@ class C31_ContainerRAM(C30_Container):
 		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
-		cells_after  : list[T20_StructCell] = []
 
 		if flag_capture_delta: cells_before = self.ReadSCells(cell_cells).data
 
@@ -206,7 +203,7 @@ class C31_ContainerRAM(C30_Container):
 
 					continue
 
-				try   : del self._s_cells[scell.ids]
+				try: del self._s_cells[scell.ids]
 				except:	result.subcodes.add(CODES_PROCESSING.PARTIAL)
 
 		if flag_capture_delta:
@@ -257,7 +254,7 @@ class C31_ContainerRAM(C30_Container):
 
 					continue
 
-				try   :	result.data.append(copy(self._s_cells[cell.ids]))
+				try:	result.data.append(copy(self._s_cells[cell.ids]))
 				except:	result.subcodes.add(CODES_PROCESSING.PARTIAL)
 
 		match len(result.data):
@@ -272,12 +269,11 @@ class C31_ContainerRAM(C30_Container):
 		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
-		cells_after  : list[T20_StructCell] = []
 
 		if flag_capture_delta: cells_before = self.ReadSCells(cells).data
 
 		for cell in cells:
-			try   :
+			try:
 				result_check: bool = CheckIdo(cell.ido)
 				result_check      &= CheckIdp(cell.idp)
 
@@ -317,12 +313,11 @@ class C31_ContainerRAM(C30_Container):
 		result.code                         = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell] = []
-		cells_after  : list[T20_StructCell] = []
 
 		if flag_capture_delta: cells_before = self.ReadSCells(cells).data
 
 		for cell in cells:
-			try   :
+			try:
 				result_check: bool = CheckIdo(cell.ido)
 				result_check      &= CheckIdp(cell.idp)
 
@@ -372,7 +367,6 @@ class C31_ContainerRAM(C30_Container):
 											   subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		cell_start  : T20_StructCell | None = None
-		cell_end    : T20_StructCell | None = None
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
 
@@ -424,7 +418,6 @@ class C31_ContainerRAM(C30_Container):
 		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
 
 		cell_start  : T20_StructCell | None = None
-		cell_end    : T20_StructCell | None = None
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
 
@@ -462,7 +455,6 @@ class C31_ContainerRAM(C30_Container):
 		result.code                              = CODES_COMPLETION.COMPLETED
 
 		cells_before : list[T20_StructCell]      = []
-		cells_after  : list[T20_StructCell]      = []
 
 		if flag_capture_delta: cells_before = self.ReadDCells(cell).data
 
@@ -499,9 +491,6 @@ class C31_ContainerRAM(C30_Container):
 
 		result                                   = T21_StructResult_StructCells()
 		result.code                              = CODES_COMPLETION.COMPLETED
-
-		cells_before : list[T20_StructCell]      = []
-		cells_after  : list[T20_StructCell]      = []
 
 		dcells = self._d_cells.get(cell.ids, dict())
 

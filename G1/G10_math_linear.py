@@ -1,5 +1,5 @@
 # ЛИНЕЙНАЯ МАТЕМАТИКА
-# 04 фев 2025
+# 04 мая 2025
 
 def CheckBetween(value_min: int | float, value: int | float, value_max: int | float, flag_include: bool = True) -> bool:
 	""" Проверка вхождения числа в диапазон """
@@ -27,7 +27,7 @@ def CalcBetween(value_min: int | float, value: int | float, value_max: int | flo
 		elif type(value) is float: return float(result)
 		else                     : return result
 	except:
-		if type(value) is int: return 0
+		if type(value)   is int  : return 0
 
 		return 0.0
 
@@ -39,7 +39,7 @@ def Sign(value: int | float) -> int:
 
 def AvgOrZero(data: list[int] | list[float], flag_return_int: bool = False) -> int | float:
 	""" Расчёт среднего с возвратом 0 если массив пуст """
-	try   :
+	try:
 		result : float = sum(data) / len(data)
 		return int(result) if flag_return_int else result
 	except:
@@ -48,7 +48,7 @@ def AvgOrZero(data: list[int] | list[float], flag_return_int: bool = False) -> i
 
 def AvgOrNone(data: list[int] | list[float], flag_return_int: bool = False) -> int | float | None:
 	""" Расчёт среднего с возвратом None если массив пуст """
-	try   :
+	try:
 		result : float = sum(data) / len(data)
 		return int(result) if flag_return_int else result
 	except:
