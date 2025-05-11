@@ -13,10 +13,10 @@ print("")
 print("[== Тест Контейнера-SQL.PostgreSQL: Пакет D-Ячеек ==]")
 
 container = C32_ContainerPostgreSQL()
-container.OptionsServerIp("195.161.41.96")
+container.OptionsServerIp("")
 container.OptionsServerTcpPort(5432)
-container.OptionsServerLogin("a6540920979")
-container.OptionsServerPassword("!-dg7/X\"0c@JqSOd")
+container.OptionsServerLogin("")
+container.OptionsServerPassword("")
 container.OptionsServerDBase("cactus-test")
 container.Connect()
 
