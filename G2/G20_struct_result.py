@@ -1,5 +1,5 @@
 # СТРУКТУРНЫЙ РЕЗУЛЬТАТ
-# 18 авг 2024
+# 07 сен 2026
 
 from dataclasses      import (dataclass,
                               field)

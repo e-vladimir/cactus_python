@@ -1,5 +1,5 @@
-# ПАЛИТРА ИНСТРУМЕТОВ ДЛЯ РАБОТЫ С ДАТОЙ-ВРЕМЕНЕМ
-# 04 мая 2025
+# ДАТА И ВРЕМЯ
+# 18 авг 2025
 
 import datetime
 import pytz
@@ -13,7 +13,7 @@ def DTime(dy, dm, dd, th, tm, ts, utc_shift: int | str = None) -> datetime.datet
 		return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts, tzinfo=datetime.timezone(datetime.timedelta(minutes=utc_shift)))
 
 	elif type(utc_shift) is str :
-		try: return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts, tzinfo=pytz.timezone(utc_shift))
+		try   : return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts, tzinfo=pytz.timezone(utc_shift))
 		except: return datetime.datetime(year=dy, month=dm, day=dd, hour=th, minute=tm, second=ts)
 
 	else:
@@ -26,7 +26,7 @@ def CurrentDTime(utc_shift: int | str = None) -> datetime.datetime:
 		return datetime.datetime.now(datetime.timezone(datetime.timedelta(minutes=utc_shift)))
 
 	elif type(utc_shift) is str :
-		try: return datetime.datetime.now(pytz.timezone(utc_shift))
+		try   : return datetime.datetime.now(pytz.timezone(utc_shift))
 		except: return datetime.datetime.now()
 
 	else:
@@ -40,7 +40,7 @@ def CurrentUTime() -> int:
 
 
 # ТЕКУЩИЕ ДАННЫЕ
-def CurrentDayOfWeek(utc_shift: int | str = 0) -> int:
+def CurrentDw(utc_shift: int | str = 0) -> int:
 	""" Текущий день недели [1..7] """
 	return CurrentDTime(utc_shift).weekday() + 1
 
@@ -92,6 +92,16 @@ def CountDdInDyDm(dy: int, dm: int) -> int:
 		case 11: return 30
 		case 12: return 31
 		case _ : return 30
+
+
+def CalcDeltaDdForUTimes(in_utime_0: int, in_utime_1: int):
+	""" Вычисление разницы в днях между UTime """
+	return 1 + (in_utime_1 - in_utime_0) // (3600 * 24)
+
+
+def CalcDeltaHhForUTimes(in_utime_0: int, in_utime_1: int):
+	""" Вычисление разницы в часах между UTime """
+	return (in_utime_1 - in_utime_0) // 3600
 
 
 # СМЕЩЕНИЕ ДАТ
