@@ -1,42 +1,42 @@
 # КАКТУС: ЛИНЕЙНЫЕ ФИЛЬТРЫ ДАННЫХ
-# 04 мая 2025
+# 08 сен 2026
 
 import datetime
 
 from   G00_cactus_codes                 import  CACTUS_STRUCT_DATA
 from   G00_filter_codes                 import  FILTERS
 from   G00_status_codes                 import (CODES_COMPLETION,
-                                                CODES_DATA,
-                                                CODES_PROCESSING,
-                                                CODES_CACTUS)
+												CODES_DATA,
+												CODES_PROCESSING,
+												CODES_CACTUS)
 
 from   G10_cactus_convertors            import (UnificationIdc,
-                                                IdoFromIds)
-from   G10_convertor_format             import (AnyToStrings,
-                                                AnyToString,
-                                                StringToFloat,
-                                                StringsToIntegers,
-                                                StringsToFloats,
-                                                StringsToBooleans,
-                                                StringsToDatetimes,
-                                                StringToInteger,
-                                                StringToBoolean,
-                                                StringToDateTime)
-from   G10_list_extended                import (DistinctAndNatSortList2D,
-                                                DistinctAndNatSortList1D)
+												IdoFromIds)
+from   G10_conversion_formats           import (AnyToStrings,
+												AnyToString,
+												StringToFloat,
+												StringsToIntegers,
+												StringsToFloats,
+												StringsToBooleans,
+												StringsToDTimes,
+												StringToInteger,
+												StringToBoolean,
+												StringToDateTime)
+from   G10_processing_lists_extended    import (DistinctAndNatSortList2D,
+												DistinctAndNatSortList1D)
 from   G10_math_linear                  import  CheckBetween
 
-from   G20_cactus_struct                import (T20_StructCell,
-                                                T20_FilterD1)
+from   G20_cactus_structs               import (T20_StructCell,
+												T20_FilterD1)
 
-from   G20_meta_frame                   import  C20_MetaFrame
+from   G20_meta_frames                  import  C20_MetaFrame
 from   G20_struct_result                import  T20_StructResult
 from   G21_struct_result                import  T21_StructResult_List
 
 from   G30_cactus_controller_containers import  controller_containers
 from   G31_cactus_container_ram         import  C31_ContainerRAM
 from   G32_cactus_container_sql         import (C32_ContainerSQLite,
-                                                C32_ContainerPostgreSQL)
+												C32_ContainerPostgreSQL)
 
 
 class C30_FilterLinear1D(C20_MetaFrame):
@@ -58,7 +58,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def _AppendFilterIdpVlp(self, filter_type: FILTERS, idp: str, data: any, flag_invert: bool, flag_include: bool) -> T20_StructResult:
 		""" Добавление фильтра IDP-VLP """
 		if data is None: return T20_StructResult(code     =  CODES_COMPLETION.COMPLETED,
-		                                         subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
+												 subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		try:
 			value  : str       = ""
@@ -68,17 +68,17 @@ class C30_FilterLinear1D(C20_MetaFrame):
 			else                 : value  = AnyToString(data)
 
 			filter_item        = T20_FilterD1(flag_invert   = flag_invert,
-			                                  flag_include  = flag_include,
-			                                  filter_type   = filter_type,
-			                                  filter_value  = value,
-			                                  filter_values = values)
+											  flag_include  = flag_include,
+											  filter_type   = filter_type,
+											  filter_value  = value,
+											  filter_values = values)
 			filters            = self._filters_idp_vlp.get(idp, [])
 			filters.append(filter_item)
 			self._filters_idp_vlp[idp] = filters
 
 		except:
 			return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                            subcodes = {CODES_DATA.ERROR_CONVERT})
+									subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		return T20_StructResult(code = CODES_COMPLETION.COMPLETED)
 
@@ -145,7 +145,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		else:
 			return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
-			                        subcodes = {CODES_PROCESSING.SKIP})
+									subcodes = {CODES_PROCESSING.SKIP})
 
 	# ЗАХВАТ ДАННЫХ
 	def _ApplyFilterIdc(self, cell: T20_StructCell) -> bool:
@@ -204,7 +204,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		idos : set[str]        = {ido for ido, result in idos.items() if result}
 
 		if not idos: return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
-		                                     subcodes = {CODES_DATA.NO_DATA})
+											 subcodes = {CODES_DATA.NO_DATA})
 
 		self._data = list(filter(lambda s_cell: s_cell.ido in idos, container._s_cells.values()))
 
@@ -287,7 +287,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		sql     : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.IDS.name_sql} FROM {self._idc} "
 		result              = container.ExecSqlSelectVList(sql)
 		if not result.code == CODES_COMPLETION.COMPLETED      : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                subcodes = result.subcodes)
+																						subcodes = result.subcodes)
 		capture_idos        = set(map(IdoFromIds, result.data))
 
 		filters : list[str] = []
@@ -298,7 +298,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		for filter_item in filters:
 			result       = container.ExecSqlSelectVList(sql + f" WHERE {filter_item}")
 			if not result.code == CODES_COMPLETION.COMPLETED  : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                subcodes = result.subcodes)
+																						subcodes = result.subcodes)
 			capture_idos = capture_idos & set(map(IdoFromIds, result.data))
 
 		idos                = list(map("'{}'".format, capture_idos))
@@ -306,7 +306,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		result_cells        = container.ExecSqlSelectMatrix(sql)
 		if not result_cells.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                subcodes = result_cells.subcodes)
+																						subcodes = result_cells.subcodes)
 
 		for raw_data in result_cells.data:
 			try:
@@ -337,7 +337,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		result              = container.ExecSqlSelectVList(sql)
 		if not result.code == CODES_COMPLETION.COMPLETED      : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                subcodes = result.subcodes)
+																						subcodes = result.subcodes)
 
 		capture_idos        = set(map(IdoFromIds, result.data))
 		filters : list[str] = []
@@ -348,7 +348,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		for filter_item in filters:
 			result       = container.ExecSqlSelectVList(sql + f" WHERE {filter_item}")
 			if not result.code == CODES_COMPLETION.COMPLETED  : return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                subcodes = result.subcodes)
+																						subcodes = result.subcodes)
 
 			capture_idos = capture_idos & set(map(IdoFromIds, result.data))
 
@@ -357,7 +357,7 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		result_cells        = container.ExecSqlSelectMatrix(sql)
 		if not result_cells.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                subcodes = result_cells.subcodes)
+																						subcodes = result_cells.subcodes)
 
 		for raw_data in result_cells.data:
 			try:
@@ -383,34 +383,34 @@ class C30_FilterLinear1D(C20_MetaFrame):
 	def Capture(self, container_name: str) -> T20_StructResult:
 		""" Захват данных """
 		if not self._idc                      : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                                subcodes = {CODES_DATA.NOT_ENOUGH})
+																		subcodes = {CODES_DATA.NOT_ENOUGH})
 
 		container = controller_containers.Container(container_name)
 		if container is None                  : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                                subcodes = {CODES_CACTUS.NO_CONTAINER})
+																		subcodes = {CODES_CACTUS.NO_CONTAINER})
 
 		if   container.Type_RAM().data        : return self._CaptureFromRam(container)
 		elif container.Type_SQLite().data     : return self._CaptureFromSqlite(container)
 		elif container.Type_PostgreSQL().data : return self._CaptureFromPostgresql(container)
 		else                                  : return T20_StructResult(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                                subcodes = {CODES_PROCESSING.SKIP})
+																		subcodes = {CODES_PROCESSING.SKIP})
 
 	# ЗАПРОС IDO
 	def Idos(self, sort_by_idp: str = None) -> T21_StructResult_List:
 		""" Запрос IDO """
 		idos   : set[str]             = {cell.ido for cell in self._data}
 		if not idos           : return T21_StructResult_List(code     =  CODES_COMPLETION.COMPLETED,
-		                                                     subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
+															 subcodes = {CODES_PROCESSING.SKIP, CODES_DATA.NO_DATA})
 
 		if sort_by_idp is None: return T21_StructResult_List(code = CODES_COMPLETION.COMPLETED,
-		                                                     data = list(idos))
+															 data = list(idos))
 
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == sort_by_idp, self._data))
 		values : list[list[str]]      = [[cell.ido, cell.vlp] for cell in data]
 		values                        = DistinctAndNatSortList2D(values                = values,
-		                                                         index_processing_item = 1,
-		                                                         flag_distinct         = True,
-		                                                         flag_sort             = True)
+																 index_processing_item = 1,
+																 flag_distinct         = True,
+																 flag_sort             = True)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -428,8 +428,8 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[str]            = [cell.vlp for cell in data]
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                         flag_distinct = flag_distinct,
-		                                                         flag_sort     = flag_sort)
+																 flag_distinct = flag_distinct,
+																 flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -448,11 +448,11 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		try: values = StringsToIntegers(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
+											 subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                         flag_distinct = flag_distinct,
-		                                                         flag_sort     = flag_sort)
+																 flag_distinct = flag_distinct,
+																 flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -471,11 +471,11 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		try: values = StringsToFloats(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
+											 subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                         flag_distinct = flag_distinct,
-		                                                         flag_sort     = flag_sort)
+																 flag_distinct = flag_distinct,
+																 flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -494,11 +494,11 @@ class C30_FilterLinear1D(C20_MetaFrame):
 
 		try: values = StringsToBooleans(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
+											 subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                         flag_distinct = flag_distinct,
-		                                                         flag_sort     = flag_sort)
+																 flag_distinct = flag_distinct,
+																 flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -515,13 +515,13 @@ class C30_FilterLinear1D(C20_MetaFrame):
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list                 = [cell.vlp for cell in data]
 
-		try: values = StringsToDatetimes(values)
+		try: values = StringsToDTimes(values)
 		except: return T21_StructResult_List(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                     subcodes = {CODES_DATA.ERROR_CONVERT})
+											 subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		values                        = DistinctAndNatSortList1D(values        = values,
-		                                                         flag_distinct = flag_distinct,
-		                                                         flag_sort     = flag_sort)
+																 flag_distinct = flag_distinct,
+																 flag_sort     = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -543,9 +543,9 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		data   : list[T20_StructCell] = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str]]      = [[cell.ido, cell.vlp] for cell in data]
 		values                        = DistinctAndNatSortList2D(values                = values,
-		                                                         index_processing_item = 1,
-		                                                         flag_distinct         = flag_distinct,
-		                                                         flag_sort             = flag_sort)
+																 index_processing_item = 1,
+																 flag_distinct         = flag_distinct,
+																 flag_sort             = flag_sort)
 
 		result                        = T21_StructResult_List()
 		result.code                   = CODES_COMPLETION.COMPLETED
@@ -562,9 +562,9 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		data   : list[T20_StructCell]  = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str | int]] = [[cell.ido, StringToInteger(cell.vlp)] for cell in data]
 		values                         = DistinctAndNatSortList2D(values                = values,
-		                                                          index_processing_item = 1,
-		                                                          flag_distinct         = flag_distinct,
-		                                                          flag_sort             = flag_sort)
+																  index_processing_item = 1,
+																  flag_distinct         = flag_distinct,
+																  flag_sort             = flag_sort)
 
 		result                         = T21_StructResult_List()
 		result.code                    = CODES_COMPLETION.COMPLETED
@@ -581,9 +581,9 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		data   : list[T20_StructCell]    = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str | float]] = [[cell.ido, StringToFloat(cell.vlp)] for cell in data]
 		values                           = DistinctAndNatSortList2D(values                = values,
-		                                                            index_processing_item = 1,
-		                                                            flag_distinct         = flag_distinct,
-		                                                            flag_sort             = flag_sort)
+																	index_processing_item = 1,
+																	flag_distinct         = flag_distinct,
+																	flag_sort             = flag_sort)
 
 		result                           = T21_StructResult_List()
 		result.code                      = CODES_COMPLETION.COMPLETED
@@ -600,9 +600,9 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		data   : list[T20_StructCell]   = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str | bool]] = [[cell.ido, StringToBoolean(cell.vlp)] for cell in data]
 		values                          = DistinctAndNatSortList2D(values                = values,
-		                                                           index_processing_item = 1,
-		                                                           flag_distinct         = flag_distinct,
-		                                                           flag_sort             = flag_sort)
+																   index_processing_item = 1,
+																   flag_distinct         = flag_distinct,
+																   flag_sort             = flag_sort)
 
 		result                          = T21_StructResult_List()
 		result.code                     = CODES_COMPLETION.COMPLETED
@@ -619,9 +619,9 @@ class C31_FilterLinear2D(C30_FilterLinear1D):
 		data   : list[T20_StructCell]                       = list(filter(lambda cell: cell.idp == idp, self._data))
 		values : list[list[str | datetime.datetime | None]] = [[cell.ido, StringToDateTime(cell.vlp)] for cell in data]
 		values                                              = DistinctAndNatSortList2D(values                = values,
-		                                                                               index_processing_item = 1,
-								                                                       flag_distinct         = flag_distinct,
-								                                                       flag_sort             = flag_sort)
+																					   index_processing_item = 1,
+																					   flag_distinct         = flag_distinct,
+																					   flag_sort             = flag_sort)
 
 		result                                              = T21_StructResult_List()
 		result.code                                         = CODES_COMPLETION.COMPLETED

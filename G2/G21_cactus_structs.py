@@ -1,15 +1,15 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 23 июл 2024
+# 08 сен 2026
 
 import s3m
 
-from   dataclasses       import (dataclass,
-                                 field)
+from   dataclasses        import (dataclass,
+								  field)
 
-from   psycopg2          import extensions
+from   psycopg2           import  extensions
 
-from   G20_cactus_struct import T20_StructCell
-from   G20_struct_result import T20_StructResult
+from   G20_cactus_structs import  T20_StructCell
+from   G20_struct_result  import  T20_StructResult
 
 
 # ТИПЫ ДАННЫХ СТРУКТУРНОЙ ЯЧЕЙКИ

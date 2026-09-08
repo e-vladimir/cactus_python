@@ -1,11 +1,12 @@
 # ТЕСТИРОВАНИЕ СТРУКТУРНОГО ОБЪЕКТА СО ЗНАЧЕНИЕМ ПО УМОЛЧАНИЮ
-# 30 мар 2025
+# 08 сен 2026
 
 import time
 
-from G00_status_codes import CODES_COMPLETION, CODES_DATA
-
-from   G30_cactus_frame                 import C30_StructFrame, C30_StructField
+from   G00_status_codes  import (CODES_COMPLETION,
+                                 CODES_DATA)
+from   G30_cactus_frames import (C30_StructFrame,
+                                 C30_StructField)
 
 
 CONTAINER_RAM = "RAM"

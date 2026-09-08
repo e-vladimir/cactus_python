@@ -1,9 +1,9 @@
 # ТЕСТ РАБОТЫ С ОБЪЕКТАМИ
 
-from G10_list_extended                import DistinctAndNatSortList1D
+from G10_processing_lists_extended                import DistinctAndNatSortList1D
 from G30_cactus_controller_containers import controller_containers
 from G30_cactus_datafilters           import C30_FilterLinear1D
-from G30_cactus_frame                 import C30_StructField
+from G30_cactus_frames                 import C30_StructField
 from G31_cactus_frame                 import C31_StructFrameWithEvents
 
 CONTAINER = "SQLite"

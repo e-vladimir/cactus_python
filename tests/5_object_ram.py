@@ -1,18 +1,20 @@
 # ТЕСТИРОВАНИЕ СТРУКТУРНОГО ОБЪЕКТА С КОНТЕЙНЕРОМ RAM
-# 24 окт 2024
+# 08 сен 2026
 
 import time
 import datetime
 
-from   G00_status_codes                 import CODES_COMPLETION
-
-from   G30_cactus_controller_containers import controller_containers
-from   G30_cactus_frame                 import C30_StructFrame, C30_StructField
+from   G00_status_codes                 import  CODES_COMPLETION
+from   G30_cactus_controller_containers import  controller_containers
+from   G30_cactus_frames                import (C30_StructFrame,
+                                                C30_StructField)
 
 CONTAINER_RAM = "RAM"
 
+
 print("Тест Структурного объекта: Базовый тест")
 print("")
+
 
 class CMessage(C30_StructFrame):
 	_idc = "Сообщение"

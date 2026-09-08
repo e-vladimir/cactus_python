@@ -6,7 +6,7 @@ import random
 from   datetime                         import datetime
 
 from   G30_cactus_controller_containers import controller_containers
-from   G30_cactus_frame                 import C30_StructFrame, C30_StructField
+from   G30_cactus_frames                 import C30_StructFrame, C30_StructField
 
 
 CONTAINER_NAME_1 = "db_1"

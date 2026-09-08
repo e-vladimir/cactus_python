@@ -1,5 +1,5 @@
 # ОБРАБОТЧИКИ СПИСКОВ
-# 19 апр 2025
+# 08 сен 2026
 
 import re
 
@@ -35,7 +35,7 @@ def DifferenceLists(list_1: list, list_2: list, flag_cmp_1_to_2: bool = False) -
 	return list(set(list_1 if flag_cmp_1_to_2 else list_2).difference(list_2 if flag_cmp_1_to_2 else list_1))
 
 
-def ClearList(items: list[str], clear_short: bool = True, clear_empty: bool = True, clear_spaces: bool = True, clear_numbers: bool = True, clear_simbols: bool = True, flag_sort: bool = True) -> list[str]:
+def CleaningList(items: list[str], clear_short: bool = True, clear_empty: bool = True, clear_spaces: bool = True, clear_numbers: bool = True, clear_simbols: bool = True, flag_sort: bool = True) -> list[str]:
 	""" Очистка списка от пустых строк, пробелов, чисел, спецсимволов """
 	result = items[:]
 

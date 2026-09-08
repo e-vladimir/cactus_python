@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 04 мая 2025
+# 08 сен 2026
 
 import psycopg2
 import sqlite3
@@ -8,30 +8,30 @@ import s3m
 from   copy                     import  copy
 
 from   G00_cactus_codes         import (CONTAINERS,
-                                        CACTUS_STRUCT_DATA)
+										CACTUS_STRUCT_DATA)
 from   G00_status_codes         import (CODES_COMPLETION,
-                                        CODES_PROCESSING,
-                                        CODES_DB,
-                                        CODES_DATA)
+										CODES_PROCESSING,
+										CODES_DB,
+										CODES_DATA)
 
-from   G10_cactus_check         import (CheckIdc,
-                                        CheckIdo,
-                                        CheckIdp)
+from   G10_cactus_checkers      import (CheckIdc,
+										CheckIdo,
+										CheckIdp)
 from   G10_cactus_convertors    import (IdoFromIds,
-                                        IdpFromIds)
-from   G10_list                 import  DifferenceLists
+										IdpFromIds)
+from   G10_processing_lists     import  DifferenceLists
 
-from   G20_cactus_struct        import  T20_StructCell
-from   G21_cactus_struct        import (T21_StructResult_CursorS3m,
-                                        T21_StructResult_StructCell,
-                                        T21_StructResult_StructCells,
-                                        T21_StructResult_VltRange,
-                                        T21_VltRange,
-                                        T21_StructResult_CursorPostgresql)
+from   G20_cactus_structs       import  T20_StructCell
+from   G21_cactus_structs       import (T21_StructResult_CursorS3m,
+										T21_StructResult_StructCell,
+										T21_StructResult_StructCells,
+										T21_StructResult_VltRange,
+										T21_VltRange,
+										T21_StructResult_CursorPostgresql)
 from   G21_struct_result        import (T21_StructResult_String,
-                                        T21_StructResult_Bool,
-                                        T21_StructResult_Int,
-                                        T21_StructResult_List)
+										T21_StructResult_Bool,
+										T21_StructResult_Int,
+										T21_StructResult_List)
 
 from   G31_cactus_container_sql import  C31_ContainerSQL
 
@@ -131,7 +131,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if self.connection is None:
 			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_CONNECTION})
+											  subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			sql_cursor      = self.connection.cursor()
@@ -142,27 +142,27 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			self.connection.commit()
 
 			return T21_StructResult_CursorS3m(code   = CODES_COMPLETION.COMPLETED,
-			                                  cursor = sql_cursor)
+											  cursor = sql_cursor)
 
 		except sqlite3.IntegrityError:
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_DB})
+											  subcodes = {CODES_DB.ERROR_DB})
 
 		except sqlite3.ProgrammingError:
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_SQL})
+											  subcodes = {CODES_DB.ERROR_SQL})
 
 		except sqlite3.OperationalError:  # Сюда попадают и ошибки SQL-синтаксиса
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_SQL})
+											  subcodes = {CODES_DB.ERROR_SQL})
 
 		except:
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
-			                                  subcodes = {CODES_DB.ERROR_DB})
+											  subcodes = {CODES_DB.ERROR_DB})
 
 	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_StructResult_Int:
 		"""Выполнение запроса с числом строк"""
@@ -522,7 +522,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
+																									  subcodes = {CODES_DATA.ERROR_CHECK})
 
 			sql     : str       = f"DELETE FROM {cell_cells.idc}"
 
@@ -537,7 +537,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_sql          = self.ExecSqlSelectMatrix(sql)
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = result_sql.subcodes)
+																									  subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -591,7 +591,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 				self.ExecSql("ROLLBACK;")
 
 				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_sql.subcodes)
+													subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -636,7 +636,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
+																									  subcodes = {CODES_DATA.ERROR_CHECK})
 
 			sql     : str       = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell_cells.idc}"
 
@@ -651,7 +651,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_sql          = self.ExecSqlSelectMatrix(sql)
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = result_sql.subcodes)
+																									  subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -703,7 +703,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			result_sql                     = self.ExecSqlSelectMatrix(sql)
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = result_sql.subcodes)
+																									  subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -757,7 +757,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sqls.append(sql)
 
 		if not sqls: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                             subcodes = {CODES_DATA.ERROR_CHECK})
+														 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		sqls.insert(0, "BEGIN TRANSACTION;")
 		sqls.append("COMMIT;")
@@ -768,7 +768,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			self.ExecSql("ROLLBACK;")
 
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result_sql.subcodes)
+												subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cells).data
@@ -810,7 +810,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sqls.append(sql)
 
 		if not sqls: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                             subcodes = {CODES_DATA.ERROR_CHECK})
+														 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		sqls.insert(0, "BEGIN TRANSACTION;")
 		sqls.append("COMMIT;")
@@ -821,7 +821,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			self.ExecSql("ROLLBACK;")
 
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result_sql.subcodes)
+												subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cells).data
@@ -960,7 +960,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_check                       &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                          subcodes = {CODES_DATA.ERROR_CHECK})
+																								  subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cells_before : list[T20_StructCell] = []
 
@@ -980,7 +980,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_sql                          = self.ExecSqlSelectMatrix(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																                                  subcodes = result_sql.subcodes)
+																								  subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cell).data
@@ -1000,7 +1000,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-											                                                      subcodes = {CODES_DATA.ERROR_CHECK})
+																								  subcodes = {CODES_DATA.ERROR_CHECK})
 
 		filters      : list[str] = []
 		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
@@ -1013,7 +1013,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_sql = self.ExecSqlSelectMatrix(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                          subcodes = result_sql.subcodes)
+																								  subcodes = result_sql.subcodes)
 
 		result                   = T21_StructResult_StructCells()
 		result.code              = CODES_COMPLETION.COMPLETED
@@ -1049,7 +1049,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
-			                                                                                   subcodes = {CODES_DATA.ERROR_CHECK})
+																							   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                   = T21_StructResult_VltRange()
 
@@ -1064,13 +1064,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                       subcodes = result_sql.subcodes)
+																							   subcodes = result_sql.subcodes)
 		try:
 			result.data       = copy(cell)
 			result.data.vlt_l = result_sql.data[0]
 			result.data.vlt_r = result_sql.data[1]
 		except:			                                      return T21_StructResult_VltRange(code     =  CODES_COMPLETION.INTERRUPTED,
-			                                                                                   subcodes = {CODES_DATA.ERROR_CONVERT})
+																							   subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		return result
 
@@ -1081,7 +1081,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                 : return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                                                                               subcodes = {CODES_DATA.ERROR_CHECK})
+																						   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                   = T21_StructResult_List()
 
@@ -1096,7 +1096,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result_sql               = self.ExecSqlSelectVList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                   subcodes = result_sql.subcodes)
+																						   subcodes = result_sql.subcodes)
 
 		result.data              = result_sql.data
 
@@ -1226,7 +1226,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if self.connection is None:
 			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-			                                         subcodes = {CODES_DB.ERROR_CONNECTION})
+													 subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
 			sql_cursor      = self.connection.cursor()
@@ -1237,27 +1237,27 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.connection.commit()
 
 			return T21_StructResult_CursorPostgresql(code   = CODES_COMPLETION.COMPLETED,
-			                                         cursor = sql_cursor)
+													 cursor = sql_cursor)
 
 		except psycopg2.IntegrityError:
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-			                                         subcodes = {CODES_DB.ERROR_DB})
+													 subcodes = {CODES_DB.ERROR_DB})
 
 		except psycopg2.ProgrammingError:
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-			                                         subcodes = {CODES_DB.ERROR_SQL})
+													 subcodes = {CODES_DB.ERROR_SQL})
 
 		except psycopg2.OperationalError:  # Сюда попадают и ошибки SQL-синтаксиса
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-			                                         subcodes = {CODES_DB.ERROR_SQL})
+													 subcodes = {CODES_DB.ERROR_SQL})
 
 		except:
 			self.PrepareDisconnect()
 			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
-			                                         subcodes = {CODES_DB.ERROR_DB})
+													 subcodes = {CODES_DB.ERROR_DB})
 
 	def ExecSqlSelectRowCount(self, sql: str | list[str]) -> T21_StructResult_Int:
 		"""Выполнение запроса с числом строк"""
@@ -1298,7 +1298,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except Exception as err:
 			if not f"{err}" == "no results to fetch": return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-											                                         subcodes = {CODES_DB.ERROR_DB})
+																					 subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1325,7 +1325,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except Exception as err:
 			if not f"{err}" == "no results to fetch": return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                                                                       subcodes = {CODES_DB.ERROR_DB})
+																				   subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1356,7 +1356,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except Exception as err:
 			if not f"{err}" == "no results to fetch": return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-			                                                                       subcodes = {CODES_DB.ERROR_DB})
+																				   subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1387,7 +1387,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			cursor.close()
 		except Exception as err:
 			if not f"{err}" == "no results to fetch": return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-											                                       subcodes = {CODES_DB.ERROR_DB})
+																				   subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1406,8 +1406,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	def RegisterClass(self, idc: str) -> T21_StructResult_Bool:
 		""" Регистрация класса структурного объекта """
 		if not CheckIdc(idc): return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                   subcodes = {CODES_DATA.ERROR_CHECK},
-		                                                   data     = False)
+														   subcodes = {CODES_DATA.ERROR_CHECK},
+														   data     = False)
 
 		result      = T21_StructResult_Bool()
 		result.code = CODES_COMPLETION.COMPLETED
@@ -1530,7 +1530,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check                                  : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											                                                      subcodes = {CODES_DATA.ERROR_CHECK})
+																								  subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_cell              = self.ReadSCell(cell)
 		check_error  : bool      = not result_cell.code == CODES_COMPLETION.COMPLETED
@@ -1556,7 +1556,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		result_cell              = self.WriteSCell(cell, False, flag_capture_delta)
 		if not result_cell.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											                                                      subcodes = result_cell.subcodes)
+																								  subcodes = result_cell.subcodes)
 
 		result.subcodes          = result_cell.subcodes
 
@@ -1622,7 +1622,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
+																									  subcodes = {CODES_DATA.ERROR_CHECK})
 
 			sql     : str       = f"DELETE FROM {cell_cells.idc}"
 
@@ -1637,7 +1637,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_sql          = self.ExecSqlSelectMatrix(sql)
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = result_sql.subcodes)
+																									  subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -1691,7 +1691,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 				self.ExecSql("ROLLBACK;")
 
 				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-				                                    subcodes = result_sql.subcodes)
+													subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -1736,7 +1736,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_check : bool = CheckIdo(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = {CODES_DATA.ERROR_CHECK})
+																									  subcodes = {CODES_DATA.ERROR_CHECK})
 
 			sql     : str       = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell_cells.idc}"
 
@@ -1751,7 +1751,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_sql          = self.ExecSqlSelectMatrix(sql)
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = result_sql.subcodes)
+																									  subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -1803,7 +1803,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_sql                    = self.ExecSqlSelectMatrix(sql)
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-																	                                  subcodes = result_sql.subcodes)
+																									  subcodes = result_sql.subcodes)
 
 			for raw_line in result_sql.data:
 				try:
@@ -1857,7 +1857,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sqls.append(sql)
 
 		if not sqls: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                             subcodes = {CODES_DATA.ERROR_CHECK})
+														 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		sqls.insert(0, "BEGIN;")
 		sqls.append("COMMIT;")
@@ -1868,7 +1868,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.ExecSql("ROLLBACK;")
 
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result_sql.subcodes)
+												subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cells).data
@@ -1909,7 +1909,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sqls.append(sql)
 
 		if not sqls: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                             subcodes = {CODES_DATA.ERROR_CHECK})
+														 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		sqls.insert(0, "BEGIN;")
 		sqls.append("COMMIT;")
@@ -1920,7 +1920,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			self.ExecSql("ROLLBACK;")
 
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = result_sql.subcodes)
+												subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cells).data
@@ -1943,7 +1943,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cell_start   : T20_StructCell | None = None
 
@@ -1956,11 +1956,11 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
+											   subcodes = result_sql.subcodes)
 
 		elif result_sql.data == 0:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
+											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                               = T21_StructResult_StructCell()
 		result.code                          = CODES_COMPLETION.COMPLETED
@@ -1984,19 +1984,19 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		sql          : str       = f"SELECT {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE ({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}') AND ({CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 		result_sql               = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
+											   subcodes = result_sql.subcodes)
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
+											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
 
@@ -2009,7 +2009,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			result_cell.vlt = int(data[1])
 		except:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CONVERT})
+											   subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		result.data              = result_cell
 		return result
@@ -2023,7 +2023,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cell_start   : T20_StructCell | None = None
 
@@ -2035,7 +2035,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = result_sql.subcodes)
+											   subcodes = result_sql.subcodes)
 
 		result                               = T21_StructResult_StructCell()
 		result.code                          = CODES_COMPLETION.COMPLETED
@@ -2058,7 +2058,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_check                       &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                         subcodes = {CODES_DATA.ERROR_CHECK})
+																 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		cells_before : list[T20_StructCell] = []
 
@@ -2078,7 +2078,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_sql                          = self.ExecSqlSelectMatrix(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                          subcodes = result_sql.subcodes)
+																								  subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cell).data
@@ -2098,7 +2098,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_StructCells(code     =  CODES_COMPLETION.INTERRUPTED,
-		                                                         subcodes = {CODES_DATA.ERROR_CHECK})
+																 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		filters      : list[str] = []
 		filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}')")
@@ -2111,7 +2111,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_sql               = self.ExecSqlSelectMatrix(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                          subcodes = result_sql.subcodes)
+																								  subcodes = result_sql.subcodes)
 
 		result                   = T21_StructResult_StructCells()
 		result.code              = CODES_COMPLETION.COMPLETED
@@ -2147,7 +2147,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_check       &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                      subcodes = {CODES_DATA.ERROR_CHECK})
+															  subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result              = T21_StructResult_VltRange()
 
@@ -2162,14 +2162,14 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_sql          = self.ExecSqlSelectHList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                       subcodes = result_sql.subcodes)
+																							   subcodes = result_sql.subcodes)
 		try:
 			result.data       = copy(cell)
 			result.data.vlt_l = result_sql.data[0]
 			result.data.vlt_r = result_sql.data[1]
 		except:
 			return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
-			                                 subcodes = {CODES_DATA.ERROR_CONVERT})
+											 subcodes = {CODES_DATA.ERROR_CONVERT})
 
 		return result
 
@@ -2180,7 +2180,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_check            &= CheckIdp(cell.idp)
 
 		if not result_check: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                  subcodes = {CODES_DATA.ERROR_CHECK})
+														  subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                   = T21_StructResult_List()
 
@@ -2195,7 +2195,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result_sql               = self.ExecSqlSelectVList(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-		                                                                                   subcodes = result_sql.subcodes)
+																						   subcodes = result_sql.subcodes)
 
 		result.data              = result_sql.data
 

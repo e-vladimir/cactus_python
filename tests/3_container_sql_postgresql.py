@@ -1,14 +1,15 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 24 окт 2024
+# 08 сен 2026
 
 import time
 
 from   G00_status_codes         import *
-
 from   G32_cactus_container_sql import C32_ContainerPostgreSQL
+
 
 print("")
 print("[== Тест Контейнера-SQL-PostgreSQL ==]")
+
 
 container = C32_ContainerPostgreSQL()
 container.OptionsServerIp("")

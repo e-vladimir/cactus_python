@@ -1,15 +1,16 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL: SQLITE
-# 24 окт 2024
+# 08 сен 2026
 
 import os
 import time
 
 from   G00_status_codes         import *
-
 from   G32_cactus_container_sql import C32_ContainerSQLite
+
 
 print("")
 print("[== Тест Контейнера-SQL-SQLite ==]")
+
 
 try   : os.remove("./data.sqlite")
 except: pass

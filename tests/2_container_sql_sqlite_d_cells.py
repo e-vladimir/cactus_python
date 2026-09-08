@@ -1,17 +1,18 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.SQLite
-# 24 окт 2024
+# 08 сен 2026
 
 import os
 import time
 
-from G00_status_codes         import *
+from   G00_status_codes         import *
+from   G20_cactus_structs       import T20_StructCell
+from   G21_cactus_structs       import T21_VltRange
+from   G32_cactus_container_sql import C32_ContainerSQLite
 
-from G20_cactus_struct        import T20_StructCell
-from G21_cactus_struct        import T21_VltRange
-from G32_cactus_container_sql import C32_ContainerSQLite
 
 print("")
 print("[== Тест Контейнера-SQL.SQLite: Пакет D-Ячеек ==]")
+
 
 try   : os.remove("./data.sqlite")
 except: pass

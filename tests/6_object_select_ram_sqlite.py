@@ -1,12 +1,15 @@
 # ТЕСТИРОВАНИЕ ВЫБОРКИ ДАННЫХ
-# 22 апр 2025
+# 08 сен 2026
+
 import os
 import time
-from pprint import pprint
 
-from G30_cactus_controller_containers import controller_containers
-from G30_cactus_datafilters import C30_FilterLinear1D
-from G30_cactus_frame import C30_StructField, C30_StructFrame
+from   pprint                           import pprint
+
+from   G30_cactus_controller_containers import controller_containers
+from   G30_cactus_datafilters           import C30_FilterLinear1D
+from   G30_cactus_frames                import C30_StructField, C30_StructFrame
+
 
 CONTAINER_RAM    = "RAM"
 CONTAINER_SQLITE = "SQLITE"

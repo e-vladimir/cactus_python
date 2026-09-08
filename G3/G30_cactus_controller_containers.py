@@ -1,18 +1,18 @@
 # КАКТУС: КОНТРОЛЛЕР КОНТЕЙНЕРОВ
-# 04 мая 2025
+# 08 сен 2026
 
 from G00_status_codes         import (CODES_DATA,
-                                      CODES_PROCESSING,
-                                      CODES_COMPLETION,
-                                      CODES_CACTUS)
+									  CODES_PROCESSING,
+									  CODES_COMPLETION,
+									  CODES_CACTUS)
 
-from G20_meta_frame           import  C20_MetaFrame
+from G20_meta_frames          import  C20_MetaFrame
 from G21_struct_result        import (T21_StructResult_List,
-                                      T21_StructResult_String)
+									  T21_StructResult_String)
 
 from G31_cactus_container_ram import  C31_ContainerRAM
 from G32_cactus_container_sql import (C32_ContainerSQLite,
-                                      C32_ContainerPostgreSQL)
+									  C32_ContainerPostgreSQL)
 
 
 class C30_ControllerContainers(C20_MetaFrame):
@@ -96,8 +96,8 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 		if container is None:
 			return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-			                               subcodes = {CODES_CACTUS.NO_CONTAINER},
-			                               data     = container_name)
+										   subcodes = {CODES_CACTUS.NO_CONTAINER},
+										   data     = container_name)
 
 		# Отключение контейнера
 		if   container.Type_SQLite().data    : container.Disconnect()

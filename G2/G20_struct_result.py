@@ -2,7 +2,7 @@
 # 07 сен 2026
 
 from dataclasses      import (dataclass,
-                              field)
+							  field)
 from typing           import Any
 
 from G00_status_codes import CODES_COMPLETION, CODES

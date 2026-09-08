@@ -1,22 +1,22 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 04 мая 2025
+# 08 сен 2026
 
 from copy                 import  copy
 
 from G00_cactus_codes     import  CONTAINERS
 from G00_status_codes     import (CODES_COMPLETION,
-                                  CODES_DATA,
-                                  CODES_PROCESSING)
+								  CODES_DATA,
+								  CODES_PROCESSING)
 
-from G10_cactus_check     import (CheckIdo,
-                                  CheckIdp)
-from G10_list             import  DifferenceLists
+from G10_cactus_checkers  import (CheckIdo,
+								  CheckIdp)
+from G10_processing_lists import  DifferenceLists
 
-from G20_cactus_struct    import  T20_StructCell
-from G21_cactus_struct    import (T21_StructResult_StructCell,
-                                  T21_StructResult_StructCells,
-                                  T21_StructResult_VltRange,
-                                  T21_VltRange)
+from G20_cactus_structs   import  T20_StructCell
+from G21_cactus_structs   import (T21_StructResult_StructCell,
+								  T21_StructResult_StructCells,
+								  T21_StructResult_VltRange,
+								  T21_VltRange)
 from G21_struct_result    import  T21_StructResult_List
 
 from G30_cactus_container import  C30_Container
@@ -54,7 +54,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_check:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-			                                   subcodes = {CODES_DATA.ERROR_CHECK})
+											   subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result_exist : bool                 = cell.ids in self._s_cells
 
@@ -93,7 +93,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_exist:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
-			                                   subcodes = {CODES_DATA.NO_DATA})
+											   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
 										   data = copy(self._s_cells[cell.ids]))
@@ -165,7 +165,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.ERROR_TYPE})
+												subcodes = {CODES_DATA.ERROR_TYPE})
 
 		result                              = T21_StructResult_StructCells()
 		result.code                         = CODES_COMPLETION.COMPLETED
@@ -225,7 +225,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.ERROR_TYPE})
+												subcodes = {CODES_DATA.ERROR_TYPE})
 
 		result            = T21_StructResult_StructCells()
 		result.code       = CODES_COMPLETION.COMPLETED
@@ -403,7 +403,7 @@ class C31_ContainerRAM(C30_Container):
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		return T21_StructResult_StructCell(code = CODES_COMPLETION.COMPLETED,
-		                                   data = copy(dcells[cell.vlt]))
+										   data = copy(dcells[cell.vlt]))
 
 	def WriteDCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Запись D-Ячейки """
@@ -449,7 +449,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.ERROR_CHECK})
+												subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                                   = T21_StructResult_StructCells()
 		result.code                              = CODES_COMPLETION.COMPLETED
@@ -487,7 +487,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_check:
 			return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
-			                                    subcodes = {CODES_DATA.ERROR_CHECK})
+												subcodes = {CODES_DATA.ERROR_CHECK})
 
 		result                                   = T21_StructResult_StructCells()
 		result.code                              = CODES_COMPLETION.COMPLETED
@@ -517,7 +517,7 @@ class C31_ContainerRAM(C30_Container):
 
 		if not result_check:
 			return T21_StructResult_VltRange(code     = CODES_COMPLETION.INTERRUPTED,
-										     subcodes = {CODES_DATA.ERROR_CHECK})
+											 subcodes = {CODES_DATA.ERROR_CHECK})
 
 		dcells       : dict[int, T20_StructCell] = self._d_cells.get(cell.ids, dict())
 

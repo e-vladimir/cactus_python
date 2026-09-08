@@ -1,16 +1,17 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 24 окт 2024
+# 08 сен 2026
 
 import time
 
-from G00_status_codes         import *
+from   G00_status_codes         import *
+from   G20_cactus_structs       import T20_StructCell
+from   G21_cactus_structs       import T21_VltRange
+from   G32_cactus_container_sql import C32_ContainerPostgreSQL
 
-from G20_cactus_struct        import T20_StructCell
-from G21_cactus_struct        import T21_VltRange
-from G32_cactus_container_sql import C32_ContainerPostgreSQL
 
 print("")
 print("[== Тест Контейнера-SQL.PostgreSQL: Пакет D-Ячеек ==]")
+
 
 container = C32_ContainerPostgreSQL()
 container.OptionsServerIp("")

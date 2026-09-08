@@ -1,16 +1,17 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
-# 24 окт 2024
+# 08 сен 2026
 
 import time
 
-from G00_status_codes         import *
-from G20_cactus_struct        import T20_StructCell
-from G21_cactus_struct        import T21_VltRange
+from   G00_status_codes         import *
+from   G20_cactus_structs       import T20_StructCell
+from   G21_cactus_structs       import T21_VltRange
+from   G31_cactus_container_ram import C31_ContainerRAM
 
-from G31_cactus_container_ram import C31_ContainerRAM
 
 print("")
 print("[== Тест Контейнера-RAM: Пакет D-Ячеек ==]")
+
 
 container  = C31_ContainerRAM()
 

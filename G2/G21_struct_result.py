@@ -3,7 +3,7 @@
 
 import datetime
 from   dataclasses       import (dataclass,
-                                 field)
+								 field)
 
 from   G20_struct_result import T20_StructResult
 

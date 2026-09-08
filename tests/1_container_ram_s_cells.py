@@ -1,17 +1,18 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-RAM
-# 19 апр 2025
+# 08 сен 2026
 
 import time
 
-from copy import deepcopy
+from   copy                     import deepcopy
 
-from G00_status_codes         import *
+from   G00_status_codes         import *
+from   G20_cactus_structs       import T20_StructCell
+from   G31_cactus_container_ram import C31_ContainerRAM
 
-from G20_cactus_struct        import T20_StructCell
-from G31_cactus_container_ram import C31_ContainerRAM
 
 print("")
 print("[== Тест Контейнера-RAM: Пакет S-Ячеек ==]")
+
 
 container = C31_ContainerRAM()
 
