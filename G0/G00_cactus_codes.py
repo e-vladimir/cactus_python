@@ -47,10 +47,10 @@ class CONNECTION_MANAGEMENT(enum.Enum):
 
 # РАСШИРЕНИЕ СТРУКТУРНЫХ ПАРАМЕТРОВ
 class POSTFIX(enum.Enum):
-	CS  = (0,  "cs")
-	RS  = (1,  "cs")
-	SRC = (2, "src")
-	DST = (3, "dst")
+	CS  = (0,  "Cs")
+	RS  = (1,  "Cs")
+	SRC = (2, "Src")
+	DST = (3, "Dst")
 
 	def __init__(self, code: int, postfix: str):
 		self.code    = code

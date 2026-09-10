@@ -6,7 +6,7 @@ import random
 import time
 
 from   G20_cactus_structs               import T20_StructCell
-from   G30_cactus_controller_containers import controller_containers
+from   G30_cactus_controller_containers import ControllerContainers
 
 
 COUNT = 1000
@@ -19,7 +19,7 @@ print("")
 try   : os.remove("./data.sqlite")
 except: pass
 
-container  = controller_containers.RegisterContainerSQLite("SQL")
+container  = ControllerContainers.RegisterContainerSQLite("SQL")
 container.OptionsFilename("./data")
 container.Connect()
 

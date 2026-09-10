@@ -5,7 +5,7 @@ import random
 
 from   datetime                         import datetime
 
-from   G30_cactus_controller_containers import controller_containers
+from   G30_cactus_controller_containers import ControllerContainers
 from   G30_cactus_frames                 import C30_StructFrame, C30_StructField
 
 
@@ -53,11 +53,11 @@ class CMsg(C30_StructFrame):
 	pass
 
 
-container_1 = controller_containers.RegisterContainerSQLite(CONTAINER_NAME_1)
+container_1 = ControllerContainers.RegisterContainerSQLite(CONTAINER_NAME_1)
 container_1.OptionsFilename("db1")
 container_1.Connect()
 
-container_2 = controller_containers.RegisterContainerSQLite(CONTAINER_NAME_2)
+container_2 = ControllerContainers.RegisterContainerSQLite(CONTAINER_NAME_2)
 container_2.OptionsFilename("db2")
 container_2.Connect()
 

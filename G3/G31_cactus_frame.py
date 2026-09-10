@@ -1,13 +1,13 @@
 # КАКТУС: РАСШИРЕНИЕ СТРУКТУРНОГО КАРКАСА
-# 08 сен 2026
+# 10 сен 2026
+
+from typing            import Any
 
 from G00_cactus_codes  import  POSTFIX
 from G00_status_codes  import  CODES_COMPLETION
-
 from G20_meta_frames   import  C20_MetaFrame
 from G20_struct_result import  T20_StructResult
 from G21_struct_result import  T21_StructResult_Bool
-
 from G30_cactus_frames import (C30_StructField,
 							   C30_StructFrame)
 
@@ -55,39 +55,39 @@ class C31_StructFrameWithEvents(C30_StructFrame):
 class C31_StructFieldCsRs(C30_StructField):
 	""" КАКТУС: Структурный параметр CS-RS """
 
-	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
+	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: Any = None):
 		super().__init__(struct_frame, idp, default_vlp)
 
-		self.cs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.CS.postfix}", default_vlp)
-		self.rs = C30_StructField(self.struct_frame, f"{idp}_{POSTFIX.RS.postfix}", default_vlp)
+		self.Cs = C30_StructField(self.StructFrame, f"{idp}_{POSTFIX.CS.postfix}", default_vlp)
+		self.Rs = C30_StructField(self.StructFrame, f"{idp}_{POSTFIX.RS.postfix}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
 
-		self.cs : C30_StructField | None = None
-		self.rs : C30_StructField | None = None
+		self.Cs : C30_StructField | None = None
+		self.Rs : C30_StructField | None = None
 
 	# УПРАВЛЕНИЕ CS ПАРАМЕТРОМ
 	def MemoryVlpFromCs(self, container_name_cs: str, container_name: str) -> T20_StructResult:
 		""" Запомнить CS-значение как S-Данные """
-		result_value_cs = self.cs.ToString(container_name_cs)
+		result_value_cs = self.Cs.ToString(container_name_cs)
 		if not result_value_cs.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
 																						   subcodes = result_value_cs.subcodes)
 
 		result_value    = self.FromString(container_name, result_value_cs.data)
 		if not result_value.code    == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-																						   subcodes = result_value_cs.subcodes)
+																						   subcodes = result_value.subcodes)
 
 		return T20_StructResult(code = CODES_COMPLETION.COMPLETED)
 
 	def WriteCsVlp(self, container_name_dst: str, vlp: str, vlt: int = 0) -> T20_StructResult:
 		""" Записать CS-значение как D-Данные """
-		return self.cs.WriteVlp(container_name_dst, vlp, vlt)
+		return self.Cs.WriteVlp(container_name_dst, vlp, vlt)
 
 	# УПРАВЛЕНИЕ RS ПАРАМЕТРОМ
 	def MemoryVlpFromRs(self, container_name_rs: str, container_name: str) -> T20_StructResult:
-		""" Запомнить CS-значение как S-Данные """
-		result_value_rs = self.rs.ToString(container_name_rs)
+		""" Запомнить RS-значение как S-Данные """
+		result_value_rs = self.Rs.ToString(container_name_rs)
 		if not result_value_rs.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
 																						   subcodes = result_value_rs.subcodes)
 
@@ -98,17 +98,17 @@ class C31_StructFieldCsRs(C30_StructField):
 		return T20_StructResult(code = CODES_COMPLETION.COMPLETED)
 
 	def WriteRsVlp(self, container_name_dst: str, vlp: str, vlt: int = 0) -> T20_StructResult:
-		""" Записать CS-значение как D-Данные """
-		return self.rs.WriteVlp(container_name_dst, vlp, vlt)
+		""" Записать RS-значение как D-Данные """
+		return self.Rs.WriteVlp(container_name_dst, vlp, vlt)
 
 	# АНАЛИЗ CS\RS ЗНАЧЕНИЙ
 	def CheckEqualCsRs(self, container_name: str) -> T21_StructResult_Bool:
 		""" Проверка равенства CS и RS """
-		result_value_cs = self.cs.ToString(container_name)
+		result_value_cs = self.Cs.ToString(container_name)
 		if not result_value_cs.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
 																								subcodes = result_value_cs.subcodes)
 
-		result_value_rs = self.rs.ToString(container_name)
+		result_value_rs = self.Rs.ToString(container_name)
 		if not result_value_rs.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
 																								subcodes = result_value_rs.subcodes)
 
@@ -119,38 +119,38 @@ class C31_StructFieldCsRs(C30_StructField):
 class C31_StructFieldSrcDst(C20_MetaFrame):
 	""" КАКТУС: Структурный параметр SRC-DST """
 
-	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: any = None):
+	def __init__(self, struct_frame: C30_StructFrame, idp: str, default_vlp: Any = None):
 		super().__init__()
 
-		self.src = C30_StructField(struct_frame, f"{idp}_{POSTFIX.SRC.postfix}", default_vlp)
-		self.dst = C30_StructField(struct_frame, f"{idp}_{POSTFIX.DST.postfix}", default_vlp)
+		self.Src = C30_StructField(struct_frame, f"{idp}_{POSTFIX.SRC.postfix}", default_vlp)
+		self.Dst = C30_StructField(struct_frame, f"{idp}_{POSTFIX.DST.postfix}", default_vlp)
 
 	def Init_10(self):
 		super().Init_10()
 
-		self.src : C30_StructField | None = None
-		self.dst : C30_StructField | None = None
+		self.Src : C30_StructField | None = None
+		self.Dst : C30_StructField | None = None
 
 	# УПРАВЛЕНИЕ ДАННЫМИ SRC-DST
 	def SwapSrcDst(self, container_name: str) -> T20_StructResult:
 		""" Перестановка значений между SRC-DST """
-		result_value_src = self.src.ToString(container_name)
+		result_value_src = self.Src.ToString(container_name)
 		if not result_value_src.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-																						   subcodes = result_value_src.subcodes)
+																						    subcodes = result_value_src.subcodes)
 
-		result_value_dst = self.src.ToString(container_name)
+		result_value_dst = self.Dst.ToString(container_name)
 		if not result_value_dst.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-																						   subcodes = result_value_dst.subcodes)
+																						    subcodes = result_value_dst.subcodes)
 
 		value_src = result_value_src.data
 		value_dst = result_value_dst.data
 
-		result_value_src = self.src.FromString(container_name, value_src)
+		result_value_src = self.Src.FromString(container_name, value_dst)
 		if not result_value_src.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-																						   subcodes = result_value_src.subcodes)
+																						    subcodes = result_value_src.subcodes)
 
-		result_value_dst = self.src.FromString(container_name, value_dst)
+		result_value_dst = self.Dst.FromString(container_name, value_src)
 		if not result_value_dst.code == CODES_COMPLETION.COMPLETED: return T20_StructResult(code     = CODES_COMPLETION.INTERRUPTED,
-																						   subcodes = result_value_dst.subcodes)
+																						    subcodes = result_value_dst.subcodes)
 
 		return T20_StructResult(code = CODES_COMPLETION.COMPLETED)

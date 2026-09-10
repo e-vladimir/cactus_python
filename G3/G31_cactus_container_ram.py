@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-RAM
-# 08 сен 2026
+# 10 сен 2026
 
 from copy                 import  copy
 
@@ -7,18 +7,15 @@ from G00_cactus_codes     import  CONTAINERS
 from G00_status_codes     import (CODES_COMPLETION,
 								  CODES_DATA,
 								  CODES_PROCESSING)
-
 from G10_cactus_checkers  import (CheckIdo,
 								  CheckIdp)
 from G10_processing_lists import  DifferenceLists
-
 from G20_cactus_structs   import  T20_StructCell
 from G21_cactus_structs   import (T21_StructResult_StructCell,
 								  T21_StructResult_StructCells,
 								  T21_StructResult_VltRange,
 								  T21_VltRange)
 from G21_struct_result    import  T21_StructResult_List
-
 from G30_cactus_container import  C30_Container
 
 
@@ -73,10 +70,8 @@ class C31_ContainerRAM(C30_Container):
 
 		if flag_capture_delta:
 			cell_end = self.ReadSCell(cell).data
-			cells    = [cell_start, cell_end]
-			cells.remove(None)
 
-			result.data = cells[0]
+			result.data = cell_start if cell_end is None else cell_end
 
 		return result
 
@@ -118,7 +113,7 @@ class C31_ContainerRAM(C30_Container):
 		if not result_write:
 			result.subcodes.add(CODES_PROCESSING.SKIP)
 
-			if flag_capture_delta: result.data = cell_in_container
+			if flag_capture_delta: result.data = copy(cell_in_container)
 
 			return result
 
@@ -376,11 +371,8 @@ class C31_ContainerRAM(C30_Container):
 		result.code                         = CODES_COMPLETION.COMPLETED
 
 		if flag_capture_delta:
-			cell_end = self.ReadSCell(cell).data
-			cells    = [cell_start, cell_end]
-			cells.remove(None)
-
-			result.data = cells[0]
+			cell_end = self.ReadDCell(cell).data
+			result.data = cell_start if cell_end is None else cell_end
 
 		return result
 
@@ -425,7 +417,7 @@ class C31_ContainerRAM(C30_Container):
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 											   subcodes = {CODES_PROCESSING.SKIP})
 
-		dcells[cell.vlt] = cell
+		dcells[cell.vlt] = copy(cell)
 		self._d_cells[cell.ids] = dcells
 
 		result                              = T21_StructResult_StructCell()
@@ -434,10 +426,7 @@ class C31_ContainerRAM(C30_Container):
 		if flag_capture_delta:
 			cell_end = self.ReadDCell(cell).data
 
-			cells    = [cell_start, cell_end]
-			cells.remove(None)
-
-			result.data = cells[0]
+			result.data = cell_start if cell_end is None else cell_end
 
 		return result
 
@@ -462,8 +451,8 @@ class C31_ContainerRAM(C30_Container):
 
 		for vlt in list(dcells.keys()):
 			result_skip  = False
-			result_skip |= bool(cell.vlt_l) and vlt >= cell.vlt_l
-			result_skip |= bool(cell.vlt_r) and vlt <= cell.vlt_r
+			result_skip |= bool(cell.vlt_l) and vlt < cell.vlt_l
+			result_skip |= bool(cell.vlt_r) and vlt > cell.vlt_r
 
 			if result_skip: continue
 
@@ -496,12 +485,12 @@ class C31_ContainerRAM(C30_Container):
 
 		for vlt in list(dcells.keys()):
 			result_skip  = False
-			result_skip |= bool(cell.vlt_l) and vlt >= cell.vlt_l
-			result_skip |= bool(cell.vlt_r) and vlt <= cell.vlt_r
+			result_skip |= bool(cell.vlt_l) and vlt < cell.vlt_l
+			result_skip |= bool(cell.vlt_r) and vlt > cell.vlt_r
 
 			if result_skip: continue
 
-			result.data.append(dcells[vlt])
+			result.data.append(copy(dcells[vlt]))
 
 		match len(result.data):
 			case 0: result.subcodes.add(CODES_DATA.NO_DATA)

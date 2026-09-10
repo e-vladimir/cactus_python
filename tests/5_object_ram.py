@@ -5,7 +5,7 @@ import time
 import datetime
 
 from   G00_status_codes                 import  CODES_COMPLETION
-from   G30_cactus_controller_containers import  controller_containers
+from   G30_cactus_controller_containers import  ControllerContainers
 from   G30_cactus_frames                import (C30_StructFrame,
                                                 C30_StructField)
 
@@ -26,7 +26,7 @@ class CMessage(C30_StructFrame):
 		self.f_text   = C30_StructField(self, "Текст сообщения")
 
 
-controller_containers.RegisterContainerRAM(CONTAINER_RAM)
+ControllerContainers.RegisterContainerRAM(CONTAINER_RAM)
 
 message = CMessage()
 message.GenerateIdo()

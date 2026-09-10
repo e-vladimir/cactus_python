@@ -1,7 +1,7 @@
 # ТЕСТ РАБОТЫ С ОБЪЕКТАМИ
 
 from G10_processing_lists_extended                import DistinctAndNatSortList1D
-from G30_cactus_controller_containers import controller_containers
+from G30_cactus_controller_containers import ControllerContainers
 from G30_cactus_datafilters           import C30_FilterLinear1D
 from G30_cactus_frames                 import C30_StructField
 from G31_cactus_frame                 import C31_StructFrameWithEvents
@@ -71,7 +71,7 @@ def PrintNoteIdos(idos: list[str]):
 	print(notes_sorted, end="\n\n")
 
 
-container = controller_containers.RegisterContainerSQLite(CONTAINER)
+container = ControllerContainers.RegisterContainerSQLite(CONTAINER)
 container.OptionsFilename("my_data")
 container.Connect()
 

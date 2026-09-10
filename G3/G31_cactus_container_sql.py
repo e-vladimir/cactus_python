@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 04 мая 2025
+# 10 сен 2026
 
 import threading
 import time
@@ -7,16 +7,13 @@ import time
 from   G00_cactus_codes     import  CONNECTION_MANAGEMENT
 from   G00_status_codes     import (CODES_COMPLETION,
 									CODES_PROCESSING)
-
 from   G10_math_linear      import  CalcBetween
-
 from   G20_struct_result    import  T20_StructResult
 from   G21_struct_result    import (T21_StructResult_Bool,
 									T21_StructResult_Int,
 									T21_StructResult_String,
 									T21_StructResult_List)
-
-from   G30_cactus_container import C30_Container
+from   G30_cactus_container import  C30_Container
 
 
 class C31_ContainerSQL(C30_Container):
@@ -33,7 +30,7 @@ class C31_ContainerSQL(C30_Container):
 	def Init_10(self):
 		super().Init_10()
 
-		self.disconnector = None
+		self.Disconnector = None
 
 	# Механика данных: Состояния
 	def StateConnected(self) -> T21_StructResult_Bool:
@@ -43,7 +40,7 @@ class C31_ContainerSQL(C30_Container):
 									 data     = True)
 
 	# Механика данных: Параметры Автоподключения
-	def ConnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool | None:
+	def ConnectMode_Manual(self, flag: bool | None = None) -> T21_StructResult_Bool | None:
 		""" Режим подключения: Ручной """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 														data = self._connect_mode == CONNECTION_MANAGEMENT.MANUAL)
@@ -51,7 +48,7 @@ class C31_ContainerSQL(C30_Container):
 		elif flag        :                                     self._connect_mode  = CONNECTION_MANAGEMENT.MANUAL
 		return None
 
-	def ConnectMode_Auto(self, flag: bool = None) -> T21_StructResult_Bool | None:
+	def ConnectMode_Auto(self, flag: bool | None = None) -> T21_StructResult_Bool | None:
 		""" Режим подключения: Автоматически """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 														data = self._connect_mode == CONNECTION_MANAGEMENT.AUTO)
@@ -60,7 +57,7 @@ class C31_ContainerSQL(C30_Container):
 		return None
 
 	# Механика данных: Параметры Автоотключения
-	def DisconnectMode_Manual(self, flag: bool = None) -> T21_StructResult_Bool | None:
+	def DisconnectMode_Manual(self, flag: bool | None = None) -> T21_StructResult_Bool | None:
 		""" Режим отключения: Отключено """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 														data = self._disconnect_mode == CONNECTION_MANAGEMENT.MANUAL)
@@ -68,7 +65,7 @@ class C31_ContainerSQL(C30_Container):
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.MANUAL
 		return None
 
-	def DisconnectMode_Auto(self, flag: bool = None) -> T21_StructResult_Bool | None:
+	def DisconnectMode_Auto(self, flag: bool | None = None) -> T21_StructResult_Bool | None:
 		""" Режим отключения: Автоматически """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 														data = self._disconnect_mode == CONNECTION_MANAGEMENT.AUTO)
@@ -76,7 +73,7 @@ class C31_ContainerSQL(C30_Container):
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.AUTO
 		return None
 
-	def DisconnectMode_Timeout(self, flag: bool = None) -> T21_StructResult_Bool | None:
+	def DisconnectMode_Timeout(self, flag: bool | None = None) -> T21_StructResult_Bool | None:
 		""" Режим отключения: Ожидание """
 		if   flag is None: return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 														data = self._disconnect_mode == CONNECTION_MANAGEMENT.TIMEOUT)
@@ -84,7 +81,7 @@ class C31_ContainerSQL(C30_Container):
 		elif flag        :                                     self._disconnect_mode  = CONNECTION_MANAGEMENT.TIMEOUT
 		return None
 
-	def DisconnectTimeout(self, value: int = None) -> T21_StructResult_Int | None:
+	def DisconnectTimeout(self, value: int | None = None) -> T21_StructResult_Int | None:
 		""" Задержка отключения """
 		if value is None: return T21_StructResult_Int(code = CODES_COMPLETION.COMPLETED,
 													  data = self._disconnect_timeout)
@@ -100,6 +97,8 @@ class C31_ContainerSQL(C30_Container):
 
 	def Disconnect(self) -> T20_StructResult:
 		""" Отключение от контейнера """
+		self.Disconnector = None
+
 		return T20_StructResult(code     = CODES_COMPLETION.COMPLETED,
 								subcodes = {CODES_PROCESSING.SKIP})
 
@@ -159,11 +158,11 @@ class C31_ContainerSQL(C30_Container):
 			self.Disconnect()
 
 		elif self.DisconnectMode_Timeout().data:
-			if self.disconnector is None:
-				self.disconnector = C30_ContainerSqlDisconnector(self)
-				self.disconnector.start()
+			if self.Disconnector is None:
+				self.Disconnector = C30_ContainerSqlDisconnector(self)
+				self.Disconnector.start()
 
-			self.disconnector.ResetCounter()
+			self.Disconnector.ResetCounter()
 
 		return self.StateConnected()
 
@@ -185,9 +184,9 @@ class C30_ContainerSqlDisconnector(threading.Thread):
 		threading.Thread.__init__(self)
 
 		self._counter : int              = 0
-
-		self.container                   = container_sql
 		self.daemon   : bool             = True
+
+		self.Container                   = container_sql
 
 	def Counter(self, value: int = None) -> int:
 		""" Чтение/Запись счетчика тактов """
@@ -205,12 +204,12 @@ class C30_ContainerSqlDisconnector(threading.Thread):
 
 	def run(self) -> None:
 		""" Основной обработчик потока """
-		if self.container is None: return
+		if self.Container is None: return
 
 		time.sleep(0.001)
 
-		while self.Counter() < self.container.DisconnectTimeout().data:
+		while self.Counter() < self.Container.DisconnectTimeout().data:
 			time.sleep(1)
 			self.IncCounter()
 
-		self.container.Disconnect()
+		self.Container.Disconnect()

@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 08 сен 2026
+# 10 сен 2026
 
 import psycopg2
 import sqlite3
@@ -13,14 +13,14 @@ from   G00_status_codes         import (CODES_COMPLETION,
 										CODES_PROCESSING,
 										CODES_DB,
 										CODES_DATA)
-
 from   G10_cactus_checkers      import (CheckIdc,
 										CheckIdo,
 										CheckIdp)
 from   G10_cactus_convertors    import (IdoFromIds,
 										IdpFromIds)
 from   G10_processing_lists     import  DifferenceLists
-
+from   G10_processing_sql       import (FormatStringForSqlite,
+                                        FormatStringForPostgreSql)
 from   G20_cactus_structs       import  T20_StructCell
 from   G21_cactus_structs       import (T21_StructResult_CursorS3m,
 										T21_StructResult_StructCell,
@@ -32,7 +32,6 @@ from   G21_struct_result        import (T21_StructResult_String,
 										T21_StructResult_Bool,
 										T21_StructResult_Int,
 										T21_StructResult_List)
-
 from   G31_cactus_container_sql import  C31_ContainerSQL
 
 
@@ -54,10 +53,10 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 	def Init_10(self):
 		super().Init_10()
 
-		self.connection : s3m.Connection | None = None
+		self.Connection : s3m.Connection | None = None
 
 	# Механика данных: Параметры подключения
-	def OptionsFilename(self, filename: str = None) -> T21_StructResult_String | None:
+	def OptionsFilename(self, filename: str | None = None) -> T21_StructResult_String | None:
 		""" Запрос/Установка параметра подключения: Имя файла """
 		if filename is None: return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED,
 															data = self._options_filename)
@@ -72,9 +71,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		result.code = CODES_COMPLETION.COMPLETED
 		result.data = False
 
-		if self.connection is None: return result
+		if self.Connection is None: return result
 
-		try    : self.connection.cursor()
+		try    : self.Connection.cursor()
 		except : return result
 
 		result.data = True
@@ -88,18 +87,22 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
 										 subcodes = {CODES_PROCESSING.SKIP})
 
-		self.connection = None
+		if self.Connection is not None:
+			try   : self.Connection.close()
+			except:	pass
+
+		self.Connection = None
 		
 		try:
-			self.connection = s3m.Connection(path              = f"{self.OptionsFilename().data}.sqlite",
-											 isolation_level   = None,
-											 check_same_thread = False)
+			self.Connection = s3m.Connection(path              =f"{self.OptionsFilename().data}.sqlite",
+			                                 isolation_level   = None,
+			                                 check_same_thread = False)
 		except:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
 										 subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
-			cursor = self.connection.cursor()
+			cursor = self.Connection.cursor()
 			cursor.execute('PRAGMA journal_mode=MEMORY;')
 		except:
 			pass
@@ -111,15 +114,17 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def Disconnect(self) -> T21_StructResult_Bool:
 		""" Отключение от СУБД """
-		if self.connection is None:
+		self.Disconnector = None
+
+		if self.Connection is None:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
 										 subcodes = {CODES_PROCESSING.SKIP},
 										 data     = True)
 
-		try: self.connection.close()
+		try: self.Connection.close()
 		except: pass
 
-		self.connection = None
+		self.Connection = None
 
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 									 data = True)
@@ -129,17 +134,17 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		""" Выполнение запроса с кодом """
 		self.PrepareConnect()
 
-		if self.connection is None:
+		if self.Connection is None:
 			return T21_StructResult_CursorS3m(code     = CODES_COMPLETION.INTERRUPTED,
 											  subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
-			sql_cursor      = self.connection.cursor()
+			sql_cursor      = self.Connection.cursor()
 
 			if   type(sql) is str  : sql_cursor.execute(sql + ';' if ';' not in sql else '')
 			elif type(sql) is list : sql_cursor.executescript('\n'.join(sql))
 
-			self.connection.commit()
+			self.Connection.commit()
 
 			return T21_StructResult_CursorS3m(code   = CODES_COMPLETION.COMPLETED,
 											  cursor = sql_cursor)
@@ -205,7 +210,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		self.PrepareDisconnect()
 
-		if (not data) or (data is None):
+		if not data:
 			return T21_StructResult_String(code     = CODES_COMPLETION.COMPLETED,
 										   subcodes = {CODES_DATA.NO_DATA})
 
@@ -375,11 +380,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if flag_capture_delta:
 			result_cell = self.ReadSCell(cell)
 			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
 
-			result.data = cells[0]
-
+			result.data = cell_start if cell_end is None else cell_end
 		return result
 
 	def ReadSCell(self, cell: T20_StructCell) -> T21_StructResult_StructCell:
@@ -433,7 +435,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		result_cell         = self.ReadSCell(cell)
 		check_error  : bool = not result_cell.code == CODES_COMPLETION.COMPLETED
-		check_error        &= CODES_DATA.NO_DATA in result_cell.subcodes
+		check_error        |= CODES_DATA.NO_DATA in result_cell.subcodes
 		if check_error:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 											   subcodes = result_cell.subcodes)
@@ -478,9 +480,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
-		sql          : str  = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+		sql          : str  = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{FormatStringForSqlite(cell.vlp)}', {cell.vlt}) "
 		if flag_skip : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
-		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
+		else         : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{FormatStringForSqlite(cell.vlp)}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
@@ -527,10 +529,10 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql     : str       = f"DELETE FROM {cell_cells.idc}"
 
 			filters : list[str] = []
-			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}%')")
+			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{FormatStringForSqlite(cell_cells.ido)}%')")
 			if bool(cell_cells.idp): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%{cell_cells.idp}')")
-			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '{cell_cells.vlp}' = '{cell_cells.vlp}')")
-			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} LIKE '{cell_cells.vlt}' = '{cell_cells.vlt}')")
+			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} = '{FormatStringForSqlite(cell_cells.vlp)}')")
+			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} = '{cell_cells.vlt}')")
 
 			if filters: sql    += " WHERE " + ' AND '.join(filters)
 
@@ -538,22 +540,6 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																									  subcodes = result_sql.subcodes)
-
-			for raw_line in result_sql.data:
-				try:
-					ids             = raw_line[0]
-					vlp             = raw_line[1]
-					vlt             = raw_line[2]
-
-					result_cell     = T20_StructCell()
-					result_cell.idc = cell_cells.idc
-					result_cell.ido = IdoFromIds(ids)
-					result_cell.idp = IdpFromIds(ids)
-					result_cell.vlp = vlp
-					result_cell.vlt = int(vlt)
-				except:
-					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
 
 		elif type(cell_cells) is list          :
 			filters : dict[str, list[str]] = dict()
@@ -578,7 +564,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			for idc, idss in filters.items():
 				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
-				select_sql += ', '.join(f"'{ids}'" for ids in idss)
+				select_sql += ', '.join(f"'{FormatStringForSqlite(ids)}'" for ids in idss)
 				select_sql += ");"
 
 				sql.append(select_sql)
@@ -592,22 +578,6 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 													subcodes = result_sql.subcodes)
-
-			for raw_line in result_sql.data:
-				try:
-					ids             = raw_line[0]
-					vlp             = raw_line[1]
-					vlt             = raw_line[2]
-
-					result_cell     = T20_StructCell()
-					result_cell.idc = cell_cells.idc
-					result_cell.ido = IdoFromIds(ids)
-					result_cell.idp = IdpFromIds(ids)
-					result_cell.vlp = vlp
-					result_cell.vlt = int(vlt)
-				except:
-					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cell_cells).data
@@ -641,10 +611,10 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 			sql     : str       = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell_cells.idc}"
 
 			filters : list[str] = []
-			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}%')")
+			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{FormatStringForSqlite(cell_cells.ido)}%')")
 			if bool(cell_cells.idp): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%{cell_cells.idp}')")
-			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '{cell_cells.vlp}' = '{cell_cells.vlp}')")
-			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} LIKE '{cell_cells.vlt}' = '{cell_cells.vlt}')")
+			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} = '{FormatStringForSqlite(cell_cells.vlp)}')")
+			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} = '{cell_cells.vlt}')")
 
 			if filters: sql    += " WHERE " + ' AND '.join(filters)
 
@@ -693,10 +663,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 			for idc, idss in filters.items():
 				select_sql  = f"SELECT '{idc}' as '{CACTUS_STRUCT_DATA.IDC.name_sql}', {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
-				select_sql += ', '.join(f"'{ids}'" for ids in idss)
+				select_sql += ', '.join(f"'{FormatStringForSqlite(ids)}'" for ids in idss)
 				select_sql += ")"
 
 				sql.append(select_sql)
+
+			if not sql: return T21_StructResult_StructCells(code     =  CODES_COMPLETION.COMPLETED,
+			                                                subcodes = {CODES_DATA.NO_DATA})
 
 			sql     : str                  = " UNION ALL ".join(sql)
 
@@ -750,8 +723,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
-			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
+			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{FormatStringForSqlite(cell.vlp)}', {cell.vlt}) "
+			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{FormatStringForSqlite(cell.vlp)}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
 			sql      += f";"
 
 			sqls.append(sql)
@@ -802,9 +775,9 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{FormatStringForSqlite(cell.vlp)}', {cell.vlt}) "
 			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
-			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
+			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{FormatStringForSqlite(cell.vlp)}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 			sql               += ';'
 
 			sqls.append(sql)
@@ -869,10 +842,8 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if flag_capture_delta:
 			result_cell = self.ReadDCell(cell)
 			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
 
-			result.data = cells[0]
+			result.data = cell_start if cell_end is None else cell_end
 
 		return result
 
@@ -931,7 +902,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
 
-		sql          : str                   = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
+		sql          : str                   = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{FormatStringForSqlite(cell.vlp)}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND {CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
@@ -977,13 +948,13 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 		if filters: sql += " WHERE " + ' AND '.join(filters)
 
-		result_sql                          = self.ExecSqlSelectMatrix(sql)
+		result_sql                          = self.ExecSql(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																								  subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
-			cells_after = self.ReadSCells(cell).data
+			cells_after = self.ReadDCells(cell).data
 
 			result.data = DifferenceLists(cells_before, cells_after, True)
 
@@ -1058,7 +1029,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql          : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE"
+		sql          : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE "
 		sql                     += ' AND '.join(filters)
 
 		result_sql               = self.ExecSqlSelectHList(sql)
@@ -1090,7 +1061,7 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE"
+		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE "
 		sql                     += ' AND '.join(filters)
 
 		result_sql               = self.ExecSqlSelectVList(sql)
@@ -1125,38 +1096,38 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 	def Init_10(self):
 		super().Init_10()
 
-		self.connection : psycopg2.extensions.connection | None = None
+		self.Connection : psycopg2.extensions.connection | None = None
 
 	# Механика данных: Параметры подключения
-	def OptionsServerIp(self, ip: str = None) -> T21_StructResult_String | None:
+	def OptionsServerIp(self, ip: str | None = None) -> T21_StructResult_String | None:
 		""" Запрос/Установка параметра подключения: IP сервера """
 		if ip is None: return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED, data = self._options_server_ip)
 
 		self._options_server_ip = ip
 		return None
 
-	def OptionsServerTcpPort(self, tcp_port: int = None) -> T21_StructResult_Int | None:
+	def OptionsServerTcpPort(self, tcp_port: int | None = None) -> T21_StructResult_Int | None:
 		""" Запрос/Установка параметра подключения: TCP-порт """
 		if tcp_port is None: return T21_StructResult_Int(code = CODES_COMPLETION.COMPLETED, data = self._options_server_tcp_port)
 
 		self._options_server_tcp_port = tcp_port
 		return None
 
-	def OptionsServerDBase(self, basename: str = None) -> T21_StructResult_String | None:
+	def OptionsServerDBase(self, basename: str | None = None) -> T21_StructResult_String | None:
 		""" Запрос/Установка параметра подключения: Имя схемы """
 		if basename is None: return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED, data = self._options_server_dbase)
 
 		self._options_server_dbase = basename
 		return None
 
-	def OptionsServerLogin(self, login: str = None) -> T21_StructResult_String | None:
+	def OptionsServerLogin(self, login: str | None = None) -> T21_StructResult_String | None:
 		""" Запрос/Установка параметра подключения: Логин """
 		if login is None: return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED, data = self._options_server_login)
 
 		self._options_server_login = login
 		return None
 
-	def OptionsServerPassword(self, password: str = None) -> T21_StructResult_String | None:
+	def OptionsServerPassword(self, password: str | None = None) -> T21_StructResult_String | None:
 		""" Запрос/Установка параметра подключения: Пароль """
 		if password is None: return T21_StructResult_String(code = CODES_COMPLETION.COMPLETED, data = self._options_server_password)
 
@@ -1170,9 +1141,9 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result.code = CODES_COMPLETION.COMPLETED
 		result.data = False
 
-		if self.connection is None: return result
+		if self.Connection is None: return result
 
-		try    : self.connection.cursor()
+		try    : self.Connection.cursor()
 		except : return result
 
 		result.data = True
@@ -1186,15 +1157,19 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
 										 subcodes = {CODES_PROCESSING.SKIP})
 
-		self.connection = None
+		if self.Connection is not None:
+			try   : self.Connection.close()
+			except:	pass
+
+		self.Connection = None
 
 		try:
-			self.connection = psycopg2.connect(host            = self._options_server_ip,
-											   port            = self._options_server_tcp_port,
-											   dbname          = self._options_server_dbase,
-											   user            = self._options_server_login,
-											   password        = self._options_server_password,
-											   connect_timeout = 5)
+			self.Connection = psycopg2.connect(host            = self.OptionsServerIp().data,
+			                                   port            = self.OptionsServerTcpPort().data,
+			                                   dbname          = self.OptionsServerDBase().data,
+			                                   user            = self.OptionsServerLogin().data,
+			                                   password        = self.OptionsServerPassword().data,
+			                                   connect_timeout = 5)
 		except:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.INTERRUPTED,
 										 subcodes = {CODES_DB.ERROR_CONNECTION})
@@ -1206,15 +1181,17 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def Disconnect(self) -> T21_StructResult_Bool:
 		""" Отключение от СУБД """
-		if self.connection is None:
+		self.Disconnector = None
+
+		if self.Connection is None:
 			return T21_StructResult_Bool(code     = CODES_COMPLETION.COMPLETED,
 										 subcodes = {CODES_PROCESSING.SKIP},
 										 data     = True)
 
-		try   : self.connection.close()
+		try   : self.Connection.close()
 		except:	pass
 
-		self.connection = None
+		self.Connection = None
 
 		return T21_StructResult_Bool(code = CODES_COMPLETION.COMPLETED,
 									 data = True)
@@ -1224,17 +1201,17 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		""" Выполнение запроса с кодом """
 		self.PrepareConnect()
 
-		if self.connection is None:
+		if self.Connection is None:
 			return T21_StructResult_CursorPostgresql(code     = CODES_COMPLETION.INTERRUPTED,
 													 subcodes = {CODES_DB.ERROR_CONNECTION})
 
 		try:
-			sql_cursor      = self.connection.cursor()
+			sql_cursor      = self.Connection.cursor()
 
 			if   type(sql) is str  : sql_cursor.execute(sql + ';')
 			elif type(sql) is list : sql_cursor.execute('\n'.join(sql))
 
-			self.connection.commit()
+			self.Connection.commit()
 
 			return T21_StructResult_CursorPostgresql(code   = CODES_COMPLETION.COMPLETED,
 													 cursor = sql_cursor)
@@ -1265,7 +1242,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if not result_cursor.code == CODES_COMPLETION.COMPLETED:
 			self.PrepareDisconnect()
 
-			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
+			return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
 										subcodes = result_cursor.subcodes)
 
 		try:
@@ -1273,7 +1250,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			count : int = cursor.rowcount
 			cursor.close()
 		except:
-			return T21_StructResult_Int(code     = CODES_COMPLETION.COMPLETED,
+			return T21_StructResult_Int(code     = CODES_COMPLETION.INTERRUPTED,
 										subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
@@ -1297,12 +1274,12 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			data : list[str] = cursor.fetchone()
 			cursor.close()
 		except Exception as err:
-			if not f"{err}" == "no results to fetch": return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
-																					 subcodes = {CODES_DB.ERROR_DB})
+			if "no results to fetch" not in f"{err}".lower(): return T21_StructResult_String(code     = CODES_COMPLETION.INTERRUPTED,
+																					         subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
-		if (not data) or (data is None):
+		if not data:
 			return T21_StructResult_String(code     = CODES_COMPLETION.COMPLETED,
 										   subcodes = {CODES_DATA.NO_DATA})
 
@@ -1324,8 +1301,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			data : list[str] = cursor.fetchone()
 			cursor.close()
 		except Exception as err:
-			if not f"{err}" == "no results to fetch": return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				   subcodes = {CODES_DB.ERROR_DB})
+			if "no results to fetch" not in f"{err}".lower(): return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+																					       subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1355,8 +1332,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			data : list[str] = list(map(lambda raw: raw[0], cursor.fetchall()))
 			cursor.close()
 		except Exception as err:
-			if not f"{err}" == "no results to fetch": return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				   subcodes = {CODES_DB.ERROR_DB})
+			if "no results to fetch" not in f"{err}".lower(): return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+																				           subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1386,8 +1363,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			data : list[str] = cursor.fetchall()
 			cursor.close()
 		except Exception as err:
-			if not f"{err}" == "no results to fetch": return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				   subcodes = {CODES_DB.ERROR_DB})
+			if "no results to fetch" not in f"{err}".lower(): return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
+																					       subcodes = {CODES_DB.ERROR_DB})
 
 		self.PrepareDisconnect()
 
@@ -1477,10 +1454,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if flag_capture_delta:
 			result_cell = self.ReadSCell(cell)
 			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
 
-			result.data = cells[0]
+			result.data = cell_start if cell_end is None else cell_end
 
 		return result
 
@@ -1534,7 +1509,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		result_cell              = self.ReadSCell(cell)
 		check_error  : bool      = not result_cell.code == CODES_COMPLETION.COMPLETED
-		check_error             &= CODES_DATA.NO_DATA in result_cell.subcodes
+		check_error             |= CODES_DATA.NO_DATA in result_cell.subcodes
 		if check_error:
 			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
 											   subcodes = result_cell.subcodes)
@@ -1578,9 +1553,9 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadSCell(cell).data
 
-		sql          : str                   = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+		sql          : str                   = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{FormatStringForPostgreSql(cell.vlp)}', {cell.vlt}) "
 		if flag_skip : sql                  += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
-		else         : sql                  += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
+		else         : sql                  += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{FormatStringForPostgreSql(cell.vlp)}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
@@ -1627,10 +1602,10 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql     : str       = f"DELETE FROM {cell_cells.idc}"
 
 			filters : list[str] = []
-			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}%')")
+			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{FormatStringForPostgreSql(cell_cells.ido)}%')")
 			if bool(cell_cells.idp): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%{cell_cells.idp}')")
-			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '{cell_cells.vlp}' = '{cell_cells.vlp}')")
-			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} LIKE '{cell_cells.vlt}' = '{cell_cells.vlt}')")
+			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} = '{FormatStringForPostgreSql(cell_cells.vlp)}')")
+			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} = '{cell_cells.vlt}')")
 
 			if filters: sql    += " WHERE " + ' AND '.join(filters)
 
@@ -1638,22 +1613,6 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																									  subcodes = result_sql.subcodes)
-
-			for raw_line in result_sql.data:
-				try:
-					ids             = raw_line[0]
-					vlp             = raw_line[1]
-					vlt             = raw_line[2]
-
-					result_cell     = T20_StructCell()
-					result_cell.idc = cell_cells.idc
-					result_cell.ido = IdoFromIds(ids)
-					result_cell.idp = IdpFromIds(ids)
-					result_cell.vlp = vlp
-					result_cell.vlt = int(vlt)
-				except:
-					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
 
 		elif type(cell_cells) is list          :
 			filters : dict[str, list[str]] = dict()
@@ -1678,7 +1637,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			for idc, idss in filters.items():
 				select_sql  = f"DELETE FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
-				select_sql += ', '.join(f"'{ids}'" for ids in idss)
+				select_sql += ', '.join(f"'{FormatStringForPostgreSql(ids)}'" for ids in idss)
 				select_sql += ");"
 
 				sql.append(select_sql)
@@ -1692,22 +1651,6 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 				return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 													subcodes = result_sql.subcodes)
-
-			for raw_line in result_sql.data:
-				try:
-					ids             = raw_line[0]
-					vlp             = raw_line[1]
-					vlt             = raw_line[2]
-
-					result_cell     = T20_StructCell()
-					result_cell.idc = cell_cells.idc
-					result_cell.ido = IdoFromIds(ids)
-					result_cell.idp = IdpFromIds(ids)
-					result_cell.vlp = vlp
-					result_cell.vlt = int(vlt)
-				except:
-					result.subcodes.add(CODES_DATA.ERROR_CONVERT)
-					result.subcodes.add(CODES_PROCESSING.PARTIAL)
 
 		if flag_capture_delta:
 			cells_after = self.ReadSCells(cell_cells).data
@@ -1733,7 +1676,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		result              = T21_StructResult_StructCells()
 
 		if   type(cell_cells) is T20_StructCell:
-			result_check : bool = CheckIdo(cell_cells.idc)
+			result_check : bool = CheckIdc(cell_cells.idc)
 
 			if not result_check                                 : return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																									  subcodes = {CODES_DATA.ERROR_CHECK})
@@ -1741,10 +1684,10 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 			sql     : str       = f"SELECT {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell_cells.idc}"
 
 			filters : list[str] = []
-			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{cell_cells.ido}%')")
+			if bool(cell_cells.ido): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '{FormatStringForPostgreSql(cell_cells.ido)}%')")
 			if bool(cell_cells.idp): filters.append(f"({CACTUS_STRUCT_DATA.IDS.name_sql} LIKE '%{cell_cells.idp}')")
-			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} LIKE '{cell_cells.vlp}' = '{cell_cells.vlp}')")
-			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} LIKE '{cell_cells.vlt}' = '{cell_cells.vlt}')")
+			if bool(cell_cells.vlp): filters.append(f"({CACTUS_STRUCT_DATA.VLP.name_sql} = '{FormatStringForPostgreSql(cell_cells.vlp)}')")
+			if bool(cell_cells.vlt): filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} = '{cell_cells.vlt}')")
 
 			if filters: sql += " WHERE " + ' AND '.join(filters)
 
@@ -1793,12 +1736,16 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 			for idc, idss in filters.items():
 				select_sql  = f"SELECT '{idc}' as {CACTUS_STRUCT_DATA.IDC.name_sql}, {CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {idc} WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} IN ("
-				select_sql += ', '.join(f"'{ids}'" for ids in idss)
+				select_sql += ', '.join(f"'{FormatStringForPostgreSql(ids)}'" for ids in idss)
 				select_sql += ")"
 
 				sql.append(select_sql)
 
 			sql    : str                  = " UNION ALL ".join(sql)
+
+			if not sql:
+				return T21_StructResult_StructCells(code     =  CODES_COMPLETION.COMPLETED,
+				                                    subcodes = {CODES_DATA.NO_DATA})
 
 			result_sql                    = self.ExecSqlSelectMatrix(sql)
 
@@ -1850,8 +1797,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
-			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {cell.idc}.{CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
+			sql : str = f"INSERT INTO {cell.idc} ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) VALUES ('{cell.ids}', '{FormatStringForPostgreSql(cell.vlp)}', {cell.vlt}) "
+			sql      += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{FormatStringForPostgreSql(cell.vlp)}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt} WHERE {cell.idc}.{CACTUS_STRUCT_DATA.VLT.name_sql} <= {cell.vlt}"
 			sql      += f";"
 
 			sqls.append(sql)
@@ -1901,9 +1848,9 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 				result.subcodes.add(CODES_PROCESSING.PARTIAL)
 				continue
 
-			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{cell.vlp}', {cell.vlt}) "
+			sql         : str  = f"INSERT INTO {cell.idc} VALUES ('{cell.ids}', '{FormatStringForPostgreSql(cell.vlp)}', {cell.vlt}) "
 			if flag_skip: sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO NOTHING"
-			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{cell.vlp}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
+			else        : sql += f"ON CONFLICT ({CACTUS_STRUCT_DATA.IDS.name_sql}) DO UPDATE SET {CACTUS_STRUCT_DATA.VLP.name_sql}='{FormatStringForPostgreSql(cell.vlp)}', {CACTUS_STRUCT_DATA.VLT.name_sql}={cell.vlt}"
 			sql               += ';'
 
 			sqls.append(sql)
@@ -1968,10 +1915,8 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if flag_capture_delta:
 			result_cell = self.ReadDCell(cell)
 			cell_end    = result_cell.data
-			cells       = [cell_start, cell_end]
-			cells.remove(None)
 
-			result.data = cells[0]
+			result.data = cell_start if cell_end is None else cell_end
 
 		return result
 
@@ -1995,7 +1940,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		data         : list[str] = result_sql.data
 		if len(data) < 2:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
+			return T21_StructResult_StructCell(code     = CODES_COMPLETION.COMPLETED,
 											   subcodes = {CODES_DATA.NO_DATA})
 
 		result                   = T21_StructResult_StructCell()
@@ -2029,7 +1974,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if flag_capture_delta: cell_start = self.ReadDCell(cell).data
 
-		sql          : str                   = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{cell.vlp}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND _vlt = {cell.vlt})"
+		sql          : str                   = f"INSERT INTO {cell.idc}_ ({CACTUS_STRUCT_DATA.IDS.name_sql}, {CACTUS_STRUCT_DATA.VLP.name_sql}, {CACTUS_STRUCT_DATA.VLT.name_sql}) SELECT '{cell.ids}', '{FormatStringForPostgreSql(cell.vlp)}', '{cell.vlt}' WHERE NOT EXISTS (SELECT 1 FROM {cell.idc}_ WHERE {CACTUS_STRUCT_DATA.IDS.name_sql} = '{cell.ids}' AND {CACTUS_STRUCT_DATA.VLT.name_sql} = {cell.vlt})"
 
 		result_sql                           = self.ExecSqlSelectRowCount(sql)
 
@@ -2075,13 +2020,13 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 		if filters: sql += " WHERE " + ' AND '.join(filters)
 
-		result_sql                          = self.ExecSqlSelectMatrix(sql)
+		result_sql                          = self.ExecSql(sql)
 
 		if not result_sql.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCells(code     = CODES_COMPLETION.INTERRUPTED,
 																								  subcodes = result_sql.subcodes)
 
 		if flag_capture_delta:
-			cells_after = self.ReadSCells(cell).data
+			cells_after = self.ReadDCells(cell).data
 
 			result.data = DifferenceLists(cells_before, cells_after, True)
 
@@ -2156,7 +2101,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql     : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE"
+		sql     : str       = f"SELECT MIN({CACTUS_STRUCT_DATA.VLT.name_sql}), MAX({CACTUS_STRUCT_DATA.VLT.name_sql}) FROM {cell.idc}_ WHERE "
 		sql                += ' AND '.join(filters)
 
 		result_sql          = self.ExecSqlSelectHList(sql)
@@ -2189,7 +2134,7 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 		if cell.vlt_l: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} >= '{cell.vlt_l}')")
 		if cell.vlt_r: filters.append(f"({CACTUS_STRUCT_DATA.VLT.name_sql} <= '{cell.vlt_r}')")
 
-		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE"
+		sql          : str       = f"SELECT DISTINCT {CACTUS_STRUCT_DATA.VLT.name_sql} FROM {cell.idc}_ WHERE "
 		sql                     += ' AND '.join(filters)
 
 		result_sql               = self.ExecSqlSelectVList(sql)

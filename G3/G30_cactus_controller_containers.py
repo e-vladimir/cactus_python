@@ -1,15 +1,13 @@
 # КАКТУС: КОНТРОЛЛЕР КОНТЕЙНЕРОВ
-# 08 сен 2026
+# 10 сен 2026
 
 from G00_status_codes         import (CODES_DATA,
 									  CODES_PROCESSING,
 									  CODES_COMPLETION,
 									  CODES_CACTUS)
-
 from G20_meta_frames          import  C20_MetaFrame
 from G21_struct_result        import (T21_StructResult_List,
 									  T21_StructResult_String)
-
 from G31_cactus_container_ram import  C31_ContainerRAM
 from G32_cactus_container_sql import (C32_ContainerSQLite,
 									  C32_ContainerPostgreSQL)
@@ -20,6 +18,8 @@ class C30_ControllerContainers(C20_MetaFrame):
 
 	# Модель данных
 	def Init_00(self):
+		super().Init_00()
+
 		self._containers : dict[str, C31_ContainerRAM | C32_ContainerSQLite | C32_ContainerPostgreSQL] = dict()
 
 	# Механика данных
@@ -107,7 +107,6 @@ class C30_ControllerContainers(C20_MetaFrame):
 		struct_result.code = CODES_COMPLETION.COMPLETED
 
 		try:
-			del container
 			del self._containers[container_name]
 		except:
 			struct_result.subcodes.add(CODES_PROCESSING.SKIP)
@@ -118,4 +117,4 @@ class C30_ControllerContainers(C20_MetaFrame):
 	pass
 
 
-controller_containers = C30_ControllerContainers()
+ControllerContainers = C30_ControllerContainers()

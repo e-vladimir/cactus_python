@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРЫ ДАННЫХ
-# 08 сен 2026
+# 10 сен 2026
 
 from dataclasses      import (dataclass,
 							  field)
@@ -19,8 +19,8 @@ class T20_StructCell:
 	vlp: str = ""
 	vlt: int = 0
 
-	ids: str = field(init = False)
-	idf: str = field(init = False)
+	ids : str = field(init = False, compare = False, hash = False)
+	idf : str = field(init = False, compare = False, hash = False)
 
 	def __regenerate_ids_idf__(self):
 		self.__dict__["ids"] = f"{self.ido}.{self.idp}"

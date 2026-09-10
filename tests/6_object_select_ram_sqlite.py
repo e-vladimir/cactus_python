@@ -6,7 +6,7 @@ import time
 
 from   pprint                           import pprint
 
-from   G30_cactus_controller_containers import controller_containers
+from   G30_cactus_controller_containers import ControllerContainers
 from   G30_cactus_datafilters           import C30_FilterLinear1D
 from   G30_cactus_frames                import C30_StructField, C30_StructFrame
 
@@ -32,8 +32,8 @@ class CObj(C30_StructFrame):
 try: os.remove("./data.sqlite")
 except: pass
 
-container_ram = controller_containers.RegisterContainerRAM(CONTAINER_RAM)
-container_sql = controller_containers.RegisterContainerRAM(CONTAINER_SQLITE)
+container_ram = ControllerContainers.RegisterContainerRAM(CONTAINER_RAM)
+container_sql = ControllerContainers.RegisterContainerRAM(CONTAINER_SQLITE)
 
 CObj.RegisterClass(CONTAINER_SQLITE)
 
