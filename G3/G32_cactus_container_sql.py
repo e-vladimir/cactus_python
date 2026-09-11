@@ -1,5 +1,5 @@
 # КАКТУС: КОНТЕЙНЕР-SQL
-# 10 сен 2026
+# 11 сен 2026
 
 import psycopg2
 import sqlite3
@@ -425,44 +425,43 @@ class C32_ContainerSQLite(C31_ContainerSQL):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool      = CheckIdc(cell.idc)
-		result_check            &= CheckIdo(cell.ido)
-		result_check            &= CheckIdp(cell.idp)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
+		result_check &= CheckIdp(cell.idp)
 
 		if not result_check:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											   subcodes = {CODES_DATA.ERROR_CHECK})
+			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes={CODES_DATA.ERROR_CHECK})
 
-		result_cell         = self.ReadSCell(cell)
-		check_error  : bool = not result_cell.code == CODES_COMPLETION.COMPLETED
-		check_error        |= CODES_DATA.NO_DATA in result_cell.subcodes
-		if check_error:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											   subcodes = result_cell.subcodes)
+		result_read = self.ReadSCell(cell)
 
-		cell_in_container   = result_cell.data
+		if result_read.code == CODES_COMPLETION.INTERRUPTED:
+			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes=result_read.subcodes)
 
-		result_write : bool = True
-		if cell_in_container is not None: result_write = (cell_in_container.vlt < cell.vlt)
+		cell_in_container = result_read.data
 
-		result              = T21_StructResult_StructCell()
+		result_write: bool = True
+		if cell_in_container is not None:
+			result_write = (cell_in_container.vlt < cell.vlt)
+
+		result = T21_StructResult_StructCell()
 		result.code = CODES_COMPLETION.COMPLETED
 
 		if not result_write:
 			result.subcodes.add(CODES_PROCESSING.SKIP)
-
-			if flag_capture_delta: result.data = cell_in_container
-
+			if flag_capture_delta:
+				result.data = cell_in_container
 			return result
 
-		result_cell         = self.WriteSCell(cell, False, flag_capture_delta)
-		if not result_cell.code == CODES_COMPLETION.COMPLETED:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											   subcodes = result_cell.subcodes)
+		result_write_cell = self.WriteSCell(cell, False, flag_capture_delta)
+		if not result_write_cell.code == CODES_COMPLETION.COMPLETED:
+			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes=result_write_cell.subcodes)
 
-		result.subcodes     = result_cell.subcodes
-
-		if flag_capture_delta: result.data = result_cell.data
+		result.subcodes = result_write_cell.subcodes
+		if flag_capture_delta:
+			result.data = result_write_cell.data
 
 		return result
 
@@ -1500,42 +1499,43 @@ class C32_ContainerPostgreSQL(C31_ContainerSQL):
 
 	def SyncSCell(self, cell: T20_StructCell, flag_capture_delta: bool = False) -> T21_StructResult_StructCell:
 		""" Синхронизация S-Ячейки """
-		result_check : bool      = CheckIdc(cell.idc)
-		result_check            &= CheckIdo(cell.ido)
-		result_check            &= CheckIdp(cell.idp)
+		result_check: bool = CheckIdc(cell.idc)
+		result_check &= CheckIdo(cell.ido)
+		result_check &= CheckIdp(cell.idp)
 
-		if not result_check                                  : return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-																								  subcodes = {CODES_DATA.ERROR_CHECK})
+		if not result_check:
+			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes={CODES_DATA.ERROR_CHECK})
 
-		result_cell              = self.ReadSCell(cell)
-		check_error  : bool      = not result_cell.code == CODES_COMPLETION.COMPLETED
-		check_error             |= CODES_DATA.NO_DATA in result_cell.subcodes
-		if check_error:
-			return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-											   subcodes = result_cell.subcodes)
+		result_read = self.ReadSCell(cell)
 
-		cell_in_container        = result_cell.data
+		if result_read.code == CODES_COMPLETION.INTERRUPTED:
+			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes=result_read.subcodes)
 
-		result_write : bool      = True
-		if cell_in_container is not None: result_write = (cell_in_container.vlt < cell.vlt)
+		cell_in_container = result_read.data
 
-		result                   = T21_StructResult_StructCell()
-		result.code              = CODES_COMPLETION.COMPLETED
+		result_write: bool = True
+		if cell_in_container is not None:
+			result_write = (cell_in_container.vlt < cell.vlt)
+
+		result = T21_StructResult_StructCell()
+		result.code = CODES_COMPLETION.COMPLETED
 
 		if not result_write:
 			result.subcodes.add(CODES_PROCESSING.SKIP)
-
-			if flag_capture_delta: result.data = cell_in_container
-
+			if flag_capture_delta:
+				result.data = cell_in_container
 			return result
 
-		result_cell              = self.WriteSCell(cell, False, flag_capture_delta)
-		if not result_cell.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_StructCell(code     = CODES_COMPLETION.INTERRUPTED,
-																								  subcodes = result_cell.subcodes)
+		result_write_cell = self.WriteSCell(cell, False, flag_capture_delta)
+		if not result_write_cell.code == CODES_COMPLETION.COMPLETED:
+			return T21_StructResult_StructCell(code=CODES_COMPLETION.INTERRUPTED,
+			                                   subcodes=result_write_cell.subcodes)
 
-		result.subcodes          = result_cell.subcodes
-
-		if flag_capture_delta: result.data = result_cell.data
+		result.subcodes = result_write_cell.subcodes
+		if flag_capture_delta:
+			result.data = result_write_cell.data
 
 		return result
 
