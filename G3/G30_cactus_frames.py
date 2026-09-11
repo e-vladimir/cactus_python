@@ -1,5 +1,5 @@
 # КАКТУС: СТРУКТУРНЫЙ КАРКАС
-# 10 сен 2026
+# 11 сен 2026
 
 import datetime
 
@@ -547,12 +547,10 @@ class C30_StructField(C20_MetaFrame):
 		vlp             = result_read.data
 
 		flag_no_default = self._default_vlp is None
-
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 
 		result          = T21_StructResult_Bool()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		try:
@@ -568,19 +566,20 @@ class C30_StructField(C20_MetaFrame):
 		""" В Datetime """
 		result_read     = self._ReadVlpSCell(container_name_src)
 		vlp             = result_read.data
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_default = self._default_vlp is None
 
-		if   flag_no_data and flag_no_default: return T21_StructResult_DTime(code     = CODES_COMPLETION.COMPLETED,
-																			 subcodes = result_read.subcodes)
-
 		result          = T21_StructResult_DTime()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
-		try   : result.data = StringToDateTime(self._default_vlp if flag_no_data else vlp)
-		except:	result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+		if flag_no_data and flag_no_default: return result
+
+		try   :
+			result.data = StringToDateTime(self._default_vlp if flag_no_data else vlp)
+			if result.data is None: raise
+		except:
+			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
 
 		return result
 
@@ -588,12 +587,11 @@ class C30_StructField(C20_MetaFrame):
 		""" В целое число """
 		result_read     = self._ReadVlpSCell(container_name_src)
 		vlp             = result_read.data
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_Int()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		try:
@@ -601,7 +599,6 @@ class C30_StructField(C20_MetaFrame):
 			elif flag_no_data                    : result.data = StringToInteger(self._default_vlp)
 			else                                 : result.data = StringToInteger(vlp)
 		except:
-			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
 
 		return result
@@ -610,12 +607,11 @@ class C30_StructField(C20_MetaFrame):
 		""" В дробное число """
 		result_read     = self._ReadVlpSCell(container_name_src)
 		vlp             = result_read.data
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_Float()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		try:
@@ -623,7 +619,6 @@ class C30_StructField(C20_MetaFrame):
 			elif flag_no_data                    : result.data = StringToFloat(self._default_vlp)
 			else                                 : result.data = StringToFloat(vlp)
 		except:
-			result.code = CODES_COMPLETION.INTERRUPTED
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
 
 		return result
@@ -632,12 +627,11 @@ class C30_StructField(C20_MetaFrame):
 		""" В строку """
 		result_read     = self._ReadVlpSCell(container_name_src)
 		vlp             = result_read.data
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_String()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		try:
@@ -654,16 +648,13 @@ class C30_StructField(C20_MetaFrame):
 	def ToBooleans(self, container_name_src : str) -> T21_StructResult_List:
 		""" В список логических значений """
 		result_read     = self._ReadVlpSCell(container_name_src)
-		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				            subcodes = result_read.subcodes)
-		vlp             = result_read.data.strip()
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		vlp             = result_read.data.strip() if result_read.data else ""
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		try:
@@ -673,21 +664,22 @@ class C30_StructField(C20_MetaFrame):
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
 
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
+
 		return result
 
 	def ToDatetimes(self, container_name_src : str) -> T21_StructResult_List:
 		""" В список Datetime """
 		result_read     = self._ReadVlpSCell(container_name_src)
-		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				            subcodes = result_read.subcodes)
-		vlp             = result_read.data.strip()
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		vlp             = result_read.data.strip() if result_read.data else ""
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		if flag_no_data and flag_no_default: pass
@@ -714,16 +706,13 @@ class C30_StructField(C20_MetaFrame):
 	def ToIntegers(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список целых чисел """
 		result_read     = self._ReadVlpSCell(container_name_src)
-		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				            subcodes = result_read.subcodes)
-		vlp             = result_read.data.strip()
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		vlp             = result_read.data.strip() if result_read.data else ""
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		if flag_no_data and flag_no_default: pass
@@ -748,16 +737,13 @@ class C30_StructField(C20_MetaFrame):
 	def ToFloats(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список дробных чисел """
 		result_read     = self._ReadVlpSCell(container_name_src)
-		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				            subcodes = result_read.subcodes)
-		vlp             = result_read.data.strip()
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		vlp             = result_read.data.strip() if result_read.data else ""
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		if flag_no_data and flag_no_default: pass
@@ -782,16 +768,13 @@ class C30_StructField(C20_MetaFrame):
 	def ToStrings(self, container_name_src: str) -> T21_StructResult_List:
 		""" В список строк """
 		result_read     = self._ReadVlpSCell(container_name_src)
-		if not result_read.code == CODES_COMPLETION.COMPLETED: return T21_StructResult_List(code     = CODES_COMPLETION.INTERRUPTED,
-																				            subcodes = result_read.subcodes)
-		vlp             = result_read.data
-		flag_no_data    = CODES_DATA.NO_DATA in result_read.subcodes
-		flag_no_data   |= result_read.code == CODES_COMPLETION.INTERRUPTED
+		vlp             = result_read.data if result_read.data else ""
+		flag_no_data    = result_read.code == CODES_COMPLETION.INTERRUPTED
 		flag_no_data   |= vlp == ''
 		flag_no_default = self._default_vlp is None
 
 		result          = T21_StructResult_List()
-		result.code     = CODES_COMPLETION.COMPLETED
+		result.code     = result_read.code
 		result.subcodes = result_read.subcodes
 
 		try:
@@ -800,6 +783,10 @@ class C30_StructField(C20_MetaFrame):
 			else                                 : result.data = list(vlp.split(SEPARATOR_LIST))
 		except:
 			result.subcodes.add(CODES_DATA.ERROR_CONVERT)
+
+		match len(result.data):
+			case 0: result.subcodes.add(CODES_DATA.NO_DATA)
+			case 1: result.subcodes.add(CODES_DATA.SINGLE)
 
 		return result
 
