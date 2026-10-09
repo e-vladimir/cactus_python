@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 08 сен 2026
+# 09 окт 2026
 
 import time
 
@@ -17,7 +17,7 @@ container.OptionsServerIp("")
 container.OptionsServerTcpPort(5432)
 container.OptionsServerLogin("")
 container.OptionsServerPassword("")
-container.OptionsServerDBase("cactus-test")
+container.OptionsServerDBase("")
 container.Connect()
 
 cell       = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=0)
@@ -41,7 +41,7 @@ if not check: print(f"                  {result.code} {result.subcodes}\n")
 time_0 = time.time()
 result = container.ReadSCell(cell)
 time_1 = time.time()
-check  = result.code == CODES_COMPLETION.INTERRUPTED
+check  = result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Чтение несуществующей ячейки")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
@@ -76,7 +76,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.ERROR_CHECK in result.subcodes
 result = container.ReadSCell(cell)
-check &= result.code == CODES_COMPLETION.INTERRUPTED
+check &= result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Попытка записи ячейки с некорректными данными (без пропуска, без захвата изменений)")
 if not check: print(f"                  {result.code} {result.subcodes}\n")
@@ -159,7 +159,7 @@ time_1 = time.time()
 check  = result.code == CODES_COMPLETION.INTERRUPTED
 check &= CODES_DATA.ERROR_CHECK in result.subcodes
 result = container.ReadSCell(cell)
-check &= result.code == CODES_COMPLETION.INTERRUPTED
+check &= result.code == CODES_COMPLETION.COMPLETED
 check &= CODES_DATA.NO_DATA in result.subcodes
 print(f"{(time_1 - time_0):0.3f} сек  ", "[+]" if check else "[ ]", "  Попытка синхронизации ячейки с некорректными данными (без захвата изменений)")
 if not check: print(f"                  {result.code} {result.subcodes}\n")

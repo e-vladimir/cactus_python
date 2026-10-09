@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 08 сен 2026
+# 09 окт 2026
 
 import time
 
@@ -20,7 +20,7 @@ container.OptionsServerIp("")
 container.OptionsServerTcpPort(5432)
 container.OptionsServerLogin("")
 container.OptionsServerPassword("")
-container.OptionsServerDBase("cactus-test")
+container.OptionsServerDBase("")
 container.Connect()
 
 cell       = T20_StructCell(idc="idc", ido="ido", idp="idp", vlp="???", vlt=0)

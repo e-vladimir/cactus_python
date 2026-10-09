@@ -1,5 +1,5 @@
 # ТЕСТИРОВАНИЕ КОНТЕЙНЕРА-SQL.PostgreSQL
-# 08 сен 2026
+# 09 окт 2026
 
 import time
 
@@ -16,7 +16,7 @@ container.OptionsServerIp("")
 container.OptionsServerTcpPort(5432)
 container.OptionsServerLogin("")
 container.OptionsServerPassword("")
-container.OptionsServerDBase("cactus-test")
+container.OptionsServerDBase("")
 
 time_0 = time.time()
 result    = container.StateConnected()
